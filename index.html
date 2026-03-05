@@ -1,251 +1,932 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kamran Huseynov — IT Müəllimi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<html>
-	<head>
-		<title>Kamran Huseynov</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-	</head>
-	<body class="is-preload">
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #1a1a24;
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --text: #e8e8f0;
+      --muted: #7070a0;
+      --border: rgba(255,255,255,0.07);
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+    html { scroll-behavior: smooth; }
 
-				<!-- Main -->
-					<div id="main">
-						<div class="inner">
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+    }
 
-							<!-- Header -->
-								<header id="header">
-									<a href="index.html" class="logo"><strong>Ana Səhifə</strong> by KH</a>
-<!-- 									<ul class="icons">
-										<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
-										<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-										<li><a href="#" class="icon brands fa-snapchat-ghost"><span class="label">Snapchat</span></a></li>
-										<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-										<li><a href="#" class="icon brands fa-medium-m"><span class="label">Medium</span></a></li>
-									</ul> -->
-								</header>
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
 
-							<!-- Banner -->
-								<section id="banner">
-									<div class="content">
-										<header>
-											<h1>Kamran Huseynov</h1>
-											<p>Informasiya Texnologiyaları Mühəndisi</p>
-										</header>
-										<p>Aenean ornare velit lacus, ac varius enim ullamcorper eu. Proin aliquam facilisis ante interdum congue. Integer mollis, nisl amet convallis, porttitor magna ullamcorper, amet egestas mauris. Ut magna finibus nisi nec lacinia. Nam maximus erat id euismod egestas. Pellentesque sapien ac quam. Lorem ipsum dolor sit nullam.</p>
-										<ul class="actions">
-											<li><a href="#" class="button big">Learn More</a></li>
-										</ul>
-									</div>
-									<span class="image object">
-										<img src="images/pic10.jpg" alt="" />
-									</span>
-								</section>
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
 
-							<!-- Section -->
-<!-- 								<section>
-									<header class="major">
-										<h2>Erat lacina</h2>
-									</header>
-									<div class="features">
-										<article>
-											<span class="icon fa-gem"></span>
-											<div class="content">
-												<h3>Portitor ullamcorper</h3>
-												<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											</div>
-										</article>
-										<article>
-											<span class="icon solid fa-paper-plane"></span>
-											<div class="content">
-												<h3>Sapien veroeros</h3>
-												<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											</div>
-										</article>
-										<article>
-											<span class="icon solid fa-rocket"></span>
-											<div class="content">
-												<h3>Quam lorem ipsum</h3>
-												<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											</div>
-										</article>
-										<article>
-											<span class="icon solid fa-signal"></span>
-											<div class="content">
-												<h3>Sed magna finibus</h3>
-												<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											</div>
-										</article>
-									</div>
-								</section> -->
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-decoration: none;
+    }
 
-							<!-- Section -->
-								<section>
-									<header class="major">
-										<h2>Məqalələr</h2>
-									</header>
-									<div class="posts">
-										<article>
-											<a href="#" class="image"><img src="images/pic01.jpg" alt="" /></a>
-											<h3>Interdum aenean</h3>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											<ul class="actions">
-												<li><a href="məqalə1.html" class="button">More</a></li>
-											</ul>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic02.jpg" alt="" /></a>
-											<h3>Nulla amet dolore</h3>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											<ul class="actions">
-												<li><a href="#" class="button">More</a></li>
-											</ul>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic03.jpg" alt="" /></a>
-											<h3>Tempus ullamcorper</h3>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											<ul class="actions">
-												<li><a href="#" class="button">More</a></li>
-											</ul>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic04.jpg" alt="" /></a>
-											<h3>Sed etiam facilis</h3>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											<ul class="actions">
-												<li><a href="#" class="button">More</a></li>
-											</ul>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic05.jpg" alt="" /></a>
-											<h3>Feugiat lorem aenean</h3>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											<ul class="actions">
-												<li><a href="#" class="button">More</a></li>
-											</ul>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic06.jpg" alt="" /></a>
-											<h3>Amet varius aliquam</h3>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-											<ul class="actions">
-												<li><a href="#" class="button">More</a></li>
-											</ul>
-										</article>
-									</div>
-								</section>
+    .nav-logo span { color: var(--muted); }
 
-    <!-- Get in touch section moved here -->
-    <section>
-        <header class="major">
-            <h2>Get in touch</h2>
-        </header>
-        <p>Sed varius enim lorem ullamcorper dolore aliquam aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin sed aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-        <ul class="contact">
-            <li class="icon solid fa-envelope"><a href="#">information@untitled.tld</a></li>
-            <li class="icon solid fa-phone">(000) 000-0000</li>
-            <li class="icon solid fa-home">1234 Somewhere Road #8254<br />
-            Nashville, TN 00000-0000</li>
-        </ul>
-    </section>
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
 
-    <!-- Footer moved here -->
-    <footer id="footer">
-        <p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
-    </footer>
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      position: relative;
+    }
 
-	
-</section>
-						</div>
-					</div>
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
 
-				<!-- Sidebar -->
-					<div id="sidebar">
-						<div class="inner">
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after { width: 100%; }
 
-							<!-- Search -->
-								<section id="search" class="alt">
-									<form method="post" action="#">
-										<input type="text" name="query" id="query" placeholder="Search" />
-									</form>
-								</section>
+    /* ── HAMBURGER ── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--text);
+      transition: all 0.3s;
+    }
 
-							<!-- Menu -->
-								<nav id="menu">
-									<header class="major">
-										<h2>Menu</h2>
-									</header>
-									<ul>
-										<li><a href="index.html">Ana Səhifə</a></li>
-										<li><a href="generic.html">Generic</a></li>
-										<li><a href="elements.html">Elements</a></li>
-										<li>
-											<span class="opener">Submenu</span>
-											<ul>
-												<li><a href="#">Lorem Dolor</a></li>
-												<li><a href="#">Ipsum Adipiscing</a></li>
-												<li><a href="#">Tempus Magna</a></li>
-												<li><a href="#">Feugiat Veroeros</a></li>
-											</ul>
-										</li>
-										<li><a href="#">Etiam Dolore</a></li>
-										<li><a href="#">Adipiscing</a></li>
-										<li>
-											<span class="opener">Another Submenu</span>
-											<ul>
-												<li><a href="#">Lorem Dolor</a></li>
-												<li><a href="#">Ipsum Adipiscing</a></li>
-												<li><a href="#">Tempus Magna</a></li>
-												<li><a href="#">Feugiat Veroeros</a></li>
-											</ul>
-										</li>
-										<li><a href="#">Maximus Erat</a></li>
-										<li><a href="#">Sapien Mauris</a></li>
-										<li><a href="#">Amet Lacinia</a></li>
-									</ul>
-								</nav>
+    /* ── HERO ── */
+    #home {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 8rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-							<!-- Section -->
-								<section>
-									<header class="major">
-										<h2>Ante interdum</h2>
-									</header>
-									<div class="mini-posts">
-										<article>
-											<a href="#" class="image"><img src="images/pic07.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic08.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic09.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-									</div>
-									<ul class="actions">
-										<li><a href="#" class="button">More</a></li>
-									</ul>
-								</section>
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+    }
 
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      pointer-events: none;
+    }
 
+    .hero-glow2 {
+      position: absolute;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(0,229,255,0.1) 0%, transparent 70%);
+      bottom: 0; left: 10%;
+      pointer-events: none;
+    }
 
-						</div>
-					</div>
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 760px;
+    }
 
-			</div>
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+    .hero-tag::before {
+      content: '';
+      display: block;
+      width: 32px; height: 1px;
+      background: var(--accent);
+    }
 
-	</body>
+    h1 {
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 .line2 {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.25);
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: var(--accent);
+      color: #000;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    }
+
+    .btn-primary:hover {
+      background: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,229,255,0.3);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 6rem 4rem; position: relative; z-index: 1; }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      max-width: 80px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 3rem;
+    }
+
+    /* ── SLIDES ── */
+    #slides { background: var(--bg2); }
+
+    .slides-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .slide-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .slide-card:hover {
+      border-color: rgba(0,229,255,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,229,255,0.1);
+    }
+
+    .slide-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-thumb-inner {
+      width: 85%;
+      height: 85%;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 0.5rem;
+    }
+
+    .slide-line { height: 6px; background: rgba(0,229,255,0.15); border-radius: 2px; }
+    .slide-line.short { width: 55%; }
+    .slide-line.accent { background: rgba(0,229,255,0.5); width: 40%; }
+    .slide-dots {
+      display: flex; gap: 4px; margin-top: auto;
+    }
+    .slide-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+    .slide-dot.on { background: var(--accent); }
+
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,229,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .slide-card:hover .slide-overlay { opacity: 1; }
+
+    .play-btn {
+      width: 48px; height: 48px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .slide-info { padding: 1.2rem; }
+
+    .slide-meta {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .slide-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .slide-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── ARTICLES ── */
+    #articles { background: var(--bg); }
+
+    .articles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .article-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .article-item::before {
+      content: '';
+      position: absolute;
+      left: -4rem;
+      top: 0; bottom: 0;
+      width: 0;
+      background: rgba(0,229,255,0.03);
+      transition: width 0.3s;
+    }
+
+    .article-item:hover::before { width: calc(100% + 8rem); }
+
+    .article-num {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      min-width: 2.5rem;
+      padding-top: 0.3rem;
+    }
+
+    .article-body { flex: 1; }
+
+    .article-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .article-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      transition: color 0.2s;
+    }
+
+    .article-item:hover .article-title { color: var(--accent); }
+
+    .article-excerpt {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .article-date {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      padding-top: 0.3rem;
+    }
+
+    .article-arrow {
+      font-size: 1.2rem;
+      color: var(--muted);
+      padding-top: 0.2rem;
+      transition: all 0.2s;
+    }
+
+    .article-item:hover .article-arrow {
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      background: var(--bg2);
+      display: flex;
+      gap: 4rem;
+      flex-wrap: wrap;
+    }
+
+    .contact-left { flex: 1; min-width: 280px; }
+    .contact-right { flex: 1; min-width: 280px; }
+
+    .contact-desc {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: color 0.2s;
+    }
+
+    .contact-link:hover { color: var(--accent); }
+
+    .contact-icon {
+      width: 40px; height: 40px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .contact-link:hover .contact-icon {
+      border-color: var(--accent);
+      background: rgba(0,229,255,0.05);
+    }
+
+    .contact-link-text {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+
+    /* Contact Form */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 0.95rem;
+      padding: 0.85rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: rgba(0,229,255,0.4);
+    }
+
+    .form-group textarea { min-height: 120px; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: var(--bg);
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-tag  { animation: fadeUp 0.6s ease both 0.1s; }
+    h1         { animation: fadeUp 0.6s ease both 0.2s; }
+    .hero-desc { animation: fadeUp 0.6s ease both 0.35s; }
+    .hero-cta  { animation: fadeUp 0.6s ease both 0.5s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; flex-direction: column; gap: 1.5rem; position: fixed; inset: 0; background: var(--bg); align-items: center; justify-content: center; z-index: 99; }
+      .nav-links.open { display: flex; }
+      .hamburger { display: flex; z-index: 101; }
+      #home, section { padding: 5rem 1.5rem 3rem; }
+      footer { padding: 1.5rem; }
+      #contact { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#home" class="nav-logo">KH<span>.dev</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" onclick="closeNav()">Haqqımda</a></li>
+      <li><a href="#slides" onclick="closeNav()">Slaydlar</a></li>
+      <li><a href="#articles" onclick="closeNav()">Məqalələr</a></li>
+      <li><a href="#contact" onclick="closeNav()">Əlaqə</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section id="home">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Müəllim &amp; Mühəndis</div>
+      <h1>
+        Kamran<br>
+        <span class="line2">Huseynov</span>
+      </h1>
+      <p class="hero-desc">
+        İnformasiya Texnologiyaları sahəsində müəllim. Proqramlaşdırma, şəbəkə sistemləri və kibertəhlükəsizlik mövzularında dərslər aparıram.
+      </p>
+      <div class="hero-cta">
+        <a href="#slides" class="btn-primary">Slaydlara Bax →</a>
+        <a href="#contact" class="btn-secondary">Əlaqə Saxla</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDES -->
+  <section id="slides">
+    <div class="section-label">Tədris Materialları</div>
+    <h2 class="section-title">Slaydlar &amp; Təqdimatlar</h2>
+    <div class="slides-grid">
+
+      <a href="#" class="slide-card">
+        <div class="slide-thumb">
+          <div class="slide-thumb-inner">
+            <div class="slide-line accent"></div>
+            <div class="slide-line"></div>
+            <div class="slide-line short"></div>
+            <div class="slide-dots">
+              <div class="slide-dot on"></div>
+              <div class="slide-dot"></div>
+              <div class="slide-dot"></div>
+            </div>
+          </div>
+          <div class="slide-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 01 · Proqramlaşdırma</div>
+          <div class="slide-title">Python-a Giriş</div>
+          <div class="slide-desc">Dəyişənlər, şərt operatorları, dövrler və funksiyalar.</div>
+        </div>
+      </a>
+
+      <a href="#" class="slide-card">
+        <div class="slide-thumb">
+          <div class="slide-thumb-inner">
+            <div class="slide-line accent"></div>
+            <div class="slide-line"></div>
+            <div class="slide-line short"></div>
+            <div class="slide-dots">
+              <div class="slide-dot on"></div>
+              <div class="slide-dot on"></div>
+              <div class="slide-dot"></div>
+            </div>
+          </div>
+          <div class="slide-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 02 · Şəbəkələr</div>
+          <div class="slide-title">TCP/IP Protokolu</div>
+          <div class="slide-desc">İnternet arxitekturası, IP ünvanlaması və marşrutlaşdırma.</div>
+        </div>
+      </a>
+
+      <a href="#" class="slide-card">
+        <div class="slide-thumb">
+          <div class="slide-thumb-inner">
+            <div class="slide-line accent"></div>
+            <div class="slide-line"></div>
+            <div class="slide-line short"></div>
+            <div class="slide-dots">
+              <div class="slide-dot on"></div>
+              <div class="slide-dot on"></div>
+              <div class="slide-dot on"></div>
+            </div>
+          </div>
+          <div class="slide-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 03 · Təhlükəsizlik</div>
+          <div class="slide-title">Kibertəhlükəsizliyə Giriş</div>
+          <div class="slide-desc">Əsas hücum növləri, şifrələmə və müdafiə metodları.</div>
+        </div>
+      </a>
+
+      <a href="#" class="slide-card">
+        <div class="slide-thumb">
+          <div class="slide-thumb-inner">
+            <div class="slide-line accent"></div>
+            <div class="slide-line"></div>
+            <div class="slide-line short"></div>
+            <div class="slide-dots">
+              <div class="slide-dot on"></div>
+              <div class="slide-dot"></div>
+              <div class="slide-dot"></div>
+            </div>
+          </div>
+          <div class="slide-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 04 · Verilənlər Bazası</div>
+          <div class="slide-title">SQL Əsasları</div>
+          <div class="slide-desc">Cədvəl yaratmaq, sorğular, JOIN əməliyyatları.</div>
+        </div>
+      </a>
+
+      <a href="#" class="slide-card">
+        <div class="slide-thumb">
+          <div class="slide-thumb-inner">
+            <div class="slide-line accent"></div>
+            <div class="slide-line"></div>
+            <div class="slide-line short"></div>
+            <div class="slide-dots">
+              <div class="slide-dot on"></div>
+              <div class="slide-dot on"></div>
+              <div class="slide-dot"></div>
+            </div>
+          </div>
+          <div class="slide-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 05 · Web</div>
+          <div class="slide-title">HTML &amp; CSS Temelleri</div>
+          <div class="slide-desc">Strukturlama, stilləmə və responsiv dizayn.</div>
+        </div>
+      </a>
+
+      <a href="#" class="slide-card">
+        <div class="slide-thumb">
+          <div class="slide-thumb-inner">
+            <div class="slide-line accent"></div>
+            <div class="slide-line"></div>
+            <div class="slide-line short"></div>
+            <div class="slide-dots">
+              <div class="slide-dot on"></div>
+              <div class="slide-dot"></div>
+              <div class="slide-dot"></div>
+            </div>
+          </div>
+          <div class="slide-overlay"><div class="play-btn">▶</div></div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 06 · Alqoritmlər</div>
+          <div class="slide-title">Sıralama Alqoritmləri</div>
+          <div class="slide-desc">Bubble, merge, quick sort — müqayisə və mürəkkəblik.</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ARTICLES -->
+  <section id="articles">
+    <div class="section-label">Yazılar</div>
+    <h2 class="section-title">Məqalələr</h2>
+    <div class="articles-list">
+
+      <a href="#" class="article-item">
+        <div class="article-num">01</div>
+        <div class="article-body">
+          <span class="article-tag">Proqramlaşdırma</span>
+          <div class="article-title">Python ilə ilk addımlar: yeni başlayanlar üçün bələdçi</div>
+          <div class="article-excerpt">Python dilinin sintaksisi, niyə öyrənmək lazım olduğu və ən yaxşı resurslar haqqında ətraflı məlumat.</div>
+        </div>
+        <div class="article-date">Mar 2025</div>
+        <div class="article-arrow">→</div>
+      </a>
+
+      <a href="#" class="article-item">
+        <div class="article-num">02</div>
+        <div class="article-body">
+          <span class="article-tag">Şəbəkə</span>
+          <div class="article-title">Ev şəbəkənizi necə təhlükəsiz edərsiniz?</div>
+          <div class="article-excerpt">Router parametrləri, firewall quraşdırması və ümumi istifadəçilər üçün sadə təhlükəsizlik tövsiyələri.</div>
+        </div>
+        <div class="article-date">Feb 2025</div>
+        <div class="article-arrow">→</div>
+      </a>
+
+      <a href="#" class="article-item">
+        <div class="article-num">03</div>
+        <div class="article-body">
+          <span class="article-tag">Kibertəhlükəsizlik</span>
+          <div class="article-title">Şifrə idarəetməsi: niyə vacibdir?</div>
+          <div class="article-excerpt">Güclü şifrə yaratmaq, password manager istifadəsi və iki faktorlu autentifikasiya haqqında.</div>
+        </div>
+        <div class="article-date">Jan 2025</div>
+        <div class="article-arrow">→</div>
+      </a>
+
+      <a href="#" class="article-item">
+        <div class="article-num">04</div>
+        <div class="article-body">
+          <span class="article-tag">Web</span>
+          <div class="article-title">Müasir web texnologiyaları: 2025-ci ildə nə öyrənmək lazımdır?</div>
+          <div class="article-excerpt">Frontend, backend və cloud texnologiyalarında ən aktual trendlər və öyrənmə yolları.</div>
+        </div>
+        <div class="article-date">Dec 2024</div>
+        <div class="article-arrow">→</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-left">
+      <div class="section-label">Əlaqə</div>
+      <h2 class="section-title">Yazın mənə</h2>
+      <p class="contact-desc">
+        Suallarınız, əməkdaşlıq təklifləriniz və ya tədris materiallarına dair istənilən mövzu üçün bizimlə əlaqə saxlayın.
+      </p>
+      <div class="contact-links">
+        <a href="mailto:kamran@kamranhuseynov.com" class="contact-link">
+          <div class="contact-icon">✉</div>
+          <span class="contact-link-text">kamran@kamranhuseynov.com</span>
+        </a>
+        <a href="https://linkedin.com" class="contact-link" target="_blank">
+          <div class="contact-icon">in</div>
+          <span class="contact-link-text">LinkedIn</span>
+        </a>
+        <a href="https://github.com" class="contact-link" target="_blank">
+          <div class="contact-icon">&lt;/&gt;</div>
+          <span class="contact-link-text">GitHub</span>
+        </a>
+      </div>
+    </div>
+    <div class="contact-right">
+      <div class="form-group">
+        <label>Ad Soyad</label>
+        <input type="text" placeholder="Adınızı daxil edin" />
+      </div>
+      <div class="form-group">
+        <label>E-poçt</label>
+        <input type="email" placeholder="email@nümunə.com" />
+      </div>
+      <div class="form-group">
+        <label>Mesaj</label>
+        <textarea placeholder="Mesajınızı yazın..."></textarea>
+      </div>
+      <button class="btn-primary" style="border:none;cursor:pointer;width:100%;justify-content:center;">Göndər →</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-copy">© 2025 Kamran Huseynov. Bütün hüquqlar qorunur.</div>
+    <div class="footer-links">
+      <a href="#home">Haqqımda</a>
+      <a href="#slides">Slaydlar</a>
+      <a href="#articles">Məqalələr</a>
+      <a href="#contact">Əlaqə</a>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+    function closeNav() {
+      document.getElementById('navLinks').classList.remove('open');
+    }
+
+    // Smooth active nav highlight on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current
+          ? 'var(--accent)' : '';
+      });
+    });
+
+    // Intersection observer for fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.slide-card, .article-item').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
 </html>
