@@ -1,539 +1,486 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slaydlar — Kamran Huseynov</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --bg2: #111118; --bg3: #1a1a24;
+      --accent: #00e5ff; --accent2: #7c3aed;
+      --text: #e8e8f0; --muted: #7070a0; --border: rgba(255,255,255,0.07);
+      --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
 
-<html>
-	<head>
-		<title>Kamran Huseynov</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-	</head>
-	<body class="is-preload">
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--mono); font-size: 0.9rem; color: var(--accent); letter-spacing: 0.1em; text-decoration: none; }
+    .nav-logo span { color: var(--muted); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+      text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; position: relative;
+    }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width 0.3s; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-links a.active { color: var(--accent); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--text); transition: all 0.3s; }
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+    /* PAGE HEADER */
+    .page-header {
+      padding: 8rem 4rem 3rem; position: relative; overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 100% 100% at 0% 50%, black 30%, transparent 100%);
+    }
+    .page-header-content { position: relative; z-index: 1; max-width: 700px; }
+    .page-tag {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-family: var(--mono); font-size: 0.72rem; color: var(--accent);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .page-tag::before { content: ''; display: block; width: 28px; height: 1px; background: var(--accent); }
+    .page-header h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 1rem; }
+    .page-header p { font-size: 1rem; color: var(--muted); line-height: 1.7; max-width: 480px; }
 
-				<!-- Main -->
-					<div id="main">
-						<div class="inner">
+    /* FILTERS */
+    .filters-bar {
+      padding: 2rem 4rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      position: relative; z-index: 1; background: var(--bg2);
+    }
+    .filter-label { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-right: 0.5rem; }
+    .filter-btn {
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.45rem 1rem; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
 
-							<!-- Header -->
-								<header id="header">
-									<a href="index.html" class="logo"><strong>Editorial</strong> by HTML5 UP</a>
-									<ul class="icons">
-										<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
-										<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-										<li><a href="#" class="icon brands fa-snapchat-ghost"><span class="label">Snapchat</span></a></li>
-										<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-										<li><a href="#" class="icon brands fa-medium-m"><span class="label">Medium</span></a></li>
-									</ul>
-								</header>
+    /* MAIN CONTENT */
+    main { padding: 3rem 4rem 5rem; position: relative; z-index: 1; }
 
-							<!-- Content -->
-								<section>
-									<header class="main">
-										<h1>Elements</h1>
-									</header>
+    /* ════════════════════════════════
+       HOW TO ADD A SLIDE CARD:
+       Copy one <div class="slide-card"> block,
+       paste it inside .slides-grid, and update:
+         - data-category  → filter tag
+         - .slide-meta    → chapter & subject
+         - .slide-title   → title text
+         - .slide-desc    → short description
+         - href on the <a> → your Google Slides or PDF link
+         - .slide-date    → date string
+    ════════════════════════════════ */
+    .slides-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
 
-									<!-- Content -->
-										<h2 id="content">Sample Content</h2>
-										<p>Praesent ac adipiscing ullamcorper semper ut amet ac risus. Lorem sapien ut odio odio nunc. Ac adipiscing nibh porttitor erat risus justo adipiscing adipiscing amet placerat accumsan. Vis. Faucibus odio magna tempus adipiscing a non. In mi primis arcu ut non accumsan vivamus ac blandit adipiscing adipiscing arcu metus praesent turpis eu ac lacinia nunc ac commodo gravida adipiscing eget accumsan ac nunc adipiscing adipiscing lorem ipsum dolor sit amet nullam veroeros adipiscing.</p>
-										<div class="row">
-											<div class="col-6 col-12-small">
-												<h3>Sem turpis amet semper</h3>
-												<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat commodo eu sed ante lacinia. Sapien a lorem in integer ornare praesent commodo adipiscing arcu in massa commodo lorem accumsan at odio massa ac ac. Semper adipiscing varius montes viverra nibh in adipiscing blandit tempus accumsan.</p>
-											</div>
-											<div class="col-6 col-12-small">
-												<h3>Magna odio tempus commodo</h3>
-												<p>In arcu accumsan arcu adipiscing accumsan orci ac. Felis id enim aliquet. Accumsan ac integer lobortis commodo ornare aliquet accumsan erat tempus amet porttitor. Ante commodo blandit adipiscing integer semper orci eget. Faucibus commodo adipiscing mi eu nullam accumsan morbi arcu ornare odio mi adipiscing nascetur lacus ac interdum morbi accumsan vis mi accumsan.</p>
-											</div>
-											<!-- Break -->
-											<div class="col-4 col-12-medium">
-												<h3>Interdum sapien gravida</h3>
-												<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit.</p>
-											</div>
-											<div class="col-4 col-12-medium">
-												<h3>Faucibus consequat lorem</h3>
-												<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit.</p>
-											</div>
-											<div class="col-4 col-12-medium">
-												<h3>Accumsan montes viverra</h3>
-												<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit.</p>
-											</div>
-										</div>
+    .slide-card {
+      background: var(--bg3); border: 1px solid var(--border);
+      overflow: hidden; transition: all 0.3s; display: flex; flex-direction: column;
+    }
+    .slide-card:hover {
+      border-color: rgba(0,229,255,0.35); transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,229,255,0.08);
+    }
 
-									<hr class="major" />
+    /* Thumbnail — shows a preview iframe OR a fallback graphic */
+    .slide-thumb {
+      width: 100%; aspect-ratio: 16/9; background: var(--bg);
+      position: relative; overflow: hidden;
+    }
+    .slide-thumb iframe {
+      width: 100%; height: 100%; border: none; pointer-events: none;
+      transform: scale(1); transform-origin: top left;
+    }
+    /* Fallback graphic when no iframe */
+    .slide-thumb-fallback {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    }
+    .slide-thumb-inner {
+      width: 80%; height: 78%; border: 1px solid var(--border);
+      display: flex; flex-direction: column; padding: 0.9rem; gap: 0.45rem;
+    }
+    .slide-line { height: 6px; background: rgba(0,229,255,0.12); border-radius: 2px; }
+    .slide-line.short { width: 55%; }
+    .slide-line.accent { background: rgba(0,229,255,0.5); width: 40%; }
+    .slide-dots { display: flex; gap: 4px; margin-top: auto; }
+    .slide-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+    .slide-dot.on { background: var(--accent); }
 
-									<!-- Elements -->
-										<h2 id="elements">Elements</h2>
-										<div class="row gtr-200">
-											<div class="col-6 col-12-medium">
+    /* Hover overlay with open button */
+    .slide-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.8rem; opacity: 0; transition: opacity 0.25s;
+    }
+    .slide-card:hover .slide-overlay { opacity: 1; }
+    .open-btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.4rem;
+      background: var(--accent); color: #000;
+      font-family: var(--mono); font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      text-decoration: none; transition: background 0.2s;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    }
+    .open-btn:hover { background: #fff; }
+    .download-btn {
+      font-family: var(--mono); font-size: 0.7rem; color: rgba(255,255,255,0.6);
+      text-decoration: none; letter-spacing: 0.06em;
+      border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;
+      transition: color 0.2s;
+    }
+    .download-btn:hover { color: var(--accent); }
 
-												<!-- Text stuff -->
-													<h3>Text</h3>
-													<p>This is <b>bold</b> and this is <strong>strong</strong>. This is <i>italic</i> and this is <em>emphasized</em>.
-													This is <sup>superscript</sup> text and this is <sub>subscript</sub> text.
-													This is <u>underlined</u> and this is code: <code>for (;;) { ... }</code>.
-													Finally, this is a <a href="#">link</a>.</p>
-													<hr />
-													<h2>Heading Level 2</h2>
-													<h3>Heading Level 3</h3>
-													<h4>Heading Level 4</h4>
-													<hr />
-													<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit tempus accumsan.</p>
+    .slide-info { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
+    .slide-meta {
+      font-family: var(--mono); font-size: 0.67rem; color: var(--accent);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.45rem;
+    }
+    .slide-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .slide-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.55; flex: 1; }
+    .slide-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--border);
+    }
+    .slide-date { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+    .slide-badge {
+      font-family: var(--mono); font-size: 0.65rem; padding: 0.2rem 0.6rem;
+      border: 1px solid; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .badge-pdf { border-color: rgba(255,100,100,0.4); color: rgba(255,100,100,0.8); }
+    .badge-slides { border-color: rgba(0,229,255,0.4); color: rgba(0,229,255,0.8); }
+    .badge-pptx { border-color: rgba(255,160,50,0.4); color: rgba(255,160,50,0.8); }
 
-												<!-- Lists -->
-													<h3>Lists</h3>
-													<div class="row">
-														<div class="col-6 col-12-small">
+    /* EMPTY STATE */
+    .empty-state {
+      display: none; text-align: center; padding: 5rem 2rem; color: var(--muted);
+    }
+    .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+    .empty-state p { font-family: var(--mono); font-size: 0.85rem; }
 
-															<h4>Unordered</h4>
-															<ul>
-																<li>Dolor etiam magna etiam.</li>
-																<li>Sagittis lorem eleifend.</li>
-																<li>Felis dolore viverra.</li>
-															</ul>
+    /* FOOTER */
+    footer {
+      padding: 2rem 4rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem; background: var(--bg); position: relative; z-index: 1;
+    }
+    .footer-copy { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
 
-															<h4>Alternate</h4>
-															<ul class="alt">
-																<li>Dolor etiam magna etiam.</li>
-																<li>Sagittis lorem eleifend.</li>
-																<li>Felis feugiat viverra.</li>
-															</ul>
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
-														</div>
-														<div class="col-6 col-12-small">
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; flex-direction: column; gap: 1.5rem; position: fixed; inset: 0; background: var(--bg); align-items: center; justify-content: center; z-index: 99; }
+      .nav-links.open { display: flex; }
+      .hamburger { display: flex; z-index: 101; }
+      .page-header, .filters-bar, main { padding-left: 1.5rem; padding-right: 1.5rem; }
+      footer { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
 
-															<h4>Ordered</h4>
-															<ol>
-																<li>Dolor etiam magna etiam.</li>
-																<li>Etiam vel lorem sed viverra.</li>
-																<li>Felis dolore viverra.</li>
-																<li>Dolor etiam magna etiam.</li>
-																<li>Etiam vel lorem sed viverra.</li>
-																<li>Felis dolore viverra.</li>
-															</ol>
+  <nav>
+    <a href="index.html" class="nav-logo">KH<span>.dev</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Haqqımda</a></li>
+      <li><a href="slaydlar.html" class="active">Slaydlar</a></li>
+      <li><a href="məqalələr.html">Məqalələr</a></li>
+      <li><a href="index.html#contact">Əlaqə</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-															<h4>Icons</h4>
-															<ul class="icons">
-																<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
-																<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-																<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-																<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
-																<li><a href="#" class="icon brands fa-dribbble"><span class="label">Dribbble</span></a></li>
-																<li><a href="#" class="icon brands fa-tumblr"><span class="label">Tumblr</span></a></li>
-															</ul>
+  <div class="page-header">
+    <div class="page-header-grid"></div>
+    <div class="page-header-content">
+      <div class="page-tag">Tədris Materialları</div>
+      <h1>Slaydlar &amp;<br>Təqdimatlar</h1>
+      <p>Dərslər üçün hazırladığım bütün slaydlar, PDF materiallar və təqdimatlar burada toplanıb.</p>
+    </div>
+  </div>
 
-														</div>
-													</div>
-													<h4>Definition</h4>
-													<dl>
-														<dt>Item1</dt>
-														<dd>
-															<p>Lorem ipsum dolor vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Lorem ipsum dolor.</p>
-														</dd>
-														<dt>Item2</dt>
-														<dd>
-															<p>Lorem ipsum dolor vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Lorem ipsum dolor.</p>
-														</dd>
-														<dt>Item3</dt>
-														<dd>
-															<p>Lorem ipsum dolor vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Lorem ipsum dolor.</p>
-														</dd>
-													</dl>
+  <!-- FILTER BAR — add/remove filter buttons to match your categories -->
+  <div class="filters-bar">
+    <span class="filter-label">Filtrlə:</span>
+    <button class="filter-btn active" data-filter="all">Hamısı</button>
+    <button class="filter-btn" data-filter="proqramlaşdırma">Proqramlaşdırma</button>
+    <button class="filter-btn" data-filter="şəbəkə">Şəbəkə</button>
+    <button class="filter-btn" data-filter="təhlükəsizlik">Təhlükəsizlik</button>
+    <button class="filter-btn" data-filter="verilənlər">Verilənlər Bazası</button>
+    <button class="filter-btn" data-filter="web">Web</button>
+  </div>
 
-													<h4>Actions</h4>
-													<ul class="actions">
-														<li><a href="#" class="button primary">Default</a></li>
-														<li><a href="#" class="button">Default</a></li>
-													</ul>
-													<ul class="actions small">
-														<li><a href="#" class="button primary small">Small</a></li>
-														<li><a href="#" class="button small">Small</a></li>
-													</ul>
-													<div class="row">
-														<div class="col-6 col-12-small">
-															<ul class="actions stacked">
-																<li><a href="#" class="button primary">Default</a></li>
-																<li><a href="#" class="button">Default</a></li>
-															</ul>
-														</div>
-														<div class="col-6 col-12-small">
-															<ul class="actions stacked">
-																<li><a href="#" class="button primary small">Small</a></li>
-																<li><a href="#" class="button small">Small</a></li>
-															</ul>
-														</div>
-														<div class="col-6 col-12-small">
-															<ul class="actions stacked">
-																<li><a href="#" class="button primary fit">Default</a></li>
-																<li><a href="#" class="button fit">Default</a></li>
-															</ul>
-														</div>
-														<div class="col-6 col-12-small">
-															<ul class="actions stacked">
-																<li><a href="#" class="button primary small fit">Small</a></li>
-																<li><a href="#" class="button small fit">Small</a></li>
-															</ul>
-														</div>
-													</div>
+  <main>
+    <div class="slides-grid" id="slidesGrid">
 
-													<h4>Pagination</h4>
-													<ul class="pagination">
-														<li><span class="button disabled">Prev</span></li>
-														<li><a href="#" class="page active">1</a></li>
-														<li><a href="#" class="page">2</a></li>
-														<li><a href="#" class="page">3</a></li>
-														<li><span>&hellip;</span></li>
-														<li><a href="#" class="page">8</a></li>
-														<li><a href="#" class="page">9</a></li>
-														<li><a href="#" class="page">10</a></li>
-														<li><a href="#" class="button">Next</a></li>
-													</ul>
+      <!-- ═══════════════════════════════════════════════════════
+           SLIDE CARD TEMPLATE — copy & paste to add new slides
+           ═══════════════════════════════════════════════════════
+           OPTION A: Google Slides embed (recommended)
+             1. Open your Google Slides presentation
+             2. File → Share → Publish to web → Embed → Copy the src URL
+             3. Paste it into the iframe src below
+             4. Remove the <div class="slide-thumb-fallback"> block
 
-												<!-- Blockquote -->
-													<h3>Blockquote</h3>
-													<blockquote>Lorem ipsum dolor vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Lorem ipsum dolor. Lorem ipsum dolor vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus.</blockquote>
+           OPTION B: PDF or direct link (no preview)
+             1. Leave the fallback graphic as is (no iframe)
+             2. Update href on .open-btn to your PDF/file URL
+             3. Set badge to badge-pdf or badge-pptx
+      ═══════════════════════════════════════════════════════ -->
 
-												<!-- Table -->
-													<h3>Table</h3>
+      <div class="slide-card" data-category="proqramlaşdırma">
+        <div class="slide-thumb">
+          <!-- OPTION A: Uncomment & replace src with your Google Slides embed URL -->
+          <!-- <iframe src="https://docs.google.com/presentation/d/YOUR_ID/embed?start=false&loop=false&delayms=3000"></iframe> -->
 
-													<h4>Default</h4>
-													<div class="table-wrapper">
-														<table>
-															<thead>
-																<tr>
-																	<th>Name</th>
-																	<th>Description</th>
-																	<th>Price</th>
-																</tr>
-															</thead>
-															<tbody>
-																<tr>
-																	<td>Item1</td>
-																	<td>Ante turpis integer aliquet porttitor.</td>
-																	<td>29.99</td>
-																</tr>
-																<tr>
-																	<td>Item2</td>
-																	<td>Vis ac commodo adipiscing arcu aliquet.</td>
-																	<td>19.99</td>
-																</tr>
-																<tr>
-																	<td>Item3</td>
-																	<td> Morbi faucibus arcu accumsan lorem.</td>
-																	<td>29.99</td>
-																</tr>
-																<tr>
-																	<td>Item4</td>
-																	<td>Vitae integer tempus condimentum.</td>
-																	<td>19.99</td>
-																</tr>
-																<tr>
-																	<td>Item5</td>
-																	<td>Ante turpis integer aliquet porttitor.</td>
-																	<td>29.99</td>
-																</tr>
-															</tbody>
-															<tfoot>
-																<tr>
-																	<td colspan="2"></td>
-																	<td>100.00</td>
-																</tr>
-															</tfoot>
-														</table>
-													</div>
+          <!-- OPTION B: Fallback graphic (delete this block if using iframe) -->
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot"></div><div class="slide-dot"></div>
+              </div>
+            </div>
+          </div>
 
-													<h4>Alternate</h4>
-													<div class="table-wrapper">
-														<table class="alt">
-															<thead>
-																<tr>
-																	<th>Name</th>
-																	<th>Description</th>
-																	<th>Price</th>
-																</tr>
-															</thead>
-															<tbody>
-																<tr>
-																	<td>Item1</td>
-																	<td>Ante turpis integer aliquet porttitor.</td>
-																	<td>29.99</td>
-																</tr>
-																<tr>
-																	<td>Item2</td>
-																	<td>Vis ac commodo adipiscing arcu aliquet.</td>
-																	<td>19.99</td>
-																</tr>
-																<tr>
-																	<td>Item3</td>
-																	<td> Morbi faucibus arcu accumsan lorem.</td>
-																	<td>29.99</td>
-																</tr>
-																<tr>
-																	<td>Item4</td>
-																	<td>Vitae integer tempus condimentum.</td>
-																	<td>19.99</td>
-																</tr>
-																<tr>
-																	<td>Item5</td>
-																	<td>Ante turpis integer aliquet porttitor.</td>
-																	<td>29.99</td>
-																</tr>
-															</tbody>
-															<tfoot>
-																<tr>
-																	<td colspan="2"></td>
-																	<td>100.00</td>
-																</tr>
-															</tfoot>
-														</table>
-													</div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 01 · Proqramlaşdırma</div>
+          <div class="slide-title">Python-a Giriş</div>
+          <div class="slide-desc">Dəyişənlər, şərt operatorları, dövrler və funksiyalar.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Sentyabr 2024</span>
+            <span class="slide-badge badge-slides">Google Slides</span>
+          </div>
+        </div>
+      </div>
 
-											</div>
-											<div class="col-6 col-12-medium">
+      <div class="slide-card" data-category="şəbəkə">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot on"></div><div class="slide-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 02 · Şəbəkə</div>
+          <div class="slide-title">TCP/IP Protokolu</div>
+          <div class="slide-desc">İnternet arxitekturası, IP ünvanlaması və marşrutlaşdırma.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Oktyabr 2024</span>
+            <span class="slide-badge badge-pdf">PDF</span>
+          </div>
+        </div>
+      </div>
 
-												<!-- Buttons -->
-													<h3>Buttons</h3>
-													<ul class="actions">
-														<li><a href="#" class="button primary">Primary</a></li>
-														<li><a href="#" class="button">Default</a></li>
-													</ul>
-													<ul class="actions">
-														<li><a href="#" class="button large">Large</a></li>
-														<li><a href="#" class="button">Default</a></li>
-														<li><a href="#" class="button small">Small</a></li>
-													</ul>
-													<ul class="actions">
-														<li><a href="#" class="button primary large">Large</a></li>
-														<li><a href="#" class="button primary">Default</a></li>
-														<li><a href="#" class="button primary small">Small</a></li>
-													</ul>
-													<ul class="actions fit">
-														<li><a href="#" class="button primary fit">Fit</a></li>
-														<li><a href="#" class="button fit">Fit</a></li>
-													</ul>
-													<ul class="actions fit small">
-														<li><a href="#" class="button primary fit small">Fit + Small</a></li>
-														<li><a href="#" class="button fit small">Fit + Small</a></li>
-													</ul>
-													<ul class="actions">
-														<li><a href="#" class="button primary icon solid fa-search">Icon</a></li>
-														<li><a href="#" class="button icon solid fa-download">Icon</a></li>
-													</ul>
-													<ul class="actions">
-														<li><span class="button primary disabled">Primary</span></li>
-														<li><span class="button disabled">Default</span></li>
-													</ul>
+      <div class="slide-card" data-category="təhlükəsizlik">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot on"></div><div class="slide-dot on"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 03 · Təhlükəsizlik</div>
+          <div class="slide-title">Kibertəhlükəsizliyə Giriş</div>
+          <div class="slide-desc">Əsas hücum növləri, şifrələmə və müdafiə metodları.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Noyabr 2024</span>
+            <span class="slide-badge badge-pptx">PPTX</span>
+          </div>
+        </div>
+      </div>
 
-												<!-- Form -->
-													<h3>Form</h3>
+      <div class="slide-card" data-category="verilənlər">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot"></div><div class="slide-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 04 · Verilənlər Bazası</div>
+          <div class="slide-title">SQL Əsasları</div>
+          <div class="slide-desc">Cədvəl yaratmaq, sorğular, JOIN əməliyyatları.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Dekabr 2024</span>
+            <span class="slide-badge badge-slides">Google Slides</span>
+          </div>
+        </div>
+      </div>
 
-													<form method="post" action="#">
-														<div class="row gtr-uniform">
-															<div class="col-6 col-12-xsmall">
-																<input type="text" name="demo-name" id="demo-name" value="" placeholder="Name" />
-															</div>
-															<div class="col-6 col-12-xsmall">
-																<input type="email" name="demo-email" id="demo-email" value="" placeholder="Email" />
-															</div>
-															<!-- Break -->
-															<div class="col-12">
-																<select name="demo-category" id="demo-category">
-																	<option value="">- Category -</option>
-																	<option value="1">Manufacturing</option>
-																	<option value="1">Shipping</option>
-																	<option value="1">Administration</option>
-																	<option value="1">Human Resources</option>
-																</select>
-															</div>
-															<!-- Break -->
-															<div class="col-4 col-12-small">
-																<input type="radio" id="demo-priority-low" name="demo-priority" checked>
-																<label for="demo-priority-low">Low</label>
-															</div>
-															<div class="col-4 col-12-small">
-																<input type="radio" id="demo-priority-normal" name="demo-priority">
-																<label for="demo-priority-normal">Normal</label>
-															</div>
-															<div class="col-4 col-12-small">
-																<input type="radio" id="demo-priority-high" name="demo-priority">
-																<label for="demo-priority-high">High</label>
-															</div>
-															<!-- Break -->
-															<div class="col-6 col-12-small">
-																<input type="checkbox" id="demo-copy" name="demo-copy">
-																<label for="demo-copy">Email me a copy</label>
-															</div>
-															<div class="col-6 col-12-small">
-																<input type="checkbox" id="demo-human" name="demo-human" checked>
-																<label for="demo-human">I am a human</label>
-															</div>
-															<!-- Break -->
-															<div class="col-12">
-																<textarea name="demo-message" id="demo-message" placeholder="Enter your message" rows="6"></textarea>
-															</div>
-															<!-- Break -->
-															<div class="col-12">
-																<ul class="actions">
-																	<li><input type="submit" value="Send Message" class="primary" /></li>
-																	<li><input type="reset" value="Reset" /></li>
-																</ul>
-															</div>
-														</div>
-													</form>
+      <div class="slide-card" data-category="web">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot on"></div><div class="slide-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 05 · Web</div>
+          <div class="slide-title">HTML &amp; CSS Temelleri</div>
+          <div class="slide-desc">Strukturlama, stilləmə və responsiv dizayn.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Yanvar 2025</span>
+            <span class="slide-badge badge-pdf">PDF</span>
+          </div>
+        </div>
+      </div>
 
-												<!-- Image -->
-													<h3>Image</h3>
+      <div class="slide-card" data-category="proqramlaşdırma">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot"></div><div class="slide-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Fəsil 06 · Alqoritmlər</div>
+          <div class="slide-title">Sıralama Alqoritmləri</div>
+          <div class="slide-desc">Bubble, merge, quick sort — müqayisə və mürəkkəblik.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Fevral 2025</span>
+            <span class="slide-badge badge-pptx">PPTX</span>
+          </div>
+        </div>
+      </div>
 
-													<h4>Fit</h4>
-													<span class="image fit"><img src="images/pic11.jpg" alt="" /></span>
-													<div class="box alt">
-														<div class="row gtr-50 gtr-uniform">
-															<div class="col-4"><span class="image fit"><img src="images/pic01.jpg" alt="" /></span></div>
-															<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
-															<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
-															<!-- Break -->
-															<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
-															<div class="col-4"><span class="image fit"><img src="images/pic01.jpg" alt="" /></span></div>
-															<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
-															<!-- Break -->
-															<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
-															<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
-															<div class="col-4"><span class="image fit"><img src="images/pic01.jpg" alt="" /></span></div>
-														</div>
-													</div>
+    </div><!-- /slides-grid -->
 
-													<h4>Left &amp; Right</h4>
-													<p><span class="image left"><img src="images/pic01.jpg" alt="" /></span>Lorem ipsum dolor sit accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent.</p>
-													<p><span class="image right"><img src="images/pic02.jpg" alt="" /></span>Lorem ipsum dolor sit accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent.</p>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state-icon">📂</div>
+      <p>Bu kateqoriyada hələ material yoxdur.</p>
+    </div>
+  </main>
 
-												<!-- Box -->
-													<h3>Box</h3>
-													<div class="box">
-														<p>Felis sagittis eget tempus primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Magna sed etiam ante ipsum primis in faucibus vestibulum.</p>
-													</div>
+  <footer>
+    <div class="footer-copy">© 2025 Kamran Huseynov.</div>
+    <div class="footer-links">
+      <a href="index.html">Haqqımda</a>
+      <a href="slaydlar.html">Slaydlar</a>
+      <a href="məqalələr.html">Məqalələr</a>
+      <a href="index.html#contact">Əlaqə</a>
+    </div>
+  </footer>
 
-												<!-- Preformatted Code -->
-													<h3>Preformatted</h3>
-													<pre><code>i = 0;
+  <script>
+    function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
 
-while (!deck.isInOrder()) {
-    print 'Iteration ' + i;
-    deck.shuffle();
-    i++;
-}
+    // Filter logic
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        const cards = document.querySelectorAll('.slide-card');
+        let visible = 0;
+        cards.forEach(card => {
+          const show = filter === 'all' || card.dataset.category === filter;
+          card.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+      });
+    });
 
-print 'It took ' + i + ' iterations to sort the deck.';
-</code></pre>
-
-											</div>
-										</div>
-
-								</section>
-
-						</div>
-					</div>
-
-				<!-- Sidebar -->
-					<div id="sidebar">
-						<div class="inner">
-
-							<!-- Search -->
-								<section id="search" class="alt">
-									<form method="post" action="#">
-										<input type="text" name="query" id="query" placeholder="Search" />
-									</form>
-								</section>
-
-							<!-- Menu -->
-								<nav id="menu">
-									<header class="major">
-										<h2>Menu</h2>
-									</header>
-									<ul>
-										<li><a href="index.html">Homepage</a></li>
-										<li><a href="generic.html">Generic</a></li>
-										<li><a href="elements.html">Elements</a></li>
-										<li>
-											<span class="opener">Submenu</span>
-											<ul>
-												<li><a href="#">Lorem Dolor</a></li>
-												<li><a href="#">Ipsum Adipiscing</a></li>
-												<li><a href="#">Tempus Magna</a></li>
-												<li><a href="#">Feugiat Veroeros</a></li>
-											</ul>
-										</li>
-										<li><a href="#">Etiam Dolore</a></li>
-										<li><a href="#">Adipiscing</a></li>
-										<li>
-											<span class="opener">Another Submenu</span>
-											<ul>
-												<li><a href="#">Lorem Dolor</a></li>
-												<li><a href="#">Ipsum Adipiscing</a></li>
-												<li><a href="#">Tempus Magna</a></li>
-												<li><a href="#">Feugiat Veroeros</a></li>
-											</ul>
-										</li>
-										<li><a href="#">Maximus Erat</a></li>
-										<li><a href="#">Sapien Mauris</a></li>
-										<li><a href="#">Amet Lacinia</a></li>
-									</ul>
-								</nav>
-
-							<!-- Section -->
-								<section>
-									<header class="major">
-										<h2>Ante interdum</h2>
-									</header>
-									<div class="mini-posts">
-										<article>
-											<a href="#" class="image"><img src="images/pic07.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic08.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-										<article>
-											<a href="#" class="image"><img src="images/pic09.jpg" alt="" /></a>
-											<p>Aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore aliquam.</p>
-										</article>
-									</div>
-									<ul class="actions">
-										<li><a href="#" class="button">More</a></li>
-									</ul>
-								</section>
-
-							<!-- Section -->
-								<section>
-									<header class="major">
-										<h2>Get in touch</h2>
-									</header>
-									<p>Sed varius enim lorem ullamcorper dolore aliquam aenean ornare velit lacus, ac varius enim lorem ullamcorper dolore. Proin sed aliquam facilisis ante interdum. Sed nulla amet lorem feugiat tempus aliquam.</p>
-									<ul class="contact">
-										<li class="icon solid fa-envelope"><a href="#">information@untitled.tld</a></li>
-										<li class="icon solid fa-phone">(000) 000-0000</li>
-										<li class="icon solid fa-home">1234 Somewhere Road #8254<br />
-										Nashville, TN 00000-0000</li>
-									</ul>
-								</section>
-
-							<!-- Footer -->
-								<footer id="footer">
-									<p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
-								</footer>
-
-						</div>
-					</div>
-
-			</div>
-
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
-
-	</body>
+    // Fade-in on scroll
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.slide-card').forEach((el, i) => {
+      el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 0.5s ease ${i * 0.07}s, transform 0.5s ease ${i * 0.07}s, border-color 0.3s, box-shadow 0.3s`;
+      observer.observe(el);
+    });
+  </script>
+</body>
 </html>
