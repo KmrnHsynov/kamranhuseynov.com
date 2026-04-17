@@ -21,7 +21,7 @@
 .course-card {
   background: var(--bg3); border: 1px solid var(--border);
   overflow: hidden; transition: all 0.3s; display: flex; flex-direction: column;
-  text-decoration: none; color: inherit;
+  cursor: pointer;
 }
 .course-card:hover {
   border-color: rgba(124,58,237,0.4); transform: translateY(-4px);
