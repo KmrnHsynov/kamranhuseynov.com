@@ -232,122 +232,34 @@
 
   <main>
 
-    <!-- ═══════════════════════════════════════════════════════
-         FEATURED / PINNED ARTICLE
-         Update this block with your most important article.
-         Set href to the article URL.
-    ═══════════════════════════════════════════════════════ -->
-    <a href="YOUR_ARTICLE_LINK" target="_blank" class="featured-article" data-category="proqramlaşdırma">
+    <a href="https://medium.com/@kmrnhsynov/linux-%C9%99m%C9%99liyyat-sistemind%C9%99-initramfs-probleminin-h%C9%99lli-77bda7d9758c" target="_blank" class="featured-article" data-category="proqramlaşdırma">
       <div class="featured-left">
         <div class="featured-pin">Seçilmiş Məqalə</div>
-        <div class="featured-title">Python ilə ilk addımlar: yeni başlayanlar üçün tam bələdçi</div>
+        <div class="featured-title">Linux Əməliyyat Sistemində Initramfs Probleminin Həlli</div>
         <div class="featured-excerpt">
-          Python-un sintaksisi, niyə öyrənmək lazım olduğu, ən yaxşı onlayn resurslar və ilk 30 gündə nə öyrənmək lazımdır — hamısı bir məqalədə.
+          Linux yükləmə prosesində initramfs xətası ilə üzləşənlər üçün addım-addım həll yolu. Problemin səbəbləri, diaqnostika metodları və düzəliş prosesi ətraflı izah edilib.
         </div>
         <div class="featured-meta">
           <span class="article-tag">Proqramlaşdırma</span>
-          <span class="article-date">15 Mart 2025</span>
-          <span class="read-time">8 dəq oxu</span>
+          <span class="article-tag">Linux</span>
+          <span class="article-date">Medium</span>
+          <span class="read-time">oxumaq üçün →</span>
         </div>
       </div>
       <div class="featured-right">
         <div class="code-graphic">
-          <span class="cm"># Python-a giriş</span><br>
-          <span class="kw">def </span><span class="fn">salam</span>(ad):<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return </span><span class="str">"Salam, "</span> + ad<br><br>
-          ad = <span class="fn">input</span>(<span class="str">"Adın nədir? "</span>)<br>
-          <span class="fn">print</span>(salam(ad))
+          <span class="cm"># initramfs xətası</span><br>
+          <span class="str">BusyBox v1.30.1</span><br>
+          <span class="cm"># Enter 'help' for a list</span><br><br>
+          <span class="kw">(initramfs)</span> <span class="fn">fsck</span> /dev/sda1<br>
+          <span class="cm"># fayl sistemini yoxla</span><br><br>
+          <span class="kw">(initramfs)</span> <span class="fn">exit</span>
         </div>
       </div>
     </a>
 
     <div class="articles-container">
       <div class="articles-list" id="articlesList">
-
-        <a href="YOUR_ARTICLE_LINK" target="_blank" class="article-item" data-category="şəbəkə">
-          <div class="article-num">01</div>
-          <div class="article-body">
-            <div class="article-tags"><span class="article-tag">Şəbəkə</span></div>
-            <div class="article-title">Ev şəbəkənizi necə təhlükəsiz edərsiniz?</div>
-            <div class="article-excerpt">Router parametrləri, firewall quraşdırması və ümumi istifadəçilər üçün sadə tövsiyələr.</div>
-          </div>
-          <div class="article-right">
-            <span class="article-date">Feb 2025</span>
-            <span class="read-time-sm">5 dəq</span>
-            <span class="article-arrow">→</span>
-          </div>
-        </a>
-
-        <a href="YOUR_ARTICLE_LINK" target="_blank" class="article-item" data-category="təhlükəsizlik">
-          <div class="article-num">02</div>
-          <div class="article-body">
-            <div class="article-tags"><span class="article-tag">Kibertəhlükəsizlik</span></div>
-            <div class="article-title">Şifrə idarəetməsi: niyə vacibdir?</div>
-            <div class="article-excerpt">Güclü şifrə yaratmaq, password manager istifadəsi və iki faktorlu autentifikasiya haqqında.</div>
-          </div>
-          <div class="article-right">
-            <span class="article-date">Yan 2025</span>
-            <span class="read-time-sm">6 dəq</span>
-            <span class="article-arrow">→</span>
-          </div>
-        </a>
-
-        <a href="YOUR_ARTICLE_LINK" target="_blank" class="article-item" data-category="web">
-          <div class="article-num">03</div>
-          <div class="article-body">
-            <div class="article-tags"><span class="article-tag">Web</span></div>
-            <div class="article-title">Müasir web texnologiyaları: 2025-ci ildə nə öyrənmək lazımdır?</div>
-            <div class="article-excerpt">Frontend, backend və cloud texnologiyalarında ən aktual trendlər.</div>
-          </div>
-          <div class="article-right">
-            <span class="article-date">Dec 2024</span>
-            <span class="read-time-sm">7 dəq</span>
-            <span class="article-arrow">→</span>
-          </div>
-        </a>
-
-        <a href="YOUR_ARTICLE_LINK" target="_blank" class="article-item" data-category="karyera">
-          <div class="article-num">04</div>
-          <div class="article-body">
-            <div class="article-tags"><span class="article-tag">Karyera</span></div>
-            <div class="article-title">IT sahəsindəki karyerəyə necə başlamaq olar?</div>
-            <div class="article-excerpt">Sıfırdan başlayanlar üçün karyera yolu, sertifikatlar və iş axtarış strategiyaları.</div>
-          </div>
-          <div class="article-right">
-            <span class="article-date">Noy 2024</span>
-            <span class="read-time-sm">10 dəq</span>
-            <span class="article-arrow">→</span>
-          </div>
-        </a>
-
-        <a href="YOUR_ARTICLE_LINK" target="_blank" class="article-item" data-category="proqramlaşdırma">
-          <div class="article-num">05</div>
-          <div class="article-body">
-            <div class="article-tags"><span class="article-tag">Proqramlaşdırma</span></div>
-            <div class="article-title">Git ilə versiya nəzarəti — əsas anlayışlar</div>
-            <div class="article-excerpt">Commit, branch, merge, pull request — Git-in əsasları sadə dillə izah edilib.</div>
-          </div>
-          <div class="article-right">
-            <span class="article-date">Okt 2024</span>
-            <span class="read-time-sm">6 dəq</span>
-            <span class="article-arrow">→</span>
-          </div>
-        </a>
-
-        <a href="YOUR_ARTICLE_LINK" target="_blank" class="article-item" data-category="təhlükəsizlik">
-          <div class="article-num">06</div>
-          <div class="article-body">
-            <div class="article-tags"><span class="article-tag">Kibertəhlükəsizlik</span></div>
-            <div class="article-title">Phishing hücumlarını necə tanımaq olar?</div>
-            <div class="article-excerpt">Real nümunələr üzərindən phishing e-poçtları, saxta saytlar və sosial mühəndislik taktikalarını tanıyın.</div>
-          </div>
-          <div class="article-right">
-            <span class="article-date">Sep 2024</span>
-            <span class="read-time-sm">5 dəq</span>
-            <span class="article-arrow">→</span>
-          </div>
-        </a>
-
       </div><!-- /articles-list -->
 
       <div class="empty-state" id="emptyState">
@@ -366,6 +278,8 @@
       <a href="məqalələr.html">Məqalələr</a>
       <a href="proyektlər.html">Proyektlər</a>
       <a href="index.html#contact">Əlaqə</a>
+      <a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a>
+      <a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a>
     </div>
   </footer>
 
