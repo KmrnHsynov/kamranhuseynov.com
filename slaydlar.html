@@ -212,6 +212,7 @@
     <a href="index.html" class="nav-logo">KH<span>.dev</span></a>
     <ul class="nav-links" id="navLinks">
       <li><a href="index.html">Haqqımda</a></li>
+      <li><a href="dərslər.html">Dərslər</a></li>
       <li><a href="slaydlar.html" class="active">Slaydlar</a></li>
       <li><a href="məqalələr.html">Məqalələr</a></li>
       <li><a href="proyektlər.html">Proyektlər</a></li>
@@ -231,15 +232,19 @@
     </div>
   </div>
 
-  <!-- FILTER BAR — add/remove filter buttons to match your categories -->
+  <!-- FILTER BAR -->
   <div class="filters-bar">
     <span class="filter-label">Filtrlə:</span>
     <button class="filter-btn active" data-filter="all">Hamısı</button>
-    <button class="filter-btn" data-filter="proqramlaşdırma">Proqramlaşdırma</button>
-    <button class="filter-btn" data-filter="şəbəkə">Şəbəkə</button>
-    <button class="filter-btn" data-filter="təhlükəsizlik">Təhlükəsizlik</button>
-    <button class="filter-btn" data-filter="verilənlər">Verilənlər Bazası</button>
-    <button class="filter-btn" data-filter="web">Web</button>
+    <button class="filter-btn" data-filter="veb-sistemler">Veb sistemləri</button>
+    <button class="filter-btn" data-filter="verilənlər-bazası">Verilənlər bazası</button>
+    <button class="filter-btn" data-filter="şəbəkə-əsasları">Şəbəkənin əsasları</button>
+    <button class="filter-btn" data-filter="nüfuzetmə">Nüfuzetmə sınaqları</button>
+    <button class="filter-btn" data-filter="iot">IoT Təhlükəsizlik</button>
+    <button class="filter-btn" data-filter="intellektual-analiz">Intellektual Analiz</button>
+    <button class="filter-btn" data-filter="əməliyyat-sistemlər">Əməliyyat sistemləri</button>
+    <button class="filter-btn" data-filter="kompüter-şəbəkə">Kompüter şəbəkələri</button>
+    <button class="filter-btn" data-filter="veb-təhlükəsizlik">Veb təhlükəsizlik</button>
   </div>
 
   <main>
@@ -260,12 +265,9 @@
              3. Set badge to badge-pdf or badge-pptx
       ═══════════════════════════════════════════════════════ -->
 
-      <div class="slide-card" data-category="proqramlaşdırma">
+      <div class="slide-card" data-category="veb-sistemler">
         <div class="slide-thumb">
-          <!-- OPTION A: Uncomment & replace src with your Google Slides embed URL -->
           <!-- <iframe src="https://docs.google.com/presentation/d/YOUR_ID/embed?start=false&loop=false&delayms=3000"></iframe> -->
-
-          <!-- OPTION B: Fallback graphic (delete this block if using iframe) -->
           <div class="slide-thumb-fallback">
             <div class="slide-thumb-inner">
               <div class="slide-line accent"></div>
@@ -276,16 +278,15 @@
               </div>
             </div>
           </div>
-
           <div class="slide-overlay">
             <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
             <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
           </div>
         </div>
         <div class="slide-info">
-          <div class="slide-meta">Fəsil 01 · Proqramlaşdırma</div>
-          <div class="slide-title">Python-a Giriş</div>
-          <div class="slide-desc">Dəyişənlər, şərt operatorları, dövrler və funksiyalar.</div>
+          <div class="slide-meta">Veb sistemləri və texnologiyaları</div>
+          <div class="slide-title">HTML &amp; CSS Əsasları</div>
+          <div class="slide-desc">Strukturlama, stilləmə, Flexbox, Grid və responsiv dizayn.</div>
           <div class="slide-footer">
             <span class="slide-date">Sentyabr 2024</span>
             <span class="slide-badge badge-slides">Google Slides</span>
@@ -293,7 +294,7 @@
         </div>
       </div>
 
-      <div class="slide-card" data-category="şəbəkə">
+      <div class="slide-card" data-category="veb-sistemler">
         <div class="slide-thumb">
           <div class="slide-thumb-fallback">
             <div class="slide-thumb-inner">
@@ -311,9 +312,9 @@
           </div>
         </div>
         <div class="slide-info">
-          <div class="slide-meta">Fəsil 02 · Şəbəkə</div>
-          <div class="slide-title">TCP/IP Protokolu</div>
-          <div class="slide-desc">İnternet arxitekturası, IP ünvanlaması və marşrutlaşdırma.</div>
+          <div class="slide-meta">Veb sistemləri və texnologiyaları</div>
+          <div class="slide-title">JavaScript-ə Giriş</div>
+          <div class="slide-desc">Dəyişənlər, funksiyalar, DOM manipulyasiyası və hadisələr.</div>
           <div class="slide-footer">
             <span class="slide-date">Oktyabr 2024</span>
             <span class="slide-badge badge-pdf">PDF</span>
@@ -321,7 +322,7 @@
         </div>
       </div>
 
-      <div class="slide-card" data-category="təhlükəsizlik">
+      <div class="slide-card" data-category="verilənlər-bazası">
         <div class="slide-thumb">
           <div class="slide-thumb-fallback">
             <div class="slide-thumb-inner">
@@ -339,17 +340,17 @@
           </div>
         </div>
         <div class="slide-info">
-          <div class="slide-meta">Fəsil 03 · Təhlükəsizlik</div>
-          <div class="slide-title">Kibertəhlükəsizliyə Giriş</div>
-          <div class="slide-desc">Əsas hücum növləri, şifrələmə və müdafiə metodları.</div>
+          <div class="slide-meta">Verilənlər bazası sistemləri</div>
+          <div class="slide-title">SQL Əsasları</div>
+          <div class="slide-desc">Cədvəl yaratmaq, SELECT sorğuları, JOIN və əməliyyatlar.</div>
           <div class="slide-footer">
             <span class="slide-date">Noyabr 2024</span>
-            <span class="slide-badge badge-pptx">PPTX</span>
+            <span class="slide-badge badge-slides">Google Slides</span>
           </div>
         </div>
       </div>
 
-      <div class="slide-card" data-category="verilənlər">
+      <div class="slide-card" data-category="şəbəkə-əsasları">
         <div class="slide-thumb">
           <div class="slide-thumb-fallback">
             <div class="slide-thumb-inner">
@@ -367,17 +368,17 @@
           </div>
         </div>
         <div class="slide-info">
-          <div class="slide-meta">Fəsil 04 · Verilənlər Bazası</div>
-          <div class="slide-title">SQL Əsasları</div>
-          <div class="slide-desc">Cədvəl yaratmaq, sorğular, JOIN əməliyyatları.</div>
+          <div class="slide-meta">Şəbəkənin əsasları</div>
+          <div class="slide-title">OSI Modeli</div>
+          <div class="slide-desc">7 qatlı model, hər qatın funksiyası və protokol nümunələri.</div>
           <div class="slide-footer">
             <span class="slide-date">Dekabr 2024</span>
-            <span class="slide-badge badge-slides">Google Slides</span>
+            <span class="slide-badge badge-pdf">PDF</span>
           </div>
         </div>
       </div>
 
-      <div class="slide-card" data-category="web">
+      <div class="slide-card" data-category="nüfuzetmə">
         <div class="slide-thumb">
           <div class="slide-thumb-fallback">
             <div class="slide-thumb-inner">
@@ -395,17 +396,73 @@
           </div>
         </div>
         <div class="slide-info">
-          <div class="slide-meta">Fəsil 05 · Web</div>
-          <div class="slide-title">HTML &amp; CSS Temelleri</div>
-          <div class="slide-desc">Strukturlama, stilləmə və responsiv dizayn.</div>
+          <div class="slide-meta">Nüfuzetmə sınaqlarının əsasları</div>
+          <div class="slide-title">Kəşfiyyat və Skan</div>
+          <div class="slide-desc">Passiv/aktiv kəşfiyyat, Nmap istifadəsi və hədəf analizi.</div>
           <div class="slide-footer">
             <span class="slide-date">Yanvar 2025</span>
+            <span class="slide-badge badge-pptx">PPTX</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-card" data-category="iot">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot"></div><div class="slide-dot on"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Elektraonika və IoT cihazların təhlükəsizliyi</div>
+          <div class="slide-title">IoT Arxitekturası</div>
+          <div class="slide-desc">Sensor şəbəkələri, MQTT protokolu və qoşulu cihaz zəifliklərı.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Fevral 2025</span>
+            <span class="slide-badge badge-slides">Google Slides</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-card" data-category="intellektual-analiz">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot on"></div><div class="slide-dot on"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Verilənin intellektual analizi</div>
+          <div class="slide-title">Maşın Öyrənməsinə Giriş</div>
+          <div class="slide-desc">Nəzarətli/nəzarətsiz öyrənmə, klassifikasiya və reqressiya modelləri.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Mart 2025</span>
             <span class="slide-badge badge-pdf">PDF</span>
           </div>
         </div>
       </div>
 
-      <div class="slide-card" data-category="proqramlaşdırma">
+      <div class="slide-card" data-category="əməliyyat-sistemlər">
         <div class="slide-thumb">
           <div class="slide-thumb-fallback">
             <div class="slide-thumb-inner">
@@ -423,12 +480,68 @@
           </div>
         </div>
         <div class="slide-info">
-          <div class="slide-meta">Fəsil 06 · Alqoritmlər</div>
-          <div class="slide-title">Sıralama Alqoritmləri</div>
-          <div class="slide-desc">Bubble, merge, quick sort — müqayisə və mürəkkəblik.</div>
+          <div class="slide-meta">Əməliyyat sistemləri</div>
+          <div class="slide-title">Linux Əmr Sətri</div>
+          <div class="slide-desc">Fayl sistemi, icazə modeli, proseslər və sistem idarəetmə əmrləri.</div>
           <div class="slide-footer">
-            <span class="slide-date">Fevral 2025</span>
+            <span class="slide-date">Aprel 2025</span>
             <span class="slide-badge badge-pptx">PPTX</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-card" data-category="kompüter-şəbəkə">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot on"></div><div class="slide-dot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Kompüter şəbəkələri</div>
+          <div class="slide-title">VLAN Konfiqurasiyası</div>
+          <div class="slide-desc">Cisco switch-lərdə VLAN yaratmaq, trunk portlar və inter-VLAN routing.</div>
+          <div class="slide-footer">
+            <span class="slide-date">Aprel 2025</span>
+            <span class="slide-badge badge-slides">Google Slides</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-card" data-category="veb-təhlükəsizlik">
+        <div class="slide-thumb">
+          <div class="slide-thumb-fallback">
+            <div class="slide-thumb-inner">
+              <div class="slide-line accent"></div>
+              <div class="slide-line"></div>
+              <div class="slide-line short"></div>
+              <div class="slide-dots">
+                <div class="slide-dot on"></div><div class="slide-dot on"></div><div class="slide-dot on"></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-overlay">
+            <a href="YOUR_LINK_HERE" target="_blank" class="open-btn">Aç →</a>
+            <a href="YOUR_DOWNLOAD_LINK" download class="download-btn">PDF yüklə</a>
+          </div>
+        </div>
+        <div class="slide-info">
+          <div class="slide-meta">Veb təhlükəsizlik</div>
+          <div class="slide-title">OWASP Top 10</div>
+          <div class="slide-desc">XSS, SQL Injection, CSRF və autentifikasiya zəiflikləri ilə mübarizə.</div>
+          <div class="slide-footer">
+            <span class="slide-date">May 2025</span>
+            <span class="slide-badge badge-pdf">PDF</span>
           </div>
         </div>
       </div>
@@ -445,6 +558,7 @@
     <div class="footer-copy">© 2025 Kamran Huseynov.</div>
     <div class="footer-links">
       <a href="index.html">Haqqımda</a>
+      <a href="dərslər.html">Dərslər</a>
       <a href="slaydlar.html">Slaydlar</a>
       <a href="məqalələr.html">Məqalələr</a>
       <a href="proyektlər.html">Proyektlər</a>

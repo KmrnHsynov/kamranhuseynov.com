@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dərslər — Kamran Huseynov</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --bg2: #111118; --bg3: #1a1a24;
+      --accent: #00e5ff; --accent2: #7c3aed;
+      --text: #e8e8f0; --muted: #7070a0; --border: rgba(255,255,255,0.07);
+      --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(10,10,15,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--mono); font-size: 0.9rem; color: var(--accent); letter-spacing: 0.1em; text-decoration: none; }
+    .nav-logo span { color: var(--muted); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-family: var(--mono); font-size: 0.78rem; color: var(--muted);
+      text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; position: relative;
+    }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width 0.3s; }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-links a.active { color: var(--accent); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { display: block; width: 24px; height: 2px; background: var(--text); transition: all 0.3s; }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 8rem 4rem 3rem; position: relative; overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 100% 100% at 0% 50%, black 30%, transparent 100%);
+    }
+    .page-header-content { position: relative; z-index: 1; max-width: 700px; }
+    .page-tag {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-family: var(--mono); font-size: 0.72rem; color: var(--accent2);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .page-tag::before { content: ''; display: block; width: 28px; height: 1px; background: var(--accent2); }
+    .page-header h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 1rem; }
+    .page-header p { font-size: 1rem; color: var(--muted); line-height: 1.7; max-width: 480px; }
+
+    /* FILTERS */
+    .filters-bar {
+      padding: 2rem 4rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      position: relative; z-index: 1; background: var(--bg2);
+    }
+    .filter-label { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; margin-right: 0.5rem; }
+    .filter-btn {
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.45rem 1rem; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active { border-color: var(--accent2); color: var(--accent2); background: rgba(124,58,237,0.05); }
+
+    /* MAIN */
+    main { padding: 3rem 4rem 5rem; position: relative; z-index: 1; }
+
+    /* COURSES GRID */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .course-card {
+      background: var(--bg3); border: 1px solid var(--border);
+      overflow: hidden; transition: all 0.3s; display: flex; flex-direction: column;
+      text-decoration: none; color: inherit;
+    }
+    .course-card:hover {
+      border-color: rgba(124,58,237,0.4); transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.08);
+    }
+
+    .course-card-header {
+      padding: 1.6rem 1.6rem 0;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .course-num {
+      font-family: var(--mono); font-size: 0.65rem; color: var(--muted);
+      border: 1px solid var(--border); padding: 0.2rem 0.55rem; flex-shrink: 0;
+    }
+    .course-category-tag {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.2rem 0.6rem; border: 1px solid; flex-shrink: 0;
+    }
+    .tag-security { color: rgba(255,100,100,0.85); border-color: rgba(255,100,100,0.3); }
+    .tag-network  { color: rgba(0,229,255,0.85);  border-color: rgba(0,229,255,0.3); }
+    .tag-data     { color: rgba(124,58,237,0.9);  border-color: rgba(124,58,237,0.35); }
+    .tag-web      { color: rgba(80,220,120,0.85); border-color: rgba(80,220,120,0.3); }
+    .tag-os       { color: rgba(255,165,50,0.85); border-color: rgba(255,165,50,0.3); }
+    .tag-iot      { color: rgba(255,200,50,0.85); border-color: rgba(255,200,50,0.3); }
+
+    .course-card-body { padding: 1rem 1.6rem 0; flex: 1; }
+    .course-title { font-size: 1.1rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.7rem; transition: color 0.2s; }
+    .course-card:hover .course-title { color: var(--accent2); }
+    .course-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+    .course-card-footer {
+      padding: 1.2rem 1.6rem;
+      margin-top: 1.2rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .slides-link {
+      font-family: var(--mono); font-size: 0.72rem; color: var(--accent);
+      text-decoration: none; letter-spacing: 0.05em; transition: all 0.2s;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .slides-link:hover { gap: 0.7rem; }
+    .course-lessons {
+      font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
+    }
+
+    /* EMPTY STATE */
+    .empty-state { display: none; text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+    .empty-state p { font-family: var(--mono); font-size: 0.85rem; }
+
+    /* FOOTER */
+    footer {
+      padding: 2rem 4rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem; background: var(--bg); position: relative; z-index: 1;
+    }
+    .footer-copy { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; flex-direction: column; gap: 1.5rem; position: fixed; inset: 0; background: var(--bg); align-items: center; justify-content: center; z-index: 99; }
+      .nav-links.open { display: flex; }
+      .hamburger { display: flex; z-index: 101; }
+      .page-header, .filters-bar, main { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .courses-grid { grid-template-columns: 1fr; }
+      footer { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">KH<span>.dev</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Haqqımda</a></li>
+      <li><a href="dərslər.html" class="active">Dərslər</a></li>
+      <li><a href="slaydlar.html">Slaydlar</a></li>
+      <li><a href="məqalələr.html">Məqalələr</a></li>
+      <li><a href="proyektlər.html">Proyektlər</a></li>
+      <li><a href="index.html#contact">Əlaqə</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-header-grid"></div>
+    <div class="page-header-content">
+      <div class="page-tag">Tədris Proqramı</div>
+      <h1>Dərslər</h1>
+      <p>Tədris etdiyim kurslar — hər dərs üzrə materiallar, slaydlar və resurslar.</p>
+    </div>
+  </div>
+
+  <div class="filters-bar">
+    <span class="filter-label">Filtrlə:</span>
+    <button class="filter-btn active" data-filter="all">Hamısı</button>
+    <button class="filter-btn" data-filter="web">Veb</button>
+    <button class="filter-btn" data-filter="security">Təhlükəsizlik</button>
+    <button class="filter-btn" data-filter="network">Şəbəkə</button>
+    <button class="filter-btn" data-filter="data">Data</button>
+    <button class="filter-btn" data-filter="os">Sistem</button>
+    <button class="filter-btn" data-filter="iot">IoT</button>
+  </div>
+
+  <main>
+    <div class="courses-grid" id="coursesGrid">
+
+      <a href="slaydlar.html?ders=veb-sistemler" class="course-card" data-category="web">
+        <div class="course-card-header">
+          <span class="course-num">01</span>
+          <span class="course-category-tag tag-web">Veb</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Veb sistemləri və texnologiyaları</div>
+          <div class="course-desc">HTML, CSS, JavaScript, backend texnologiyaları və müasir veb arxitekturası. Statik saytdan dinamik tətbiqlərə keçid.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=veb-sistemler" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=verilənlər-bazası" class="course-card" data-category="data">
+        <div class="course-card-header">
+          <span class="course-num">02</span>
+          <span class="course-category-tag tag-data">Data</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Verilənlər bazası sistemləri</div>
+          <div class="course-desc">SQL, NoSQL, verilənlər modelləşdirməsi, sorğu optimallaşdırması və tranzaksiya idarəetməsi.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=verilənlər-bazası" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=şəbəkə-əsasları" class="course-card" data-category="network">
+        <div class="course-card-header">
+          <span class="course-num">03</span>
+          <span class="course-category-tag tag-network">Şəbəkə</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Şəbəkənin əsasları</div>
+          <div class="course-desc">OSI modeli, TCP/IP protokolları, IP ünvanlaması, marşrutlaşdırma və şəbəkə konfiqurasiyasının əsasları.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=şəbəkə-əsasları" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=nüfuzetmə" class="course-card" data-category="security">
+        <div class="course-card-header">
+          <span class="course-num">04</span>
+          <span class="course-category-tag tag-security">Təhlükəsizlik</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Nüfuzetmə sınaqlarının əsasları</div>
+          <div class="course-desc">Etik hacking metodologiyası, kəşfiyyat, skan, istismar mərhələləri və pentest hesabatı hazırlama.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=nüfuzetmə" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=iot" class="course-card" data-category="iot">
+        <div class="course-card-header">
+          <span class="course-num">05</span>
+          <span class="course-category-tag tag-iot">IoT</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Elektraonika və IoT cihazların təhlükəsizliyi</div>
+          <div class="course-desc">Mikrokontrollerlər, sensor şəbəkələri, IoT protokolları və qoşulu cihazların kibertəhlükəsizliyi.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=iot" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=intellektual-analiz" class="course-card" data-category="data">
+        <div class="course-card-header">
+          <span class="course-num">06</span>
+          <span class="course-category-tag tag-data">Data</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Verilənin intellektual analizi</div>
+          <div class="course-desc">Maşın öyrənməsi, data mining, statistik analiz, vizuallaşdırma alətləri və proqnozlaşdırma modelləri.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=intellektual-analiz" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=əməliyyat-sistemlər" class="course-card" data-category="os">
+        <div class="course-card-header">
+          <span class="course-num">07</span>
+          <span class="course-category-tag tag-os">Sistem</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Əməliyyat sistemləri</div>
+          <div class="course-desc">Linux/Windows arxitekturası, proseslər, fayl sistemləri, əmr sətri idarəetməsi və sistem administrasiyası.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=əməliyyat-sistemlər" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=kompüter-şəbəkə" class="course-card" data-category="network">
+        <div class="course-card-header">
+          <span class="course-num">08</span>
+          <span class="course-category-tag tag-network">Şəbəkə</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Kompüter şəbəkələri</div>
+          <div class="course-desc">LAN/WAN konfiqurasiyası, Cisco cihazları, VLAN, şəbəkə diaqnostikası və praktiki laboratoriya işləri.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=kompüter-şəbəkə" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+      <a href="slaydlar.html?ders=veb-təhlükəsizlik" class="course-card" data-category="security">
+        <div class="course-card-header">
+          <span class="course-num">09</span>
+          <span class="course-category-tag tag-security">Təhlükəsizlik</span>
+        </div>
+        <div class="course-card-body">
+          <div class="course-title">Veb təhlükəsizlik</div>
+          <div class="course-desc">OWASP Top 10, XSS, SQL injection, CSRF, autentifikasiya zəiflikləri və müdafiə metodologiyaları.</div>
+        </div>
+        <div class="course-card-footer">
+          <span class="course-lessons">Tədris materialları →</span>
+          <a href="slaydlar.html?ders=veb-təhlükəsizlik" class="slides-link">Slaydlar <span>→</span></a>
+        </div>
+      </a>
+
+    </div><!-- /courses-grid -->
+
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state-icon">📚</div>
+      <p>Bu kateqoriyada hələ dərs yoxdur.</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-copy">© 2025 Kamran Huseynov.</div>
+    <div class="footer-links">
+      <a href="index.html">Haqqımda</a>
+      <a href="dərslər.html">Dərslər</a>
+      <a href="slaydlar.html">Slaydlar</a>
+      <a href="məqalələr.html">Məqalələr</a>
+      <a href="proyektlər.html">Proyektlər</a>
+      <a href="index.html#contact">Əlaqə</a>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        const cards = document.querySelectorAll('.course-card');
+        let visible = 0;
+        cards.forEach(card => {
+          const show = filter === 'all' || card.dataset.category === filter;
+          card.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+      });
+    }, { threshold: 0.06 });
+    document.querySelectorAll('.course-card').forEach((el, i) => {
+      el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 0.5s ease ${i * 0.07}s, transform 0.5s ease ${i * 0.07}s, border-color 0.3s, box-shadow 0.3s`;
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
