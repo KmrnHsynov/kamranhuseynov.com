@@ -64,7 +64,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;height:1
 </head>
 <body>
 <div id="topbar">
-  <a href="index.html" id="home-link">← KH.dev</a>
+  <a href="proyektlər.html" id="home-link">← Proyektlər</a>
   <h1>🐍 PythonBolt</h1>
   <button class="lang-btn active" id="btn-az" onclick="setLang('az')">AZ</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
@@ -775,7 +775,7 @@ async function runCode(){
   outEl.innerHTML='';fbEl.textContent='';
   let lines=[];
   pyodide.globals.set('print',(...args)=>{
-    const line=args.map(a=>String(a)).join(' ');
+    const line=args.map(a=>typeof a==='boolean'?(a?'True':'False'):String(a)).join(' ');
     lines.push(line);
     const d=document.createElement('div');
     d.className='out-ok';d.textContent=line;outEl.appendChild(d);
