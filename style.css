@@ -120,11 +120,17 @@ footer {
 @media (max-width: 768px) {
   nav { padding: 1rem 1.5rem; }
   .nav-links {
-    display: none; flex-direction: column; gap: 1.5rem;
-    position: fixed; inset: 0; background: var(--bg);
-    align-items: center; justify-content: center; z-index: 99;
+    display: none; flex-direction: column; gap: 0;
+    position: fixed; top: 57px; left: 0; right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 99;
+    padding: 0.5rem 0;
   }
-  .nav-links a { font-size: 0.9rem; }
+  .nav-links li { width: 100%; }
+  .nav-links li a { display: block; padding: 0.85rem 1.5rem; font-size: 0.82rem; }
   .nav-links.open { display: flex; }
   .hamburger { display: flex; z-index: 101; }
   .page-header { padding: 5rem 1.5rem 2rem; }
