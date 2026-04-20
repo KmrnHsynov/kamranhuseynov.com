@@ -14,6 +14,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;height:1
 
 /* ── TOPBAR ── */
 #topbar{background:#161b22;border-bottom:1px solid #30363d;padding:0 12px;display:flex;align-items:center;gap:8px;height:48px;flex-shrink:0}
+#home-link{color:#8b949e;font-size:12px;text-decoration:none;border:1px solid #30363d;padding:3px 10px;border-radius:6px;white-space:nowrap;transition:border-color .15s,color .15s}
+#home-link:hover{border-color:#f7df1e;color:#f7df1e}
 #topbar h1{font-size:16px;font-weight:700;background:linear-gradient(135deg,#f7df1e,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
 .lang-btn{background:transparent;border:1px solid #30363d;color:#8b949e;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:11px}
 .lang-btn.active{border-color:#f7df1e;color:#f7df1e}
@@ -119,6 +121,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;height:1
 <body>
 <div id="topbar">
   <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <a href="proyektlər.html" id="home-link">← Proyektlər</a>
   <h1>⚡ JSBolt</h1>
   <button class="lang-btn active" id="btn-az" onclick="setLang('az')">AZ</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
