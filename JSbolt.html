@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>JSBolt</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOPBAR ── */
+#topbar{background:#161b22;border-bottom:1px solid #30363d;padding:0 12px;display:flex;align-items:center;gap:8px;height:48px;flex-shrink:0}
+#topbar h1{font-size:16px;font-weight:700;background:linear-gradient(135deg,#f7df1e,#f0a500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.lang-btn{background:transparent;border:1px solid #30363d;color:#8b949e;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:11px}
+.lang-btn.active{border-color:#f7df1e;color:#f7df1e}
+#progress-bar-wrap{flex:1;height:5px;background:#30363d;border-radius:99px;overflow:hidden}
+#progress-bar-fill{height:100%;background:linear-gradient(90deg,#f7df1e,#f0a500);border-radius:99px;transition:width .4s}
+#progress-text{font-size:11px;color:#8b949e;white-space:nowrap}
+#menu-btn{display:none;background:transparent;border:1px solid #30363d;color:#8b949e;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:16px;line-height:1}
+
+/* ── LAYOUT ── */
+#main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* ── SIDEBAR ── */
+#sidebar{width:200px;background:#0d1117;border-right:1px solid #30363d;overflow-y:auto;flex-shrink:0;transition:transform .25s}
+#sidebar h3{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#8b949e;padding:12px 14px 6px}
+.lesson-item{padding:9px 14px;cursor:pointer;font-size:12px;color:#8b949e;border-left:3px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px}
+.lesson-item:hover{background:#161b22;color:#e6edf3}
+.lesson-item.active{background:#161b22;border-left-color:#f7df1e;color:#f7df1e}
+.lesson-item .check{color:#3fb950;font-size:11px;margin-left:auto}
+.lesson-item .num{font-size:10px;color:#484f58;min-width:16px}
+.section-header{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#484f58;padding:10px 14px 4px;margin-top:4px}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:49}
+
+/* ── CONTENT ── */
+#content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TABS (mobile) ── */
+#tabs{display:none;background:#161b22;border-bottom:1px solid #30363d;flex-shrink:0}
+#tabs button{flex:1;padding:10px;background:transparent;border:none;color:#8b949e;font-size:13px;cursor:pointer;border-bottom:2px solid transparent}
+#tabs button.active{color:#f7df1e;border-bottom-color:#f7df1e}
+
+/* ── DESKTOP: side-by-side ── */
+#split{flex:1;display:flex;overflow:hidden}
+#lesson-panel{width:44%;overflow-y:auto;padding:20px 24px;border-right:1px solid #30363d;flex-shrink:0}
+#lesson-panel h2{font-size:19px;font-weight:700;margin-bottom:4px}
+.lesson-meta{font-size:11px;color:#8b949e;margin-bottom:14px}
+.lesson-body{font-size:13px;line-height:1.75;color:#c9d1d9}
+.lesson-body p{margin-bottom:12px}
+.lesson-body pre{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:11px 13px;font-family:'Courier New',monospace;font-size:12px;overflow-x:auto;margin-bottom:12px;color:#f0f6fc;line-height:1.6}
+.kw{color:#ff7b72}.str{color:#a5d6ff}.fn{color:#d2a8ff}.cm{color:#6e7681}.num{color:#79c0ff}.bi{color:#ffa657}
+.task-box{background:#161b22;border:1px solid #30363d;border-left:3px solid #f7df1e;border-radius:8px;padding:13px 15px;margin-top:18px}
+.task-box h4{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#f7df1e;margin-bottom:6px}
+.task-box p{font-size:13px;color:#e6edf3;line-height:1.6}
+
+#exercise-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#ex-header{padding:9px 14px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+#ex-header h3{font-size:13px;font-weight:600}
+#ex-nav{display:flex;gap:5px;flex-wrap:wrap}
+.ex-dot{width:24px;height:24px;border-radius:50%;border:2px solid #30363d;background:transparent;color:#8b949e;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ex-dot.active{border-color:#f7df1e;color:#f7df1e;background:#f7df1e18}
+.ex-dot.done{border-color:#3fb950;background:#3fb95022;color:#3fb950}
+
+#editor-wrap{flex:1;overflow:hidden;position:relative}
+.CodeMirror{height:100%!important;font-size:13px;font-family:'Courier New',monospace}
+
+#output-bar{height:140px;flex-shrink:0;border-top:1px solid #30363d;display:flex;flex-direction:column}
+#run-row{display:flex;align-items:center;gap:7px;padding:6px 10px;background:#161b22;border-bottom:1px solid #30363d;flex-shrink:0;flex-wrap:wrap}
+#run-btn{background:linear-gradient(135deg,#f7df1e,#f0a500);border:none;color:#0d1117;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700}
+#reset-btn{background:transparent;border:1px solid #30363d;color:#8b949e;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+#hint-btn{background:transparent;border:1px solid #d2940022;color:#d29400;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px}
+#feedback{font-size:11px;display:flex;align-items:center;gap:4px;margin-left:auto}
+.fb-pass{color:#3fb950}.fb-hint{color:#d29922}
+#output{flex:1;overflow-y:auto;padding:7px 11px;font-family:'Courier New',monospace;font-size:12px;background:#0d1117;line-height:1.5}
+.out-ok{color:#e6edf3}.out-err{color:#ff7b72}.out-info{color:#484f58}
+
+/* ══════════════════════════════════
+   MOBILE  ≤ 700px
+══════════════════════════════════ */
+@media(max-width:700px){
+  #menu-btn{display:block}
+  #progress-bar-wrap{max-width:80px}
+
+  /* sidebar slides in as drawer */
+  #sidebar{
+    position:fixed;top:0;left:0;height:100%;width:75%;max-width:260px;
+    z-index:50;transform:translateX(-100%);
+    border-right:1px solid #30363d;
+    background:#0d1117;
+  }
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-overlay.open{display:block}
+
+  /* tabs replace the side-by-side split */
+  #tabs{display:flex}
+  #split{flex-direction:column}
+
+  /* lesson panel fills screen on its tab */
+  #lesson-panel{
+    width:100%;border-right:none;
+    padding:16px;flex-shrink:0;
+    display:none;
+  }
+  #lesson-panel.tab-active{display:block;overflow-y:auto;flex:1}
+
+  /* exercise panel fills screen on its tab */
+  #exercise-panel{display:none}
+  #exercise-panel.tab-active{display:flex}
+
+  #output-bar{height:130px}
+  .CodeMirror{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <h1>⚡ JSBolt</h1>
+  <button class="lang-btn active" id="btn-az" onclick="setLang('az')">AZ</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <div id="progress-bar-wrap"><div id="progress-bar-fill" style="width:0%"></div></div>
+  <span id="progress-text">0/0</span>
+</div>
+
+<div id="main">
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="sidebar">
+    <h3 id="sidebar-title">Dərslər</h3>
+    <div id="lesson-list"></div>
+  </div>
+
+  <div id="content">
+    <!-- Mobile tabs -->
+    <div id="tabs">
+      <button id="tab-lesson" class="active" onclick="switchTab('lesson')">📖 Dərs</button>
+      <button id="tab-code" onclick="switchTab('code')">💻 Kod</button>
+    </div>
+
+    <div id="split">
+      <div id="lesson-panel" class="tab-active">
+        <h2 id="lesson-title"></h2>
+        <div class="lesson-meta" id="lesson-meta"></div>
+        <div class="lesson-body" id="lesson-body"></div>
+        <div class="task-box">
+          <h4 id="task-label">Tapşırıq</h4>
+          <p id="task-text"></p>
+        </div>
+        <!-- Mobile: button to jump to code tab -->
+        <button id="to-code-btn" onclick="switchTab('code')" style="display:none;margin-top:16px;width:100%;padding:10px;background:linear-gradient(135deg,#f7df1e,#f0a500);border:none;border-radius:8px;color:#0d1117;font-weight:700;font-size:14px;cursor:pointer">💻 Kodu yaz →</button>
+      </div>
+
+      <div id="exercise-panel">
+        <div id="ex-header">
+          <h3 id="ex-title">Məşq 1</h3>
+          <div id="ex-nav"></div>
+        </div>
+        <div id="editor-wrap"><textarea id="editor"></textarea></div>
+        <div id="output-bar">
+          <div id="run-row">
+            <button id="run-btn" onclick="runCode()">▶ Run</button>
+            <button id="reset-btn" onclick="resetCode()">↺</button>
+            <button id="hint-btn" onclick="showHint()">💡</button>
+            <span id="feedback"></span>
+          </div>
+          <div id="output"><span class="out-info">▶ Run your code...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let lang='az';
+function setLang(l){lang=l;document.getElementById('btn-az').classList.toggle('active',l==='az');document.getElementById('btn-en').classList.toggle('active',l==='en');renderSidebar();loadLesson(curLesson);}
+function t(az,en){return lang==='az'?az:en}
+
+// ── Mobile helpers ────────────────────────────────────
+function isMobile(){return window.innerWidth<=700}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+let activeTab='lesson';
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById('tab-lesson').classList.toggle('active',tab==='lesson');
+  document.getElementById('tab-code').classList.toggle('active',tab==='code');
+  document.getElementById('lesson-panel').classList.toggle('tab-active',tab==='lesson');
+  document.getElementById('exercise-panel').classList.toggle('tab-active',tab==='code');
+  if(tab==='code'&&cm)setTimeout(()=>cm.refresh(),50);
+}
+
+function showMobileCodeBtn(show){
+  const b=document.getElementById('to-code-btn');
+  if(b)b.style.display=show?'block':'none';
+}
+
+// ── CURRICULUM ────────────────────────────────────────
+const curriculum=[
+{id:0,section:{az:'Əsaslar',en:'Basics'},
+ title:{az:'Giriş: JavaScript nədir?',en:'Intro: What is JavaScript?'},
+ meta:{az:'Dərs 0 · 2 dəq',en:'Lesson 0 · 2 min'},
+ body:{
+  az:`<p>JavaScript — veb səhifələrini interaktiv edən proqramlaşdırma dilidir. Brauzer daxilində birbaşa işləyir, server lazım deyil.</p>
+<p>Çıxış üçün <b>console.log()</b> funksiyasından istifadə edirik:</p>
+<pre><span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Salam, dünya!"</span>)</pre>
+<p>Şərh əlavə etmək üçün <b>//</b> (bir sətir) və ya <b>/* */</b> (çox sətir):</p>
+<pre><span class="cm">// Bu şərhdir</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Salam!"</span>) <span class="cm">// inline şərh</span></pre>`,
+  en:`<p>JavaScript is the programming language of the web. It runs directly in the browser — no server needed.</p>
+<p>Use <b>console.log()</b> to display output:</p>
+<pre><span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Hello, world!"</span>)</pre>
+<p>Comments: <b>//</b> for single line, <b>/* */</b> for multi-line:</p>
+<pre><span class="cm">// This is a comment</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Hello!"</span>) <span class="cm">// inline comment</span></pre>`
+ },
+ exercises:[
+  {task:{az:'Ekrana "Salam, JavaScript!" çap edin.',en:'Print "Hello, JavaScript!" to the console.'},
+   starter:'// Kodunuzu buraya yazın\n',check:o=>o.includes('Salam, JavaScript!')||o.includes('Hello, JavaScript!'),hint:{az:'console.log("Salam, JavaScript!")',en:'console.log("Hello, JavaScript!")'}},
+  {task:{az:'İki ayrı console.log() ilə "JavaScript" və "Maraqlıdır!" çap edin.',en:'Use two console.log() calls to print "JavaScript" and "Awesome!"'},
+   starter:'',check:o=>o.split('\n').filter(l=>l.trim()).length>=2,hint:{az:'İki ayrı console.log() yazın',en:'Write two separate console.log() calls'}},
+  {task:{az:'console.log() içərisində 18 + 24 hesablayın. Cavab: 42.',en:'Calculate 18 + 24 inside console.log(). Answer: 42.'},
+   starter:'',check:o=>o.includes('42'),hint:{az:'console.log(18 + 24)',en:'console.log(18 + 24)'}},
+  {task:{az:'Adınızı, yaşınızı və şəhərinizi üç ayrı console.log() ilə çap edin.',en:'Print your name, age, and city using three separate console.log() calls.'},
+   starter:'',check:o=>o.split('\n').filter(l=>l.trim()).length>=3,hint:{az:'Üç ayrı console.log() yazın',en:'Write three separate console.log() calls'}},
+ ]
+},
+{id:1,
+ title:{az:'Dəyişənlər (let, const, var)',en:'Variables (let, const, var)'},
+ meta:{az:'Dərs 1 · 5 dəq',en:'Lesson 1 · 5 min'},
+ body:{
+  az:`<p>JavaScript-də dəyişən elan etmək üçün üç açar söz var:</p>
+<pre><span class="kw">let</span> ad = <span class="str">"Kənan"</span>       <span class="cm">// dəyişdirilə bilər</span>
+<span class="kw">const</span> PI = <span class="num">3.14</span>      <span class="cm">// sabit, dəyişdirilməz</span>
+<span class="kw">var</span> yas = <span class="num">22</span>         <span class="cm">// köhnə üsul</span></pre>
+<p>Müasir JS-də <b>let</b> və <b>const</b> istifadə edin.</p>
+<pre><span class="kw">let</span> x = <span class="num">10</span>
+x = <span class="num">20</span>   <span class="cm">// ✅ let dəyişdirilə bilər</span>
+<span class="kw">const</span> Y = <span class="num">10</span>
+<span class="cm">// Y = 20  ← ❌ XƏTA!</span></pre>
+<p>Şablon sətri (template literal):</p>
+<pre><span class="kw">const</span> salam = <span class="str">\`Ad: \${ad}, Yaş: \${yas}\`</span>
+<span class="fn">console</span>.<span class="fn">log</span>(salam)</pre>`,
+  en:`<p>JavaScript has three ways to declare variables:</p>
+<pre><span class="kw">let</span> name = <span class="str">"Kenan"</span>     <span class="cm">// can be reassigned</span>
+<span class="kw">const</span> PI = <span class="num">3.14</span>      <span class="cm">// constant, cannot change</span>
+<span class="kw">var</span> age = <span class="num">22</span>         <span class="cm">// old style, avoid</span></pre>
+<p>In modern JS, prefer <b>let</b> and <b>const</b>.</p>
+<pre><span class="kw">let</span> x = <span class="num">10</span>
+x = <span class="num">20</span>   <span class="cm">// ✅ let can be reassigned</span>
+<span class="kw">const</span> Y = <span class="num">10</span>
+<span class="cm">// Y = 20  ← ❌ ERROR!</span></pre>
+<p>Template literals for interpolation:</p>
+<pre><span class="kw">const</span> msg = <span class="str">\`Name: \${name}, Age: \${age}\`</span>
+<span class="fn">console</span>.<span class="fn">log</span>(msg)</pre>`
+ },
+ exercises:[
+  {task:{az:'"ad" dəyişənini let ilə yaradın, adınızı verin və çap edin.',en:'Declare a "name" variable with let, assign your name, and log it.'},
+   starter:'',check:o=>o.trim().length>0,hint:{az:'let ad = "Adınız"\nconsole.log(ad)',en:'let name = "YourName"\nconsole.log(name)'}},
+  {task:{az:'"en" və "hündürlük" dəyişənlərini const ilə yaradın. Sahəni çap edin.',en:'Declare "width" and "height" with const. Log their area.'},
+   starter:'',check:o=>!isNaN(o.trim().split('\n').pop()),hint:{az:'console.log(en * hündürlük)',en:'console.log(width * height)'}},
+  {task:{az:'ad, yas, şəhər yaradın. Template literal ilə "Mənim adım X, yaşım Y, şəhərim Z" çap edin.',en:'Create name, age, city. Use a template literal to log "My name is X, age Y, city Z".'},
+   starter:'',check:o=>o.includes('adım')||o.includes('name is'),hint:{az:'console.log(`Mənim adım ${ad}...`)',en:'console.log(`My name is ${name}...`)'}},
+  {task:{az:'let counter=0. 3 dəfə +=5 edin. Final dəyəri çap edin (15 olmalıdır).',en:'let counter=0. Add 5 three times using +=. Log the final value (should be 15).'},
+   starter:'let counter = 0\n',check:o=>o.includes('15'),hint:{az:'counter += 5  // 3 dəfə',en:'counter += 5  // three times'}},
+ ]
+},
+{id:2,
+ title:{az:'Məlumat tipləri',en:'Data Types'},
+ meta:{az:'Dərs 2 · 6 dəq',en:'Lesson 2 · 6 min'},
+ body:{
+  az:`<p>JavaScript-in əsas tipləri:</p>
+<pre><span class="kw">typeof</span> <span class="num">42</span>          <span class="cm">// "number"</span>
+<span class="kw">typeof</span> <span class="str">"salam"</span>    <span class="cm">// "string"</span>
+<span class="kw">typeof</span> <span class="kw">true</span>       <span class="cm">// "boolean"</span>
+<span class="kw">typeof</span> <span class="kw">undefined</span>  <span class="cm">// "undefined"</span>
+<span class="kw">typeof</span> <span class="kw">null</span>       <span class="cm">// "object" ← JS xətası!</span></pre>
+<p>Tip çevirmələri:</p>
+<pre><span class="fn">Number</span>(<span class="str">"42"</span>)      <span class="cm">// 42</span>
+<span class="fn">String</span>(<span class="num">99</span>)       <span class="cm">// "99"</span>
+<span class="fn">Boolean</span>(<span class="num">0</span>)      <span class="cm">// false</span>
+<span class="fn">parseInt</span>(<span class="str">"3.9"</span>) <span class="cm">// 3</span></pre>
+<p>Riyazi: <b>+ - * / % **</b> · Math: <b>Math.round(), Math.floor(), Math.ceil(), Math.random()</b></p>`,
+  en:`<p>JavaScript's main types:</p>
+<pre><span class="kw">typeof</span> <span class="num">42</span>          <span class="cm">// "number"</span>
+<span class="kw">typeof</span> <span class="str">"hello"</span>    <span class="cm">// "string"</span>
+<span class="kw">typeof</span> <span class="kw">true</span>       <span class="cm">// "boolean"</span>
+<span class="kw">typeof</span> <span class="kw">undefined</span>  <span class="cm">// "undefined"</span>
+<span class="kw">typeof</span> <span class="kw">null</span>       <span class="cm">// "object" ← JS quirk!</span></pre>
+<p>Type conversions:</p>
+<pre><span class="fn">Number</span>(<span class="str">"42"</span>)      <span class="cm">// 42</span>
+<span class="fn">String</span>(<span class="num">99</span>)       <span class="cm">// "99"</span>
+<span class="fn">Boolean</span>(<span class="num">0</span>)      <span class="cm">// false</span>
+<span class="fn">parseInt</span>(<span class="str">"3.9"</span>) <span class="cm">// 3</span></pre>
+<p>Math operators: <b>+ - * / % **</b> · Math object: <b>Math.round(), Math.floor(), Math.ceil()</b></p>`
+ },
+ exercises:[
+  {task:{az:'number, string, boolean tipli 3 dəyişən yaradın. Hər birinin tipini typeof ilə çap edin.',en:'Create 3 variables: number, string, boolean. Log each type using typeof.'},
+   starter:'',check:o=>o.includes('number')&&o.includes('string')&&o.includes('boolean'),hint:{az:'console.log(typeof dəyişən)',en:'console.log(typeof variable)'}},
+  {task:{az:'"37" mətnini ədədə çevirin, 5 ilə vurun. Nəticə 185.',en:'Convert "37" to a number and multiply by 5. Result: 185.'},
+   starter:'const s = "37"\n',check:o=>o.includes('185'),hint:{az:'console.log(Number(s) * 5)',en:'console.log(Number(s) * 5)'}},
+  {task:{az:'Math.round(4.6), Math.floor(4.9), Math.ceil(4.1) nəticələrini çap edin.',en:'Log Math.round(4.6), Math.floor(4.9), Math.ceil(4.1).'},
+   starter:'',check:o=>o.includes('5')&&o.includes('4'),hint:{az:'console.log(Math.round(4.6))\nconsole.log(Math.floor(4.9))\nconsole.log(Math.ceil(4.1))',en:'console.log(Math.round(4.6))\nconsole.log(Math.floor(4.9))\nconsole.log(Math.ceil(4.1))'}},
+  {task:{az:'2**10 qüvvətini hesablayın. Cavab: 1024.',en:'Calculate 2**10. Answer: 1024.'},
+   starter:'',check:o=>o.includes('1024'),hint:{az:'console.log(2 ** 10)',en:'console.log(2 ** 10)'}},
+  {task:{az:'Boolean(0), Boolean(""), Boolean("salam"), Boolean(1) çap edin.',en:'Log Boolean(0), Boolean(""), Boolean("hello"), Boolean(1).'},
+   starter:'',check:o=>o.includes('false')&&o.includes('true'),hint:{az:'console.log(Boolean(0), Boolean(""), Boolean("salam"), Boolean(1))',en:'console.log(Boolean(0), Boolean(""), Boolean("hello"), Boolean(1))'}},
+ ]
+},
+{id:3,section:{az:'Mətn',en:'Strings'},
+ title:{az:'Stringlər',en:'Strings'},
+ meta:{az:'Dərs 3 · 7 dəq',en:'Lesson 3 · 7 min'},
+ body:{
+  az:`<pre><span class="kw">const</span> s = <span class="str">"JavaScript"</span>
+s.<span class="bi">length</span>              <span class="cm">// 10</span>
+s.<span class="fn">toUpperCase</span>()       <span class="cm">// JAVASCRIPT</span>
+s.<span class="fn">toLowerCase</span>()       <span class="cm">// javascript</span>
+s.<span class="fn">includes</span>(<span class="str">"Script"</span>)  <span class="cm">// true</span>
+s.<span class="fn">replace</span>(<span class="str">"Java"</span>,<span class="str">"Type"</span>) <span class="cm">// TypeScript</span>
+s.<span class="fn">slice</span>(<span class="num">0</span>,<span class="num">4</span>)           <span class="cm">// Java</span>
+s.<span class="fn">split</span>(<span class="str">"a"</span>)           <span class="cm">// array</span>
+s.<span class="fn">trim</span>()              <span class="cm">// boşluqları sil</span></pre>
+<p>Template literal:</p>
+<pre><span class="kw">const</span> n=<span class="str">"Kənan"</span>, y=<span class="num">25</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">\`Ad: \${n}, Yaş: \${y}\`</span>)</pre>`,
+  en:`<pre><span class="kw">const</span> s = <span class="str">"JavaScript"</span>
+s.<span class="bi">length</span>              <span class="cm">// 10</span>
+s.<span class="fn">toUpperCase</span>()       <span class="cm">// JAVASCRIPT</span>
+s.<span class="fn">toLowerCase</span>()       <span class="cm">// javascript</span>
+s.<span class="fn">includes</span>(<span class="str">"Script"</span>)  <span class="cm">// true</span>
+s.<span class="fn">replace</span>(<span class="str">"Java"</span>,<span class="str">"Type"</span>) <span class="cm">// TypeScript</span>
+s.<span class="fn">slice</span>(<span class="num">0</span>,<span class="num">4</span>)           <span class="cm">// Java</span>
+s.<span class="fn">split</span>(<span class="str">"a"</span>)           <span class="cm">// array</span>
+s.<span class="fn">trim</span>()              <span class="cm">// remove whitespace</span></pre>
+<p>Template literal:</p>
+<pre><span class="kw">const</span> n=<span class="str">"Kenan"</span>, y=<span class="num">25</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">\`Name: \${n}, Age: \${y}\`</span>)</pre>`
+ },
+ exercises:[
+  {task:{az:'"javascript" sözünü böyük hərflərə çevirin.',en:'Convert "javascript" to uppercase.'},
+   starter:'const s = "javascript"\n',check:o=>o.includes('JAVASCRIPT'),hint:{az:'console.log(s.toUpperCase())',en:'console.log(s.toUpperCase())'}},
+  {task:{az:'"Veb Proqramlaşdırma" mətninin uzunluğunu, ilk 3 simvolunu və "Proqram" içindəmi olduğunu çap edin.',en:'Log the length, first 3 chars, and whether "Program" is in "Web Programming".'},
+   starter:'const s = "Veb Proqramlaşdırma"\n',check:o=>o.split('\n').filter(l=>l.trim()).length>=2,hint:{az:'s.length, s.slice(0,3), s.includes("Proqram")',en:'s.length, s.slice(0,3), s.includes("Program")'}},
+  {task:{az:'"  salam dünya  " mətnindən boşluqları silin (.trim()).',en:'Remove whitespace from "  hello world  " using .trim().'},
+   starter:'const s = "  salam dünya  "\n',check:o=>!o.startsWith(' '),hint:{az:'console.log(s.trim())',en:'console.log(s.trim())'}},
+  {task:{az:'"bakı,gəncə,sumqayıt,lənkəran" mətnini vergüllə parçalayın.',en:'Split "baku,ganja,sumgait,lankaran" by comma.'},
+   starter:'const s = "bakı,gəncə,sumqayıt,lənkəran"\n',check:o=>o.includes('['),hint:{az:'console.log(s.split(","))',en:'console.log(s.split(","))'}},
+  {task:{az:'Ad və soyadı const-lara yazın. Template literal ilə "Ad Soyad" çap edin.',en:'Store first and last name. Log "First Last" using a template literal.'},
+   starter:'',check:o=>o.trim().length>0&&!o.includes('undefined'),hint:{az:'console.log(`${ad} ${soyad}`)',en:'console.log(`${first} ${last}`)'}},
+ ]
+},
+{id:4,section:{az:'Nəzarət axını',en:'Control Flow'},
+ title:{az:'Şərtlər (if / else / switch)',en:'Conditions (if / else / switch)'},
+ meta:{az:'Dərs 4 · 7 dəq',en:'Lesson 4 · 7 min'},
+ body:{
+  az:`<pre><span class="kw">if</span> (yas >= <span class="num">18</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Böyükdür"</span>)
+} <span class="kw">else if</span> (yas >= <span class="num">13</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Yeniyetmə"</span>)
+} <span class="kw">else</span> {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Uşaq"</span>)
+}</pre>
+<p>Ternary: <code>şərt ? doğru : yanlış</code></p>
+<pre><span class="kw">const</span> tip = n % <span class="num">2</span> === <span class="num">0</span> ? <span class="str">"Cüt"</span> : <span class="str">"Tək"</span></pre>
+<p>switch/case:</p>
+<pre><span class="kw">switch</span>(gün) {
+  <span class="kw">case</span> <span class="num">1</span>: <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"B.e."</span>); <span class="kw">break</span>
+  <span class="kw">default</span>: <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Digər"</span>)
+}</pre>
+<p>Müqayisə: <b>===</b> <b>!==</b> <b>&gt;</b> <b>&lt;</b> <b>&amp;&amp;</b> <b>||</b> <b>!</b></p>`,
+  en:`<pre><span class="kw">if</span> (age >= <span class="num">18</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Adult"</span>)
+} <span class="kw">else if</span> (age >= <span class="num">13</span>) {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Teenager"</span>)
+} <span class="kw">else</span> {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Child"</span>)
+}</pre>
+<p>Ternary: <code>condition ? true : false</code></p>
+<pre><span class="kw">const</span> type = n % <span class="num">2</span> === <span class="num">0</span> ? <span class="str">"Even"</span> : <span class="str">"Odd"</span></pre>
+<p>switch/case:</p>
+<pre><span class="kw">switch</span>(day) {
+  <span class="kw">case</span> <span class="num">1</span>: <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Mon"</span>); <span class="kw">break</span>
+  <span class="kw">default</span>: <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Other"</span>)
+}</pre>
+<p>Comparison: <b>===</b> <b>!==</b> <b>&gt;</b> <b>&lt;</b> <b>&amp;&amp;</b> <b>||</b> <b>!</b></p>`
+ },
+ exercises:[
+  {task:{az:'temp=38. 35-dən böyükdürsə "İsti", 15-dən aşağıdırsa "Soyuq", əks halda "Mülayim".',en:'temp=38. "Hot" if >35, "Cold" if <15, else "Mild".'},
+   starter:'const temp = 38\n',check:o=>o.includes('İsti')||o.includes('Hot'),hint:{az:'if (temp > 35) ... else if (temp < 15) ...',en:'if (temp > 35) ... else if (temp < 15) ...'}},
+  {task:{az:'score=82. 90+→"A", 80-89→"B", 70-79→"C", 60-69→"D", aşağı→"F".',en:'score=82. "A" for 90+, "B" for 80-89, "C" for 70-79, "D" for 60-69, "F" otherwise.'},
+   starter:'const score = 82\n',check:o=>o.includes('B'),hint:{az:'else if (score >= 80) { console.log("B") }',en:'else if (score >= 80) { console.log("B") }'}},
+  {task:{az:'n=7. Ternary ilə cüt/tək olduğunu çap edin.',en:'n=7. Use ternary to log "Even" or "Odd".'},
+   starter:'const n = 7\n',check:o=>o.includes('Tək')||o.includes('Odd'),hint:{az:'const tip = n%2===0?"Cüt":"Tək"\nconsole.log(tip)',en:'const type = n%2===0?"Even":"Odd"\nconsole.log(type)'}},
+  {task:{az:'gun=3 üçün switch/case ilə gün adını çap edin. gun=3 → "Çərşənbə".',en:'Use switch/case for day=3: day=3 → "Wednesday".'},
+   starter:'const gun = 3\n',check:o=>o.includes('Çərşənbə')||o.includes('Wednesday'),hint:{az:'case 3: console.log("Çərşənbə"); break',en:'case 3: console.log("Wednesday"); break'}},
+ ]
+},
+{id:5,
+ title:{az:'Dövrlər (for / while / for...of)',en:'Loops (for / while / for...of)'},
+ meta:{az:'Dərs 5 · 8 dəq',en:'Lesson 5 · 8 min'},
+ body:{
+  az:`<pre><span class="kw">for</span> (<span class="kw">let</span> i=<span class="num">0</span>; i<<span class="num">5</span>; i++) <span class="fn">console</span>.<span class="fn">log</span>(i)</pre>
+<p>while:</p>
+<pre><span class="kw">let</span> say = <span class="num">1</span>
+<span class="kw">while</span> (say <= <span class="num">5</span>) { <span class="fn">console</span>.<span class="fn">log</span>(say); say++ }</pre>
+<p>for...of — massiv üzərindən:</p>
+<pre><span class="kw">for</span> (<span class="kw">const</span> m <span class="kw">of</span> [<span class="str">"alma"</span>,<span class="str">"armud"</span>]) <span class="fn">console</span>.<span class="fn">log</span>(m)</pre>
+<p><b>break</b> — dövrü dayandırır · <b>continue</b> — növbəti iterasiyaya keçir</p>`,
+  en:`<pre><span class="kw">for</span> (<span class="kw">let</span> i=<span class="num">0</span>; i<<span class="num">5</span>; i++) <span class="fn">console</span>.<span class="fn">log</span>(i)</pre>
+<p>while:</p>
+<pre><span class="kw">let</span> count = <span class="num">1</span>
+<span class="kw">while</span> (count <= <span class="num">5</span>) { <span class="fn">console</span>.<span class="fn">log</span>(count); count++ }</pre>
+<p>for...of — iterates over arrays:</p>
+<pre><span class="kw">for</span> (<span class="kw">const</span> f <span class="kw">of</span> [<span class="str">"apple"</span>,<span class="str">"pear"</span>]) <span class="fn">console</span>.<span class="fn">log</span>(f)</pre>
+<p><b>break</b> — stops the loop · <b>continue</b> — skips to next iteration</p>`
+ },
+ exercises:[
+  {task:{az:'for dövrü ilə 1-10 ədədlərinin cəmini tapın. Cavab: 55.',en:'Use a for loop to sum numbers 1–10. Answer: 55.'},
+   starter:'let total = 0\n',check:o=>o.includes('55'),hint:{az:'for(let i=1;i<=10;i++) total+=i',en:'for(let i=1;i<=10;i++) total+=i'}},
+  {task:{az:'for dövrü ilə 1-100 arasındakı cüt ədədləri çap edin.',en:'Print all even numbers from 1 to 100 using a for loop.'},
+   starter:'',check:o=>o.includes('2')&&o.includes('100'),hint:{az:'if(i%2===0) console.log(i)',en:'if(i%2===0) console.log(i)'}},
+  {task:{az:'while dövrü ilə 2-nin qüvvətlərini (1,2,4,...) 1000-dən kiçik olanları çap edin.',en:'Use while to print powers of 2 (1,2,4,...) less than 1000.'},
+   starter:'let n = 1\n',check:o=>o.includes('512'),hint:{az:'while(n<1000){console.log(n);n*=2}',en:'while(n<1000){console.log(n);n*=2}'}},
+  {task:{az:'["Bakı","Gəncə","Sumqayıt","Lənkəran"] massivini for...of ilə çap edin.',en:'Log each item in ["Baku","Ganja","Sumgait","Lankaran"] using for...of.'},
+   starter:'const şəhərlər = ["Bakı","Gəncə","Sumqayıt","Lənkəran"]\n',check:o=>o.includes('Bakı')||o.includes('Baku'),hint:{az:'for(const s of şəhərlər) console.log(s)',en:'for(const c of cities) console.log(c)'}},
+  {task:{az:'İç-içə for ilə 5x5 ulduz (*) cədvəli çap edin.',en:'Print a 5×5 grid of asterisks using nested for loops.'},
+   starter:'',check:o=>o.split('\n').filter(l=>l.includes('*')).length>=5,hint:{az:'for(let i=0;i<5;i++){let r="";for(let j=0;j<5;j++)r+="* ";console.log(r)}',en:'for(let i=0;i<5;i++){let r="";for(let j=0;j<5;j++)r+="* ";console.log(r)}'}},
+ ]
+},
+{id:6,section:{az:'Məlumat strukturları',en:'Data Structures'},
+ title:{az:'Massivlər (Arrays)',en:'Arrays'},
+ meta:{az:'Dərs 6 · 8 dəq',en:'Lesson 6 · 8 min'},
+ body:{
+  az:`<pre><span class="kw">const</span> arr = [<span class="str">"alma"</span>,<span class="str">"armud"</span>,<span class="str">"gilas"</span>]
+arr.<span class="fn">push</span>(<span class="str">"üzüm"</span>)     <span class="cm">// sona əlavə</span>
+arr.<span class="fn">pop</span>()           <span class="cm">// sonuncunu sil</span>
+arr.<span class="fn">unshift</span>(<span class="str">"ərik"</span>) <span class="cm">// əvvələ əlavə</span>
+arr.<span class="bi">length</span>           <span class="cm">// uzunluq</span></pre>
+<p>Güclü metodlar:</p>
+<pre>arr.<span class="fn">filter</span>(x => x.<span class="bi">length</span> > <span class="num">4</span>)
+arr.<span class="fn">map</span>(x => x.<span class="fn">toUpperCase</span>())
+arr.<span class="fn">reduce</span>((a,x) => a+x, <span class="str">""</span>)
+arr.<span class="fn">sort</span>((a,b) => a-b)</pre>`,
+  en:`<pre><span class="kw">const</span> arr = [<span class="str">"apple"</span>,<span class="str">"pear"</span>,<span class="str">"cherry"</span>]
+arr.<span class="fn">push</span>(<span class="str">"grape"</span>)     <span class="cm">// add to end</span>
+arr.<span class="fn">pop</span>()             <span class="cm">// remove last</span>
+arr.<span class="fn">unshift</span>(<span class="str">"apricot"</span>) <span class="cm">// add to front</span>
+arr.<span class="bi">length</span>             <span class="cm">// length</span></pre>
+<p>Powerful methods:</p>
+<pre>arr.<span class="fn">filter</span>(x => x.<span class="bi">length</span> > <span class="num">4</span>)
+arr.<span class="fn">map</span>(x => x.<span class="fn">toUpperCase</span>())
+arr.<span class="fn">reduce</span>((a,x) => a+x, <span class="str">""</span>)
+arr.<span class="fn">sort</span>((a,b) => a-b)</pre>`
+ },
+ exercises:[
+  {task:{az:'[10,20,30,40,50] cəmini .reduce() ilə, maksimumunu Math.max(...arr) ilə çap edin.',en:'Log the sum of [10,20,30,40,50] via .reduce() and max via Math.max(...arr).'},
+   starter:'const arr = [10,20,30,40,50]\n',check:o=>o.includes('150')&&o.includes('50'),hint:{az:'arr.reduce((a,x)=>a+x,0) və Math.max(...arr)',en:'arr.reduce((a,x)=>a+x,0) and Math.max(...arr)'}},
+  {task:{az:'[1..10] massivindən cüt ədədləri .filter() ilə götürün.',en:'Use .filter() to get even numbers from [1..10].'},
+   starter:'const nums = [1,2,3,4,5,6,7,8,9,10]\n',check:o=>o.includes('2')&&o.includes('10')&&!o.includes(',1,'),hint:{az:'nums.filter(x=>x%2===0)',en:'nums.filter(x=>x%2===0)'}},
+  {task:{az:'[1,2,3,4,5] massivindəki hər elementi .map() ilə kvadratına çevirin. Nəticə: [1,4,9,16,25].',en:'Use .map() to square each element of [1,2,3,4,5]. Result: [1,4,9,16,25].'},
+   starter:'const nums = [1,2,3,4,5]\n',check:o=>o.includes('25')&&o.includes('16'),hint:{az:'nums.map(x=>x**2)',en:'nums.map(x=>x**2)'}},
+  {task:{az:'["Python","Java","C++","JavaScript"] massivindən "Java"nı silin. Massivi çap edin.',en:'Remove "Java" from ["Python","Java","C++","JavaScript"]. Log the result.'},
+   starter:'const dillər = ["Python","Java","C++","JavaScript"]\n',check:o=>!o.includes('Java')&&o.includes('Python'),hint:{az:'dillər.splice(dillər.indexOf("Java"),1)',en:'langs.splice(langs.indexOf("Java"),1)'}},
+  {task:{az:'[5,3,8,1,9,2,7] massivini azalan sırada çap edin. İlk element 9 olmalıdır.',en:'Sort [5,3,8,1,9,2,7] descending. First element should be 9.'},
+   starter:'const n = [5,3,8,1,9,2,7]\n',check:o=>o.indexOf('9')<o.indexOf('1'),hint:{az:'n.sort((a,b)=>b-a)',en:'n.sort((a,b)=>b-a)'}},
+ ]
+},
+{id:7,
+ title:{az:'Obyektlər (Objects)',en:'Objects'},
+ meta:{az:'Dərs 7 · 8 dəq',en:'Lesson 7 · 8 min'},
+ body:{
+  az:`<pre><span class="kw">const</span> t = { ad:<span class="str">"Kənan"</span>, yas:<span class="num">21</span>, bal:<span class="num">88</span> }
+t.ad           <span class="cm">// Kənan</span>
+t[<span class="str">"yas"</span>]        <span class="cm">// 21</span>
+t.şəhər = <span class="str">"Bakı"</span> <span class="cm">// yeni xüsusiyyət</span></pre>
+<p>Metodlar:</p>
+<pre><span class="fn">Object</span>.<span class="fn">keys</span>(t)     <span class="cm">// açarlar</span>
+<span class="fn">Object</span>.<span class="fn">values</span>(t)   <span class="cm">// dəyərlər</span>
+<span class="fn">Object</span>.<span class="fn">entries</span>(t)  <span class="cm">// cütlər</span></pre>
+<p>Destructuring:</p>
+<pre><span class="kw">const</span> { ad, yas } = t
+<span class="fn">console</span>.<span class="fn">log</span>(ad, yas)</pre>`,
+  en:`<pre><span class="kw">const</span> s = { name:<span class="str">"Kenan"</span>, age:<span class="num">21</span>, score:<span class="num">88</span> }
+s.name          <span class="cm">// Kenan</span>
+s[<span class="str">"age"</span>]        <span class="cm">// 21</span>
+s.city = <span class="str">"Baku"</span>  <span class="cm">// new property</span></pre>
+<p>Methods:</p>
+<pre><span class="fn">Object</span>.<span class="fn">keys</span>(s)     <span class="cm">// keys</span>
+<span class="fn">Object</span>.<span class="fn">values</span>(s)   <span class="cm">// values</span>
+<span class="fn">Object</span>.<span class="fn">entries</span>(s)  <span class="cm">// pairs</span></pre>
+<p>Destructuring:</p>
+<pre><span class="kw">const</span> { name, age } = s
+<span class="fn">console</span>.<span class="fn">log</span>(name, age)</pre>`
+ },
+ exercises:[
+  {task:{az:'Özünüz haqqında obyekt: ad, yas, şəhər. Hər dəyəri ayrıca çap edin.',en:'Create an object: name, age, city. Log each value separately.'},
+   starter:'',check:o=>o.split('\n').filter(l=>l.trim()).length>=3,hint:{az:'const mən={ad:"...",yas:...}',en:'const me={name:"...",age:...}'}},
+  {task:{az:'{a:1,b:2,c:3} obyektini Object.entries()+for...of ilə çap edin.',en:'Log all pairs of {a:1,b:2,c:3} using Object.entries() + for...of.'},
+   starter:'const d = {a:1,b:2,c:3}\n',check:o=>o.includes('a')&&o.includes('1')&&o.includes('c'),hint:{az:'for(const [k,v] of Object.entries(d)) console.log(k,v)',en:'for(const [k,v] of Object.entries(d)) console.log(k,v)'}},
+  {task:{az:'Destructuring ilə {ad:"Kənan",yas:21,bal:92} obyektindən ad və bal çıxarın. Template literal ilə çap edin.',en:'Destructure name and score from {name:"Kenan",age:21,score:92}. Log with template literal.'},
+   starter:'const t = {ad:"Kənan", yas:21, bal:92}\n',check:o=>o.includes('Kənan')&&o.includes('92'),hint:{az:'const {ad,bal}=t\nconsole.log(`${ad}: ${bal}`)',en:'const {name,score}=t\nconsole.log(`${name}: ${score}`)'}},
+  {task:{az:'[{ad:"A",bal:80},{ad:"B",bal:95},{ad:"C",bal:73}] — ən yüksək ballının adını çap edin.',en:'[{name:"A",score:80},{name:"B",score:95}] — log the name of the top scorer.'},
+   starter:'const tələbələr = [{ad:"A",bal:80},{ad:"B",bal:95},{ad:"C",bal:73}]\n',check:o=>o.includes('B'),hint:{az:'tələbələr.sort((a,b)=>b.bal-a.bal)[0].ad',en:'students.sort((a,b)=>b.score-a.score)[0].name'}},
+ ]
+},
+{id:8,section:{az:'Funksiyalar',en:'Functions'},
+ title:{az:'Funksiyalar (function / arrow)',en:'Functions (function / arrow)'},
+ meta:{az:'Dərs 8 · 9 dəq',en:'Lesson 8 · 9 min'},
+ body:{
+  az:`<pre><span class="cm">// Declaration</span>
+<span class="kw">function</span> <span class="fn">salam</span>(ad) {
+  <span class="kw">return</span> <span class="str">\`Salam, \${ad}!\`</span>
+}
+<span class="cm">// Arrow</span>
+<span class="kw">const</span> <span class="fn">cəm</span> = (a,b) => a+b
+<span class="cm">// Default param</span>
+<span class="kw">const</span> <span class="fn">güc</span> = (x,d=<span class="num">2</span>) => x**d</pre>
+<p>Higher-order funksiyalar:</p>
+<pre><span class="kw">const</span> <span class="fn">əməl</span> = (a,b,fn) => fn(a,b)
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="fn">əməl</span>(<span class="num">4</span>,<span class="num">5</span>,(a,b)=>a*b)) <span class="cm">// 20</span></pre>`,
+  en:`<pre><span class="cm">// Declaration</span>
+<span class="kw">function</span> <span class="fn">greet</span>(name) {
+  <span class="kw">return</span> <span class="str">\`Hello, \${name}!\`</span>
+}
+<span class="cm">// Arrow</span>
+<span class="kw">const</span> <span class="fn">add</span> = (a,b) => a+b
+<span class="cm">// Default param</span>
+<span class="kw">const</span> <span class="fn">power</span> = (x,exp=<span class="num">2</span>) => x**exp</pre>
+<p>Higher-order functions:</p>
+<pre><span class="kw">const</span> <span class="fn">operate</span> = (a,b,fn) => fn(a,b)
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="fn">operate</span>(<span class="num">4</span>,<span class="num">5</span>,(a,b)=>a*b)) <span class="cm">// 20</span></pre>`
+ },
+ exercises:[
+  {task:{az:'İki ədədin maksimumunu tapan maxIki(a,b) arrow funksiyası yazın. maxIki(7,12)→12.',en:'Write arrow function maxTwo(a,b) returning the larger. maxTwo(7,12)→12.'},
+   starter:'',check:o=>o.includes('12'),hint:{az:'const maxIki=(a,b)=>a>b?a:b',en:'const maxTwo=(a,b)=>a>b?a:b'}},
+  {task:{az:'Massiv ortalamasını hesablayan average(arr) yazın. average([10,20,30])→20.',en:'Write average(arr) returning the mean. average([10,20,30])→20.'},
+   starter:'',check:o=>o.includes('20'),hint:{az:'const average=arr=>arr.reduce((a,x)=>a+x,0)/arr.length',en:'const average=arr=>arr.reduce((a,x)=>a+x,0)/arr.length'}},
+  {task:{az:'Default parametrli salam(ad,dil="az"): dil="az"→"Salam {ad}", dil="en"→"Hello {ad}".',en:'Write greet(name,lang="en"): lang="en"→"Hello {name}", lang="az"→"Salam {name}".'},
+   starter:'',check:o=>o.includes('Salam')&&o.includes('Hello'),hint:{az:'const salam=(ad,dil="az")=>dil==="az"?`Salam ${ad}`:`Hello ${ad}`',en:'const greet=(name,lang="en")=>lang==="en"?`Hello ${name}`:`Salam ${name}`'}},
+  {task:{az:'Rekursiv factorial(n) yazın. factorial(5)→120.',en:'Write recursive factorial(n). factorial(5)→120.'},
+   starter:'',check:o=>o.includes('120'),hint:{az:'function factorial(n){return n<=1?1:n*factorial(n-1)}',en:'function factorial(n){return n<=1?1:n*factorial(n-1)}'}},
+  {task:{az:'operate(a,b,fn) yazın. operate(10,3,(a,b)=>a%b)→1.',en:'Write operate(a,b,fn). operate(10,3,(a,b)=>a%b)→1.'},
+   starter:'',check:o=>o.trim().split('\n').some(l=>l.trim()==='1'),hint:{az:'const operate=(a,b,fn)=>fn(a,b)\nconsole.log(operate(10,3,(a,b)=>a%b))',en:'const operate=(a,b,fn)=>fn(a,b)\nconsole.log(operate(10,3,(a,b)=>a%b))'}},
+ ]
+},
+{id:9,section:{az:'DOM və Veb',en:'DOM & Web'},
+ title:{az:'DOM Manipulyasiyası',en:'DOM Manipulation'},
+ meta:{az:'Dərs 9 · 8 dəq',en:'Lesson 9 · 8 min'},
+ body:{
+  az:`<p>DOM — HTML sənədinin JS tərəfindən idarə olunan təsviridir.</p>
+<pre><span class="cm">// Element seçmək</span>
+document.<span class="fn">getElementById</span>(<span class="str">"id"</span>)
+document.<span class="fn">querySelector</span>(<span class="str">".class"</span>)
+document.<span class="fn">querySelectorAll</span>(<span class="str">"tag"</span>)</pre>
+<pre><span class="cm">// Məzmun dəyişmək</span>
+el.textContent = <span class="str">"Yeni mətn"</span>
+el.style.color = <span class="str">"red"</span>
+el.classList.<span class="fn">add</span>(<span class="str">"aktiv"</span>)
+el.classList.<span class="fn">remove</span>(<span class="str">"aktiv"</span>)</pre>
+<pre><span class="cm">// Event</span>
+el.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, () => {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Klik!"</span>)
+})</pre>`,
+  en:`<p>The DOM is JavaScript's interface to HTML documents.</p>
+<pre><span class="cm">// Selecting elements</span>
+document.<span class="fn">getElementById</span>(<span class="str">"id"</span>)
+document.<span class="fn">querySelector</span>(<span class="str">".class"</span>)
+document.<span class="fn">querySelectorAll</span>(<span class="str">"tag"</span>)</pre>
+<pre><span class="cm">// Changing content</span>
+el.textContent = <span class="str">"New text"</span>
+el.style.color = <span class="str">"red"</span>
+el.classList.<span class="fn">add</span>(<span class="str">"active"</span>)
+el.classList.<span class="fn">remove</span>(<span class="str">"active"</span>)</pre>
+<pre><span class="cm">// Events</span>
+el.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, () => {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">"Clicked!"</span>)
+})</pre>`
+ },
+ exercises:[
+  {task:{az:'DOM elementini simulyasiya edin: {textContent:""} obyekti. textContent="Salam!" verin, çap edin.',en:'Simulate a DOM element {textContent:""}. Set textContent="Hello!" and log it.'},
+   starter:'const el = {textContent: "", style: {}}\n',check:o=>o.includes('Salam!')||o.includes('Hello!'),hint:{az:'el.textContent="Salam!"\nconsole.log(el.textContent)',en:'el.textContent="Hello!"\nconsole.log(el.textContent)'}},
+  {task:{az:'classList simulyasiyası: {classes:[], add(c){...}} obyekti. "aktiv" və "görünür" əlavə edin.',en:'Simulate classList with add(). Add "active" and "visible", log classes.'},
+   starter:'const el = {classes:[], add(c){this.classes.push(c)}}\n',check:o=>o.includes('aktiv')||o.includes('active'),hint:{az:'el.add("aktiv")\nel.add("görünür")\nconsole.log(el.classes)',en:'el.add("active")\nel.add("visible")\nconsole.log(el.classes)'}},
+  {task:{az:'addEventListener simulyasiyası: "click" eventi üçün callback əlavə edin və çağırın.',en:'Simulate addEventListener: add a "click" callback and fire it.'},
+   starter:'const el = {\n  listeners: {},\n  addEventListener(e,fn){this.listeners[e]=fn}\n}\n',check:o=>o.includes('Klik')||o.includes('Click'),hint:{az:'el.addEventListener("click",()=>console.log("Klik!"))\nel.listeners["click"]()',en:'el.addEventListener("click",()=>console.log("Clicked!"))\nel.listeners["click"]()'}},
+  {task:{az:'5 fake element massivi: [{id:1,text:"a"},...]. id===3 olanı tapıb text-ini çap edin.',en:'5 fake elements [{id:1,text:"a"},...]. Find id===3 and log its text.'},
+   starter:'const elements = [{id:1,text:"alma"},{id:2,text:"armud"},{id:3,text:"gilas"},{id:4,text:"üzüm"},{id:5,text:"ərik"}]\n',check:o=>o.includes('gilas'),hint:{az:'console.log(elements.find(e=>e.id===3).text)',en:'console.log(elements.find(e=>e.id===3).text)'}},
+ ]
+},
+{id:10,section:{az:'Asinxron JS',en:'Async JS'},
+ title:{az:'Promises və async/await',en:'Promises & async/await'},
+ meta:{az:'Dərs 10 · 9 dəq',en:'Lesson 10 · 9 min'},
+ body:{
+  az:`<pre><span class="kw">const</span> vəd = <span class="kw">new</span> <span class="fn">Promise</span>((resolve, reject) => {
+  <span class="fn">resolve</span>(<span class="str">"Uğurlu!"</span>)
+})
+vəd.<span class="fn">then</span>(v => <span class="fn">console</span>.<span class="fn">log</span>(v))
+   .<span class="fn">catch</span>(e => <span class="fn">console</span>.<span class="fn">log</span>(e))</pre>
+<p>async/await:</p>
+<pre><span class="kw">async function</span> <span class="fn">gətir</span>() {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> r = <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="str">"data"</span>)
+    <span class="fn">console</span>.<span class="fn">log</span>(r)
+  } <span class="kw">catch</span>(e) { <span class="fn">console</span>.<span class="fn">log</span>(e) }
+}
+<span class="fn">gətir</span>()</pre>`,
+  en:`<pre><span class="kw">const</span> p = <span class="kw">new</span> <span class="fn">Promise</span>((resolve, reject) => {
+  <span class="fn">resolve</span>(<span class="str">"Done!"</span>)
+})
+p.<span class="fn">then</span>(v => <span class="fn">console</span>.<span class="fn">log</span>(v))
+ .<span class="fn">catch</span>(e => <span class="fn">console</span>.<span class="fn">log</span>(e))</pre>
+<p>async/await:</p>
+<pre><span class="kw">async function</span> <span class="fn">fetch</span>() {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> r = <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">resolve</span>(<span class="str">"data"</span>)
+    <span class="fn">console</span>.<span class="fn">log</span>(r)
+  } <span class="kw">catch</span>(e) { <span class="fn">console</span>.<span class="fn">log</span>(e) }
+}
+<span class="fn">fetch</span>()</pre>`
+ },
+ exercises:[
+  {task:{az:'"Uğurlu!" ilə resolve olan Promise yaradın. .then() ilə çap edin.',en:'Create a Promise resolving with "Success!". Log it with .then().'},
+   starter:'',check:o=>o.includes('Uğurlu')||o.includes('Success'),hint:{az:'new Promise(r=>r("Uğurlu!")).then(v=>console.log(v))',en:'new Promise(r=>r("Success!")).then(v=>console.log(v))'}},
+  {task:{az:'reject("Xəta!") olan Promise yaradın. .catch() ilə xəta mesajını çap edin.',en:'Create a Promise that rejects with "Error!". Catch and log it.'},
+   starter:'',check:o=>o.includes('Xəta')||o.includes('Error'),hint:{az:'new Promise((_,r)=>r("Xəta!")).catch(e=>console.log(e))',en:'new Promise((_,r)=>r("Error!")).catch(e=>console.log(e))'}},
+  {task:{az:'async function yazın, Promise.resolve("ok")-u await edin. Nəticəni çap edin.',en:'Write an async function that awaits Promise.resolve("ok") and logs the result.'},
+   starter:'',check:o=>o.includes('ok'),hint:{az:'async function f(){const r=await Promise.resolve("ok");console.log(r)}\nf()',en:'async function f(){const r=await Promise.resolve("ok");console.log(r)}\nf()'}},
+  {task:{az:'Promise.all() ilə üç Promise-i paralel işlədin. Nəticələr massivini çap edin.',en:'Run three Promises in parallel with Promise.all(). Log the results array.'},
+   starter:'const p1=Promise.resolve("bir")\nconst p2=Promise.resolve("iki")\nconst p3=Promise.resolve("üç")\n',check:o=>o.includes('bir')||o.includes('one'),hint:{az:'Promise.all([p1,p2,p3]).then(r=>console.log(r))',en:'Promise.all([p1,p2,p3]).then(r=>console.log(r))'}},
+ ]
+},
+];
+
+// ── JS Runner ─────────────────────────────────────────
+function runJS(code){
+  const lines=[];
+  const fakeConsole={log:(...args)=>lines.push(args.map(a=>{
+    if(a===null)return'null';
+    if(typeof a==='object'){try{return JSON.stringify(a)}catch{return String(a)}}
+    return String(a)
+  }).join(' '))};
+  try{new Function('console',code)(fakeConsole)}
+  catch(e){lines.push('❌ '+e.message)}
+  return lines;
+}
+
+// ── STATE ─────────────────────────────────────────────
+let curLesson=0,curExercise=0,done={},cm;
+const totalEx=()=>curriculum.reduce((a,l)=>a+l.exercises.length,0);
+const compEx=()=>Object.values(done).reduce((a,v)=>a+v.length,0);
+
+function renderSidebar(){
+  document.getElementById('sidebar-title').textContent=t('Dərslər','Lessons');
+  const list=document.getElementById('lesson-list');list.innerHTML='';
+  let lastSec='';
+  curriculum.forEach((l,i)=>{
+    if(l.section&&l.section[lang]!==lastSec){
+      lastSec=l.section[lang];
+      const sh=document.createElement('div');sh.className='section-header';sh.textContent=lastSec;list.appendChild(sh);
+    }
+    const allDone=(done[l.id]||[]).length===l.exercises.length;
+    const d=document.createElement('div');
+    d.className='lesson-item'+(i===curLesson?' active':'');
+    d.innerHTML=`<span class="num">${i}</span>${l.title[lang]}${allDone?'<span class="check">✓</span>':''}`;
+    d.onclick=()=>{curLesson=i;curExercise=0;loadLesson(i);if(isMobile())closeSidebar();};
+    list.appendChild(d);
+  });
+  const comp=compEx(),total=totalEx();
+  document.getElementById('progress-text').textContent=`${comp}/${total}`;
+  document.getElementById('progress-bar-fill').style.width=`${total?Math.round(comp/total*100):0}%`;
+}
+
+function loadLesson(i){
+  curLesson=i;curExercise=0;
+  const l=curriculum[i];
+  document.getElementById('lesson-title').textContent=l.title[lang];
+  document.getElementById('lesson-meta').textContent=l.meta[lang];
+  document.getElementById('lesson-body').innerHTML=l.body[lang];
+  document.getElementById('task-label').textContent=t('Tapşırıq','Exercise');
+  showMobileCodeBtn(isMobile());
+  // on mobile, switch to lesson tab when loading a new lesson
+  if(isMobile()) switchTab('lesson');
+  loadExercise(0);renderSidebar();
+}
+
+function loadExercise(ei){
+  curExercise=ei;
+  const ex=curriculum[curLesson].exercises[ei];
+  document.getElementById('task-text').textContent=ex.task[lang];
+  document.getElementById('ex-title').textContent=t(`Məşq ${ei+1}`,`Exercise ${ei+1}`);
+  if(cm){const saved=getSaved(curLesson,ei);cm.setValue(saved||ex.starter);}
+  document.getElementById('output').innerHTML=`<span class="out-info">▶ ${t('Kodu işlət','Run your code')}</span>`;
+  document.getElementById('feedback').textContent='';
+  renderExNav();
+}
+
+function renderExNav(){
+  const nav=document.getElementById('ex-nav');nav.innerHTML='';
+  curriculum[curLesson].exercises.forEach((_,ei)=>{
+    const b=document.createElement('button');
+    b.className='ex-dot'+(ei===curExercise?' active':'')+((done[curLesson]||[]).includes(ei)?' done':'');
+    b.textContent=ei+1;b.onclick=()=>loadExercise(ei);nav.appendChild(b);
+  });
+}
+
+const getSaved=(l,e)=>{try{return localStorage.getItem(`jsb2_${l}_${e}`)}catch{return null}};
+const setSaved=(l,e,v)=>{try{localStorage.setItem(`jsb2_${l}_${e}`,v)}catch{}};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  cm=CodeMirror.fromTextArea(document.getElementById('editor'),{
+    mode:'javascript',theme:'dracula',lineNumbers:true,indentUnit:2,
+    extraKeys:{"Tab":cm=>cm.replaceSelection("  ")}
+  });
+  cm.on('change',()=>setSaved(curLesson,curExercise,cm.getValue()));
+  loadLesson(0);renderSidebar();
+  document.getElementById('output').innerHTML=`<span class="out-info">${t('Hazırdır. Kodu yazıb işlət!','Ready. Write and run!')}</span>`;
+  // show mobile btn if needed
+  showMobileCodeBtn(isMobile());
+  window.addEventListener('resize',()=>{
+    showMobileCodeBtn(isMobile());
+    if(!isMobile()){
+      document.getElementById('lesson-panel').classList.add('tab-active');
+      document.getElementById('exercise-panel').classList.add('tab-active');
+    }
+  });
+});
+
+function runCode(){
+  const code=cm.getValue();
+  const outEl=document.getElementById('output'),fbEl=document.getElementById('feedback');
+  outEl.innerHTML='';fbEl.textContent='';
+  const lines=runJS(code);
+  lines.forEach(line=>{
+    const d=document.createElement('div');
+    d.className=line.startsWith('❌')?'out-err':'out-ok';
+    d.textContent=line;outEl.appendChild(d);
+  });
+  if(!lines.length)outEl.innerHTML=`<span class="out-info">${t('Çıxış yoxdur.','No output.')}</span>`;
+  setSaved(curLesson,curExercise,code);
+  const ex=curriculum[curLesson].exercises[curExercise];
+  const combined=lines.join('\n');
+  if(!combined.includes('❌')&&ex.check(combined)){
+    fbEl.innerHTML=`<span class="fb-pass">✅ ${t('Düzgündür!','Correct!')}</span>`;
+    if(!done[curLesson])done[curLesson]=[];
+    if(!done[curLesson].includes(curExercise))done[curLesson].push(curExercise);
+    renderExNav();renderSidebar();
+    setTimeout(()=>{
+      const ne=curExercise+1,nl=curLesson+1;
+      if(ne<curriculum[curLesson].exercises.length)loadExercise(ne);
+      else if(nl<curriculum.length){curLesson=nl;loadLesson(nl);}
+    },1400);
+  } else if(!combined.includes('❌')){
+    fbEl.innerHTML=`<span class="fb-hint">💡 ${ex.hint[lang]}</span>`;
+  }
+}
+
+function resetCode(){
+  cm.setValue(curriculum[curLesson].exercises[curExercise].starter);
+  document.getElementById('output').innerHTML=`<span class="out-info">↺ ${t('Sıfırlandı.','Reset.')}</span>`;
+  document.getElementById('feedback').textContent='';
+}
+
+function showHint(){
+  document.getElementById('feedback').innerHTML=`<span class="fb-hint">💡 ${curriculum[curLesson].exercises[curExercise].hint[lang]}</span>`;
+}
+</script>
+</body>
+</html>
