@@ -1,0 +1,390 @@
+/* === RESET === */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* === BASE === */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* === TOPBAR === */
+#topbar {
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+#home-link {
+  color: #8b949e;
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid #30363d;
+  padding: 3px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: border-color .15s, color .15s;
+}
+#home-link:hover { border-color: #f7df1e; color: #f7df1e; }
+
+#topbar h1 {
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f7df1e, #f0a500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+.lang-btn {
+  background: transparent;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.lang-btn.active { border-color: #f7df1e; color: #f7df1e; }
+
+#progress-bar-wrap {
+  flex: 1;
+  height: 5px;
+  background: #30363d;
+  border-radius: 99px;
+  overflow: hidden;
+}
+#progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f7df1e, #f0a500);
+  border-radius: 99px;
+  transition: width .4s;
+}
+#progress-text { font-size: 11px; color: #8b949e; white-space: nowrap; }
+
+#menu-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* === MAIN LAYOUT === */
+#main { display: flex; flex: 1; overflow: hidden; position: relative; }
+
+/* === SIDEBAR === */
+#sidebar {
+  width: 200px;
+  background: #0d1117;
+  border-right: 1px solid #30363d;
+  overflow-y: auto;
+  flex-shrink: 0;
+  transition: transform .25s;
+}
+#sidebar h3 {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #8b949e;
+  padding: 12px 14px 6px;
+}
+
+.lesson-item {
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #8b949e;
+  border-left: 3px solid transparent;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lesson-item:hover  { background: #161b22; color: #e6edf3; }
+.lesson-item.active { background: #161b22; border-left-color: #f7df1e; color: #f7df1e; }
+.lesson-item .check { color: #3fb950; font-size: 11px; margin-left: auto; }
+.lesson-item .num   { font-size: 10px; color: #484f58; min-width: 16px; }
+
+.section-header {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #484f58;
+  padding: 10px 14px 4px;
+  margin-top: 4px;
+}
+
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 49;
+}
+
+/* === CONTENT === */
+#content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* === MOBILE TABS (hidden on desktop) === */
+#tabs { display: none; background: #161b22; border-bottom: 1px solid #30363d; flex-shrink: 0; }
+#tabs button {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-family: 'Segoe UI', sans-serif;
+}
+#tabs button.active { color: #f7df1e; border-bottom-color: #f7df1e; }
+
+/* === SPLIT (lesson + editor side by side) === */
+#split { flex: 1; display: flex; overflow: hidden; }
+
+/* === LESSON PANEL === */
+#lesson-panel {
+  width: 44%;
+  overflow-y: auto;
+  padding: 20px 24px;
+  border-right: 1px solid #30363d;
+  flex-shrink: 0;
+}
+#lesson-panel h2 { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.lesson-meta     { font-size: 11px; color: #8b949e; margin-bottom: 14px; }
+.lesson-body     { font-size: 13px; line-height: 1.75; color: #c9d1d9; }
+.lesson-body p   { margin-bottom: 12px; }
+.lesson-body pre {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 11px 13px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+  color: #f0f6fc;
+  line-height: 1.6;
+}
+
+.kw  { color: #ff7b72; }
+.str { color: #a5d6ff; }
+.fn  { color: #d2a8ff; }
+.cm  { color: #6e7681; }
+.num { color: #79c0ff; }
+.bi  { color: #ffa657; }
+
+.task-box {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-left: 3px solid #f7df1e;
+  border-radius: 8px;
+  padding: 13px 15px;
+  margin-top: 18px;
+}
+.task-box h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #f7df1e;
+  margin-bottom: 6px;
+}
+.task-box p { font-size: 13px; color: #e6edf3; line-height: 1.6; }
+
+#to-code-btn {
+  display: none;
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #f7df1e, #f0a500);
+  border: none;
+  border-radius: 8px;
+  color: #0d1117;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* === EXERCISE PANEL === */
+#exercise-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+#ex-header {
+  padding: 9px 14px;
+  border-bottom: 1px solid #30363d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+#ex-header h3 { font-size: 13px; font-weight: 600; }
+#ex-nav { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.ex-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 2px solid #30363d;
+  background: transparent;
+  color: #8b949e;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.ex-dot.active { border-color: #f7df1e; color: #f7df1e; background: #f7df1e18; }
+.ex-dot.done   { border-color: #3fb950; background: #3fb95022; color: #3fb950; }
+
+#editor-wrap { flex: 1; overflow: hidden; position: relative; }
+.CodeMirror  { height: 100% !important; font-size: 13px; font-family: 'Courier New', monospace; }
+
+/* === OUTPUT BAR === */
+#output-bar {
+  height: 140px;
+  flex-shrink: 0;
+  border-top: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+}
+
+#run-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+#run-btn {
+  background: linear-gradient(135deg, #f7df1e, #f0a500);
+  border: none;
+  color: #0d1117;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+#reset-btn {
+  background: transparent;
+  border: 1px solid #30363d;
+  color: #8b949e;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+}
+#hint-btn {
+  background: transparent;
+  border: 1px solid #d2940022;
+  color: #d29400;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+#feedback { font-size: 11px; display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.fb-pass { color: #3fb950; }
+.fb-hint { color: #d29922; }
+
+#output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 7px 11px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  background: #0d1117;
+  line-height: 1.5;
+}
+.out-ok   { color: #e6edf3; }
+.out-err  { color: #ff7b72; }
+.out-info { color: #484f58; }
+
+/* === RESPONSIVE — MOBILE ≤ 700px === */
+@media (max-width: 700px) {
+  body { height: 100dvh; }
+
+  #menu-btn { display: block; }
+  #progress-bar-wrap { max-width: 80px; }
+
+  /* Sidebar: slides in as a drawer */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100%;
+    width: 75%;
+    max-width: 260px;
+    z-index: 50;
+    transform: translateX(-100%);
+    border-right: 1px solid #30363d;
+    background: #0d1117;
+  }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-overlay.open { display: block; }
+
+  /* Show tab bar */
+  #tabs { display: flex; }
+
+  /* Split becomes vertical column */
+  #split { flex-direction: column; }
+
+  /* Lesson panel fills its tab */
+  #lesson-panel {
+    width: 100%;
+    border-right: none;
+    padding: 16px;
+    flex-shrink: 0;
+    display: none;
+  }
+  #lesson-panel.tab-active { display: block; overflow-y: auto; flex: 1; }
+
+  /* Show "Kodu yaz →" button in lesson panel */
+  #to-code-btn { display: block; }
+
+  /* Exercise panel fills its tab */
+  #exercise-panel { display: none; }
+  #exercise-panel.tab-active { display: flex; }
+
+  #output-bar { height: 130px; }
+  .CodeMirror  { font-size: 12px; }
+
+  #ex-header { padding: 8px 12px; }
+  #run-row   { padding: 5px 8px; gap: 6px; }
+  #run-btn   { padding: 5px 12px; font-size: 11px; }
+  #reset-btn, #hint-btn { padding: 5px 9px; font-size: 10px; }
+  #feedback  { font-size: 11px; flex-basis: 100%; margin-left: 0; margin-top: 2px; }
+}
+
+@media (max-width: 400px) {
+  #topbar h1 { font-size: 13px; }
+  #home-link { padding: 2px 7px; font-size: 11px; }
+  .lang-btn  { padding: 2px 6px; font-size: 10px; }
+  #progress-bar-wrap { display: none; }
+  .lesson-body pre { font-size: 11px; }
+  #output { font-size: 11px; }
+}
