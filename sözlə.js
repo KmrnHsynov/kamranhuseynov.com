@@ -14,7 +14,7 @@ const LOSE_MSG = ["Bu səfər alınmadı :( Söz: ", "Məğlub oldun. Söz: ", "
 const KB_ROWS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "Ü", "İ", "O", "P", "Ö", "Ğ"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L", "I", "Ə"],
-  ["SİL", "Z", "X", "C", "V", "B", "N", "M", "Ç", "Ş", "DAXİL"]
+  ["SİL", "Z", "X", "C", "V", "B", "N", "M", "Ç", "Ş", "DAXİL ET"]
 ];
 
 let target = "", currentRow = 0, currentCol = 0, gameOver = false, mode = "daily", revealing = false;
