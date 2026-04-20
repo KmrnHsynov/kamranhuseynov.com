@@ -52,7 +52,7 @@ header {
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
-  gap: 8px;
+  position: relative;
 }
 
 h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
@@ -71,6 +71,15 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
 .home-link:hover { opacity: 1; }
 
 .header-btns { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+.logo_image {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
+  position: absolute;
+  left: 35%;
+  transform: translateX(-50%);
+}
 
 .icon-btn {
   background: none;
@@ -184,7 +193,7 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   max-width: 42px;
   touch-action: manipulation;
 }
-.key.wide { max-width: 62px; font-size: 0.65rem; }
+.key.wide { max-width: 76px; font-size: 0.62rem; }
 .key.correct { background: var(--correct); color: #fff; }
 .key.present { background: var(--present); color: #fff; }
 .key.absent  { background: var(--absent);  color: #fff; }
@@ -301,7 +310,7 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   #keyboard { padding: 8px 4px 12px; gap: 5px; }
   .kb-row   { gap: 3px; }
   .key      { height: 46px; font-size: 0.7rem; min-width: 24px; }
-  .key.wide { font-size: 0.6rem; max-width: 54px; }
+  .key.wide { font-size: 0.58rem; max-width: 64px; }
 }
 
 @media (max-width: 360px) {

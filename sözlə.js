@@ -12,10 +12,9 @@ const WIN_MSG  = ["Təbriklərrr!", "Halaldır!", "Bu işi bacarırsan!", "Əlas
 const LOSE_MSG = ["Bu səfər alınmadı :( Söz: ", "Məğlub oldun. Söz: ", "Növbəti dəfə bacaracaqsan! Söz: ", "Çətin idi, hə? Söz: ", "Yenə cəhd et! Söz: "];
 
 const KB_ROWS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["SİL", "Z", "X", "C", "V", "B", "N", "M", "DAXİL"],
-  ["Ə", "Ş", "Ç", "Ğ", "I", "İ", "Ö", "Ü"]
+  ["Q", "W", "E", "R", "T", "Y", "U", "Ü", "İ", "O", "P", "Ö", "Ğ"],
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L", "I", "Ə"],
+  ["SİL", "Z", "X", "C", "V", "B", "N", "M", "Ç", "Ş", "DAXİL"]
 ];
 
 let target = "", currentRow = 0, currentCol = 0, gameOver = false, mode = "daily", revealing = false;
