@@ -119,7 +119,17 @@ async function handlePdfFile(file){
     for(let i=1;i<=pdf.numPages;i++){
       const page = await pdf.getPage(i);
       const tc = await page.getTextContent();
-      fullText += tc.items.map(it=>it.str).join(' ')+'\n';
+      // Group text items by Y coordinate to reconstruct proper lines
+      const lineMap = new Map();
+      tc.items.forEach(item=>{
+        const y = Math.round(item.transform[5]);
+        if(!lineMap.has(y)) lineMap.set(y,[]);
+        lineMap.get(y).push({x:item.transform[4], str:item.str});
+      });
+      const sortedLines = [...lineMap.entries()]
+        .sort((a,b)=>b[0]-a[0])
+        .map(([,items])=>items.sort((a,b)=>a.x-b.x).map(it=>it.str).join(''));
+      fullText += sortedLines.join('\n')+'\n';
     }
     const parsed = parsePdfText(fullText);
     if(!parsed.length){
@@ -148,59 +158,51 @@ async function handlePdfFile(file){
 }
 
 function parsePdfText(text){
-  /* Supports:
-     1. Question text
-        A) opt  B) opt  C) opt  D) opt
-        Answer: A   OR  Cavab: A
-     Also plain numbered list with no options → short answer
-  */
   const results=[];
-  // Normalize line endings
   text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
 
-  // Pattern: lines starting with number + dot/paren
-  const qRegex = /(?:^|\n)\s*(\d+)[.)]\s+(.+?)(?=\n\s*\d+[.)]\s|\n*$)/gs;
-  const optRegex = /\b([A-Da-d])[.)]\s*([^A-Da-d\n]+)/g;
-  const ansRegex = /(?:cavab|answer|düzgün)[:\s]+([A-Da-d])/i;
-  const tfRegex = /\b(doğru|yanlış|true|false)\b/i;
+  // Split on lines that start with a question number (e.g. "1." or "1)")
+  const qRegex = /(?:^|\n)[ \t]*(\d+)[.)]\s+(.+?)(?=\n[ \t]*\d+[.)]\s|\s*$)/gs;
 
   let m;
   while((m=qRegex.exec(text))!==null){
     const block = m[2].trim();
-    const firstLine = block.split('\n')[0].trim();
+    const lines = block.split('\n').map(l=>l.trim()).filter(l=>l);
+    if(!lines.length) continue;
 
-    // Extract options
+    const questionText = lines[0];
     const opts=[];
-    let om;
-    optRegex.lastIndex=0;
-    while((om=optRegex.exec(block))!==null){
-      opts.push(om[2].trim());
+    let correctLetter=null;
+
+    for(const line of lines){
+      // Match option lines: A) text  or  A. text
+      const optMatch = line.match(/^([A-Da-d])[.)]\s+(.+)/);
+      if(optMatch){
+        opts.push(optMatch[2].trim());
+        continue;
+      }
+      // Match answer line
+      const ansMatch = line.match(/(?:cavab|answer|düzgün)[:\s]+([A-Da-d])/i);
+      if(ansMatch && !correctLetter){
+        correctLetter = ansMatch[1].toUpperCase();
+      }
     }
 
-    // Extract answer hint
-    const ansMt = ansRegex.exec(block);
-    const correctLetter = ansMt ? ansMt[1].toUpperCase() : null;
     const correctIdx = correctLetter ? 'ABCD'.indexOf(correctLetter) : 0;
-
-    // True/False?
-    const tfMt = tfRegex.exec(block);
 
     let q;
     if(opts.length>=2){
-      // Pad to 4
       while(opts.length<4) opts.push('');
-      q={ type:'mc', text:firstLine, options:opts.slice(0,4), correctOption:correctIdx>=0?correctIdx:0, tfAnswer:true, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
-    } else if(tfMt || /\bT\/F\b/i.test(block)){
-      const ans = /\b(doğru|true)\b/i.test(block);
-      q={ type:'tf', text:firstLine, options:['','','',''], correctOption:0, tfAnswer:ans, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
+      q={ type:'mc', text:questionText, options:opts.slice(0,4), correctOption:correctIdx>=0?correctIdx:0, tfAnswer:true, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
+    } else if(/\b(doğru|yanlış|true|false|T\/F)\b/i.test(block)){
+      const ans=/\b(doğru|true)\b/i.test(block);
+      q={ type:'tf', text:questionText, options:['','','',''], correctOption:0, tfAnswer:ans, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
     } else if(/\[blank\]/i.test(block)){
-      // fill
-      const ans = (block.match(/cavab[:\s]+(.+)/i)||[])[1]||'';
-      q={ type:'fill', text:firstLine, options:['','','',''], correctOption:0, tfAnswer:true, shortAnswer:'', fillText:firstLine, fillAnswers:[ans], points:1 };
+      const ans=(block.match(/cavab[:\s]+(.+)/i)||[])[1]||'';
+      q={ type:'fill', text:questionText, options:['','','',''], correctOption:0, tfAnswer:true, shortAnswer:'', fillText:questionText, fillAnswers:[ans], points:1 };
     } else {
-      // short answer
-      const ans = (block.match(/(?:cavab|answer)[:\s]+(.+)/i)||[])[1]||'';
-      q={ type:'short', text:firstLine, options:['','','',''], correctOption:0, tfAnswer:true, shortAnswer:ans, fillText:'', fillAnswers:[], points:1 };
+      const ans=(block.match(/(?:cavab|answer)[:\s]+(.+)/i)||[])[1]||'';
+      q={ type:'short', text:questionText, options:['','','',''], correctOption:0, tfAnswer:true, shortAnswer:ans, fillText:'', fillAnswers:[], points:1 };
     }
     results.push(q);
   }

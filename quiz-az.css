@@ -174,7 +174,7 @@ textarea{resize:vertical;line-height:1.6;}
 #editor-view{flex-direction:row;}
 
 .sidebar{
-  width:290px;min-width:290px;
+  width:320px;min-width:320px;
   background:var(--surface);
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;
