@@ -8,7 +8,6 @@
 const DEFAULT_PW_HASH = 'a4f795ba6225c5311dcb48a4711fcc924eaa12add1272435413ba06d1c4d1173';
 const STORAGE_KEY_PW  = 'qc_pw_hash';
 const STORAGE_KEY_QS  = 'qc_questions';
-const STORAGE_KEY_PDF_EXP = 'qc_pdf_exp';
 const STORAGE_KEY_CFG  = 'qc_cfg';
 const STORAGE_KEY_STUDENT = 'qc_student_qs';
 
@@ -25,9 +24,6 @@ let timerInt = null;
 let timerLeft = 0;
 let answered = false;
 
-// pdf expiry (epoch ms)
-let pdfExpiryTs = null;
-let pdfExpiryTimer = null;
 
 // ══════════════════════════════════════════════════════
 //  PASSWORD
@@ -75,8 +71,7 @@ function goStudentMode(){
 //  PERSISTENCE (non-pdf questions)
 // ══════════════════════════════════════════════════════
 function saveQs(){
-  const toSave = questions.filter(q=>!q._fromPdf);
-  localStorage.setItem(STORAGE_KEY_QS, JSON.stringify({questions:toSave, qId}));
+  localStorage.setItem(STORAGE_KEY_QS, JSON.stringify({questions, qId}));
 }
 
 function loadSaved(){
@@ -88,9 +83,6 @@ function loadSaved(){
       qId = d.qId||0;
     }
   }catch(e){}
-  // Restore PDF expiry
-  const exp = localStorage.getItem(STORAGE_KEY_PDF_EXP);
-  if(exp){ pdfExpiryTs = +exp; schedulePdfExpiry(); }
 }
 
 // ══════════════════════════════════════════════════════
@@ -136,18 +128,13 @@ async function handlePdfFile(file){
       status.innerHTML='⚠️ Sual tapılmadı. Faylın formatını yoxlayın (nömrəli sual siyahısı).';
       return;
     }
-    // Clear previous PDF questions
+    // Replace previous PDF questions
     questions = questions.filter(q=>!q._fromPdf);
     parsed.forEach(q=>{ q.id=++qId; q._fromPdf=true; questions.push(q); });
     if(!activeQId && questions.length) activeQId=questions[0].id;
+    saveQs();
 
-    // Set 60-min expiry
-    pdfExpiryTs = Date.now() + 60*60*1000;
-    localStorage.setItem(STORAGE_KEY_PDF_EXP, pdfExpiryTs);
-    schedulePdfExpiry();
-
-    const expStr = new Date(pdfExpiryTs).toLocaleTimeString('az-AZ');
-    status.innerHTML=`✅ ${parsed.length} sual idxal edildi.<div class="pdf-expiry">⏱ PDF sualları ${expStr}-da avtomatik silinəcək (60 dəq)</div>`;
+    status.innerHTML=`✅ ${parsed.length} sual idxal edildi.`;
     document.getElementById('btn-clear-pdf').style.display='flex';
     renderSidebar();
     renderEditor();
@@ -209,21 +196,14 @@ function parsePdfText(text){
   return results;
 }
 
-function schedulePdfExpiry(){
-  clearTimeout(pdfExpiryTimer);
-  if(!pdfExpiryTs) return;
-  const remaining = pdfExpiryTs - Date.now();
-  if(remaining<=0){ clearPdfQuestions(); return; }
-  pdfExpiryTimer = setTimeout(()=>{ clearPdfQuestions(); }, remaining);
-}
+
 
 function clearPdfQuestions(){
   questions = questions.filter(q=>!q._fromPdf);
-  pdfExpiryTs=null;
-  localStorage.removeItem(STORAGE_KEY_PDF_EXP);
+  saveQs();
   const status=document.getElementById('pdf-status');
   status.className='pdf-status show';
-  status.innerHTML='🗑 PDF sualları silindi (60 dəqiqə keçdi).';
+  status.innerHTML='🗑 PDF sualları silindi.';
   document.getElementById('btn-clear-pdf').style.display='none';
   if(activeQId && !questions.find(q=>q.id===activeQId)) activeQId=questions[0]?.id||null;
   renderSidebar();renderEditor();
@@ -280,13 +260,23 @@ function tlbl(t){return{mc:'ÇS',tf:'D/Y',short:'Qısa',fill:'Boşluq'}[t]||t;}
 function renderTopics(){
   const el = document.getElementById('topics-list');
   if(!el) return;
+  const emptyCount = questions.filter(q=>!q.topic?.trim()).length;
   const topics = [...new Set(questions.map(q=>q.topic?.trim()).filter(Boolean))];
-  if(!topics.length){
-    el.innerHTML='<div style="padding:20px 16px;font-size:12px;color:var(--muted);line-height:1.7">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>';
-    return;
-  }
   const published = (() => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENT)||'{}').topic||''; }catch(e){return '';} })();
-  el.innerHTML = topics.map(topic=>{
+
+  // Bulk-assign section (always shown if there are any questions)
+  const bulkHtml = questions.length ? `
+    <div style="padding:14px 16px;border-bottom:2px solid var(--border);background:rgba(255,255,255,.03)">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Boş Sualları Təyin Et</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${emptyCount} sualın mövzusu boşdur</div>
+      <input type="text" id="bulk-topic-input" placeholder="Mövzu adı…" style="font-size:12px;padding:7px 11px;margin-bottom:8px"
+        oninput="document.getElementById('bulk-topic-btn').disabled=!this.value.trim()"
+        onkeydown="if(event.key==='Enter')assignBulkTopic()"/>
+      <button id="bulk-topic-btn" class="btn btn-ghost btn-full btn-sm" onclick="assignBulkTopic()" disabled
+        style="font-size:12px">Boş sualları bu mövzuya əlavə et</button>
+    </div>` : '';
+
+  const listHtml = topics.length ? topics.map(topic=>{
     const count = questions.filter(q=>q.topic?.trim()===topic).length;
     const isActive = topic === published;
     return`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -298,7 +288,29 @@ function renderTopics(){
         ${isActive?'✓ Göndərilib':'📤 Göndər'}
       </button>
     </div>`;
-  }).join('');
+  }).join('') : '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>';
+
+  el.innerHTML = bulkHtml + listHtml;
+}
+
+function assignBulkTopic(){
+  const input = document.getElementById('bulk-topic-input');
+  const name = input?.value.trim();
+  if(!name) return;
+  let changed = 0;
+  questions.forEach(q=>{ if(!q.topic?.trim()){ q.topic = name; changed++; } });
+  if(!changed){ renderTopics(); return; }
+  saveQs();
+  renderSidebar();
+  renderEditor();
+  renderTopics();
+  // Show confirmation
+  const el = document.getElementById('topics-list');
+  const banner = document.createElement('div');
+  banner.style.cssText='padding:10px 16px;background:rgba(67,232,176,.12);border-bottom:1px solid rgba(67,232,176,.2);font-size:12px;color:var(--accent3);font-weight:600';
+  banner.textContent=`✓ ${changed} sual "${name}" mövzusuna əlavə edildi`;
+  el.prepend(banner);
+  setTimeout(()=>banner.remove(), 3000);
 }
 
 function publishTopic(topicName){
