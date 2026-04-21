@@ -68,7 +68,7 @@ function renderKeyboard() {
     rowEl.className = 'kb-row';
     row.forEach(k => {
       const btn = document.createElement('button');
-      btn.className = 'key' + (k === 'SİL' || k === 'DAXİL' ? ' wide' : '');
+      btn.className = 'key' + (k === 'SİL' || k === 'DAXİL ET' ? ' wide' : '');
       btn.textContent = k;
       btn.id = 'key-' + k;
       if (keyStates[k]) btn.classList.add(keyStates[k]);
@@ -93,7 +93,7 @@ function handleKey(k) {
       board[currentRow][currentCol] = "";
       updateTile(currentRow, currentCol, "");
     }
-  } else if (k === 'DAXİL') {
+  } else if (k === 'DAXİL ET') {
     submitRow();
   } else if (currentCol < 5) {
     board[currentRow][currentCol] = k;
@@ -229,9 +229,9 @@ function closeModal(){ document.getElementById('modal').style.display = 'none'; 
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Backspace') { handleKey('SİL'); return; }
-  if (e.key === 'Enter')     { handleKey('DAXİL'); return; }
+  if (e.key === 'Enter')     { handleKey('DAXİL ET'); return; }
   const k = e.key.toUpperCase();
-  const allKeys = KB_ROWS.flat().filter(x => x !== 'SİL' && x !== 'DAXİL');
+  const allKeys = KB_ROWS.flat().filter(x => x !== 'SİL' && x !== 'DAXİL ET');
   if (allKeys.includes(k)) handleKey(k);
 });
 
