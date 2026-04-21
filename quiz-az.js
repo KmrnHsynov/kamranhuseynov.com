@@ -9,7 +9,8 @@ const DEFAULT_PW_HASH = 'a4f795ba6225c5311dcb48a4711fcc924eaa12add1272435413ba06
 const STORAGE_KEY_PW  = 'qc_pw_hash';
 const STORAGE_KEY_QS  = 'qc_questions';
 const STORAGE_KEY_CFG  = 'qc_cfg';
-const STORAGE_KEY_STUDENT = 'qc_student_qs';
+const STORAGE_KEY_STUDENT   = 'qc_student_qs';
+const STORAGE_KEY_ANALYTICS = 'qc_analytics';
 
 let questions = [];
 let qId = 0;
@@ -214,12 +215,16 @@ function clearPdfQuestions(){
 // ══════════════════════════════════════════════════════
 function switchTab(name){
   document.querySelectorAll('.sidebar-tab').forEach((t,i)=>{
-    const names=['questions','settings','pdf','topics'];
+    const names=['questions','settings','pdf','topics','analytics'];
     t.classList.toggle('active', names[i]===name);
   });
   document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='topics') renderTopics();
+  if(name==='analytics') renderAnalytics();
+  // Restore editor when leaving analytics
+  const main = document.getElementById('questions-container');
+  if(name !== 'analytics') main.classList.remove('hidden');
 }
 
 function addQuestion(type='mc'){
@@ -325,6 +330,92 @@ function publishTopic(topicName){
   banner.textContent=`✓ "${topicName}" tələbə səhifəsinə göndərildi`;
   el.prepend(banner);
   setTimeout(()=>banner.remove(), 3000);
+}
+
+// ══════════════════════════════════════════════════════
+//  ANALYTICS
+// ══════════════════════════════════════════════════════
+function renderAnalytics(){
+  const records = (() => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY_ANALYTICS)||'[]'); }catch(e){return [];} })();
+  const main = document.getElementById('questions-container');
+  const sidebar = document.getElementById('analytics-sidebar');
+  main.classList.remove('hidden');
+
+  if(!records.length){
+    sidebar.innerHTML='<div style="padding:20px 16px;font-size:12px;color:var(--muted);line-height:1.7">Hələ nəticə yoxdur.<br/>Tələbələr testi bitirdikdə burada görünəcək.</div>';
+    main.innerHTML='<div class="analytics-empty"><div style="font-size:48px;margin-bottom:16px">📊</div><p>Hələ heç bir tələbə testi tamamlamamışdır.</p></div>';
+    return;
+  }
+
+  const avgPct = Math.round(records.reduce((s,r)=>s+r.pct,0)/records.length);
+  const avgTime = fmtTime(Math.round(records.reduce((s,r)=>s+r.timeUsed,0)/records.length));
+  const topics = [...new Set(records.map(r=>r.topic).filter(Boolean))];
+
+  // Sidebar: summary cards
+  sidebar.innerHTML=`
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+      <div class="an-stat"><span>${records.length}</span><small>Toplam Cəhd</small></div>
+      <div class="an-stat"><span>${avgPct}%</span><small>Orta Nəticə</small></div>
+      <div class="an-stat"><span>${avgTime}</span><small>Orta Vaxt</small></div>
+    </div>
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Mövzular</div>
+      ${topics.map(t=>{
+        const cnt=records.filter(r=>r.topic===t).length;
+        const avg=Math.round(records.filter(r=>r.topic===t).reduce((s,r)=>s+r.pct,0)/cnt);
+        return`<div style="font-size:12px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)">
+          <span style="color:var(--text2)">${esc(t)||'—'}</span>
+          <span style="color:var(--accent4)">${cnt} cəhd · ${avg}%</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="padding:12px 16px">
+      <button class="btn btn-ghost btn-full btn-sm" onclick="clearAnalytics()" style="color:var(--wrong)">🗑 Bütün Nəticələri Sil</button>
+    </div>`;
+
+  // Main area: table
+  main.innerHTML=`
+    <div class="analytics-wrap">
+      <div class="analytics-hdr">
+        <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
+        <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
+      </div>
+      <div class="an-table">
+        <div class="an-thead">
+          <div>Ad</div><div>Mövzu</div><div>Tarix / Vaxt</div>
+          <div style="text-align:center">Doğru</div>
+          <div style="text-align:center">Yanlış</div>
+          <div style="text-align:center">Cavabsız</div>
+          <div style="text-align:center">Nəticə</div>
+        </div>
+        ${[...records].reverse().map(r=>{
+          const cls = r.pct>=70?'an-good':r.pct>=50?'an-mid':'an-low';
+          const date = new Date(r.timestamp);
+          const dateStr = date.toLocaleDateString('az-AZ',{day:'2-digit',month:'2-digit',year:'numeric'});
+          const timeStr = date.toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
+          return`<div class="an-row">
+            <div class="an-name">${esc(r.studentName||'Anonim')}</div>
+            <div style="font-size:12px;color:var(--text2)">${esc(r.topic||'—')}</div>
+            <div style="font-size:11px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
+            <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
+            <div style="text-align:center;color:var(--wrong);font-weight:700">${r.wrong}</div>
+            <div style="text-align:center;color:var(--muted);font-weight:700">${r.unanswered??r.totalQuestions-r.correct-r.wrong}</div>
+            <div style="text-align:center"><span class="an-badge ${cls}">${r.pct}%</span></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function fmtTime(secs){
+  const m=Math.floor(secs/60), s=secs%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function clearAnalytics(){
+  if(!confirm('Bütün tələbə nəticələri silinsin?')) return;
+  localStorage.removeItem(STORAGE_KEY_ANALYTICS);
+  renderAnalytics();
 }
 
 function renderEditor(){

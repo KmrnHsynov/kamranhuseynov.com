@@ -1,10 +1,11 @@
 'use strict';
 
-const STORAGE_KEY_STUDENT = 'qc_student_qs';
-const MAX_QUESTIONS       = 30;
-const EXAM_SECONDS        = 30 * 60;
+const STORAGE_KEY_STUDENT   = 'qc_student_qs';
+const STORAGE_KEY_ANALYTICS = 'qc_analytics';
+const MAX_QUESTIONS         = 30;
+const EXAM_SECONDS          = 30 * 60;
 
-let quizQs = [], quizIdx = 0, quizAns = {}, topicName = '';
+let quizQs = [], quizIdx = 0, quizAns = {}, topicName = '', studentName = '';
 let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
 
 // ── INIT ──────────────────────────────────────────────
@@ -39,6 +40,7 @@ function showLobby(){
 
 // ── START ─────────────────────────────────────────────
 function startExam(){
+  studentName = (document.getElementById('student-name-inp')?.value || '').trim() || 'Anonim';
   // Shuffle all questions, pick up to 30
   let pool = JSON.parse(JSON.stringify(quizQs))
     .sort(() => Math.random() - .5)
@@ -254,6 +256,28 @@ function finishQuiz(){
   document.getElementById('result-heading').textContent=hdg;
   document.getElementById('result-sub').textContent=`${ok} doğru, ${bad} yanlış — ${earned} / ${total} xal`;
   document.getElementById('review-sec').innerHTML=`<h3>Cavabların İcmalı</h3>`+quizQs.map(buildReview).join('');
+
+  // Save to analytics
+  try{
+    const record={
+      id: Date.now(),
+      studentName,
+      topic: topicName,
+      timestamp: Date.now(),
+      totalQuestions: quizQs.length,
+      correct: ok,
+      wrong: bad,
+      unanswered: quizQs.length - ok - bad,
+      score: earned,
+      maxScore: total,
+      pct,
+      timeUsed: EXAM_SECONDS - timeLeft
+    };
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_ANALYTICS)||'[]');
+    existing.push(record);
+    localStorage.setItem(STORAGE_KEY_ANALYTICS, JSON.stringify(existing));
+  }catch(e){}
+
   showView('results-view');
 }
 
