@@ -1,7 +1,6 @@
 'use strict';
 
 const STORAGE_KEY_STUDENT   = 'qc_student_qs';
-const STORAGE_KEY_ANALYTICS = 'qc_analytics';
 const MAX_QUESTIONS         = 30;
 const EXAM_SECONDS          = 30 * 60;
 
@@ -10,16 +9,41 @@ let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
 
 // ── INIT ──────────────────────────────────────────────
 (function init(){
-  const raw = localStorage.getItem(STORAGE_KEY_STUDENT);
-  if(!raw){ showNoQuiz(); return; }
-  try {
-    const d = JSON.parse(raw);
-    quizQs   = d.questions || [];
-    topicName = d.topic || '';
-  } catch(e){ showNoQuiz(); return; }
-  if(!quizQs.length){ showNoQuiz(); return; }
-  showLobby();
+  // Show loading state while fetching from Firebase
+  document.getElementById('lobby-view').innerHTML=`
+    <div class="lock-card" style="max-width:460px">
+      <div class="lock-icon">⏳</div>
+      <h2>Yüklənir…</h2>
+      <p style="font-size:13px;color:var(--text2)">Test məlumatları alınır</p>
+    </div>`;
+  showView('lobby-view');
+
+  db.ref('student_quiz').once('value')
+    .then(snapshot=>{
+      const d = snapshot.val();
+      if(d && d.questions && d.questions.length){
+        quizQs    = d.questions;
+        topicName = d.topic || '';
+        showLobby();
+      } else {
+        // fallback to localStorage (same-browser)
+        _loadFromLocalStorage();
+      }
+    })
+    .catch(()=>_loadFromLocalStorage());
 })();
+
+function _loadFromLocalStorage(){
+  try{
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENT)||'null');
+    if(d && d.questions && d.questions.length){
+      quizQs    = d.questions;
+      topicName = d.topic || '';
+      showLobby(); return;
+    }
+  }catch(e){}
+  showNoQuiz();
+}
 
 function showNoQuiz(){
   document.getElementById('lobby-view').innerHTML = `
@@ -33,8 +57,20 @@ function showNoQuiz(){
 
 function showLobby(){
   const count = Math.min(quizQs.length, MAX_QUESTIONS);
-  if(topicName) document.getElementById('lobby-topic').textContent = topicName;
-  document.getElementById('lobby-count').textContent = count;
+  document.getElementById('lobby-view').innerHTML = `
+    <div class="lock-card" style="max-width:460px">
+      <div class="lock-icon">📝</div>
+      <h2 id="lobby-topic">${esc(topicName||'İmtahan')}</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:6px">
+        Suallar: <strong>${count}</strong> &nbsp;·&nbsp; Vaxt: <strong>30 dəqiqə</strong>
+      </p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7">
+        Suallar və cavablar avtomatik qarışdırılacaq.<br/>
+        Vaxt bitdikdə test avtomatik göndəriləcək.
+      </p>
+      <input type="text" id="student-name-inp" placeholder="Adınızı daxil edin…" style="margin-bottom:14px" maxlength="60"/>
+      <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana Başla</button>
+    </div>`;
   showView('lobby-view');
 }
 
@@ -257,10 +293,9 @@ function finishQuiz(){
   document.getElementById('result-sub').textContent=`${ok} doğru, ${bad} yanlış — ${earned} / ${total} xal`;
   document.getElementById('review-sec').innerHTML=`<h3>Cavabların İcmalı</h3>`+quizQs.map(buildReview).join('');
 
-  // Save to analytics
+  // Save to Firebase analytics
   try{
     const record={
-      id: Date.now(),
       studentName,
       topic: topicName,
       timestamp: Date.now(),
@@ -273,9 +308,7 @@ function finishQuiz(){
       pct,
       timeUsed: EXAM_SECONDS - timeLeft
     };
-    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_ANALYTICS)||'[]');
-    existing.push(record);
-    localStorage.setItem(STORAGE_KEY_ANALYTICS, JSON.stringify(existing));
+    db.ref('analytics').push(record);
   }catch(e){}
 
   showView('results-view');
@@ -299,6 +332,7 @@ function buildReview(q){
 }
 
 function retakeExam(){
+  clearInterval(totalTimer);
   showLobby();
 }
 

@@ -321,37 +321,59 @@ function assignBulkTopic(){
 function publishTopic(topicName){
   const filtered = questions.filter(q=>q.topic?.trim()===topicName);
   if(!filtered.length) return;
-  localStorage.setItem(STORAGE_KEY_STUDENT, JSON.stringify({questions: filtered, topic: topicName}));
-  renderTopics();
-  // Brief confirmation
+
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
   banner.style.cssText='padding:10px 16px;background:rgba(67,232,176,.12);border-bottom:1px solid rgba(67,232,176,.2);font-size:12px;color:var(--accent3);font-weight:600';
-  banner.textContent=`✓ "${topicName}" tələbə səhifəsinə göndərildi`;
+  banner.textContent='⏳ Göndərilir…';
   el.prepend(banner);
-  setTimeout(()=>banner.remove(), 3000);
+
+  db.ref('student_quiz').set({questions: filtered, topic: topicName, publishedAt: Date.now()})
+    .then(()=>{
+      // keep localStorage as same-browser fallback
+      localStorage.setItem(STORAGE_KEY_STUDENT, JSON.stringify({questions: filtered, topic: topicName}));
+      renderTopics();
+      banner.textContent=`✓ "${topicName}" bütün cihazlara göndərildi`;
+      setTimeout(()=>banner.remove(), 3000);
+    })
+    .catch(err=>{
+      banner.style.background='rgba(239,68,68,.12)';
+      banner.style.color='var(--wrong)';
+      banner.textContent='❌ Xəta: '+err.message;
+      setTimeout(()=>banner.remove(), 4000);
+    });
 }
 
 // ══════════════════════════════════════════════════════
 //  ANALYTICS
 // ══════════════════════════════════════════════════════
 function renderAnalytics(){
-  const records = (() => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY_ANALYTICS)||'[]'); }catch(e){return [];} })();
   const main = document.getElementById('questions-container');
   const sidebar = document.getElementById('analytics-sidebar');
   main.classList.remove('hidden');
+  main.innerHTML='<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Yüklənir…</p></div>';
+  sidebar.innerHTML='';
 
+  db.ref('analytics').once('value').then(snapshot=>{
+    const val = snapshot.val();
+    const records = val ? Object.values(val).sort((a,b)=>a.timestamp-b.timestamp) : [];
+    _drawAnalytics(records, main, sidebar);
+  }).catch(err=>{
+    main.innerHTML=`<div class="analytics-empty"><p style="color:var(--wrong)">❌ Yüklənmə xətası: ${err.message}</p></div>`;
+  });
+}
+
+function _drawAnalytics(records, main, sidebar){
   if(!records.length){
     sidebar.innerHTML='<div style="padding:20px 16px;font-size:12px;color:var(--muted);line-height:1.7">Hələ nəticə yoxdur.<br/>Tələbələr testi bitirdikdə burada görünəcək.</div>';
     main.innerHTML='<div class="analytics-empty"><div style="font-size:48px;margin-bottom:16px">📊</div><p>Hələ heç bir tələbə testi tamamlamamışdır.</p></div>';
     return;
   }
 
-  const avgPct = Math.round(records.reduce((s,r)=>s+r.pct,0)/records.length);
+  const avgPct  = Math.round(records.reduce((s,r)=>s+r.pct,0)/records.length);
   const avgTime = fmtTime(Math.round(records.reduce((s,r)=>s+r.timeUsed,0)/records.length));
-  const topics = [...new Set(records.map(r=>r.topic).filter(Boolean))];
+  const topics  = [...new Set(records.map(r=>r.topic).filter(Boolean))];
 
-  // Sidebar: summary cards
   sidebar.innerHTML=`
     <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
       <div class="an-stat"><span>${records.length}</span><small>Toplam Cəhd</small></div>
@@ -373,7 +395,6 @@ function renderAnalytics(){
       <button class="btn btn-ghost btn-full btn-sm" onclick="clearAnalytics()" style="color:var(--wrong)">🗑 Bütün Nəticələri Sil</button>
     </div>`;
 
-  // Main area: table
   main.innerHTML=`
     <div class="analytics-wrap">
       <div class="analytics-hdr">
@@ -414,8 +435,7 @@ function fmtTime(secs){
 
 function clearAnalytics(){
   if(!confirm('Bütün tələbə nəticələri silinsin?')) return;
-  localStorage.removeItem(STORAGE_KEY_ANALYTICS);
-  renderAnalytics();
+  db.ref('analytics').remove().then(()=>renderAnalytics());
 }
 
 function renderEditor(){
