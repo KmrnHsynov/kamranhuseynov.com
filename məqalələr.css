@@ -82,8 +82,15 @@
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-  .articles-container { padding-left: 1.5rem; padding-right: 1.5rem; }
-  .featured-article { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+  .articles-container { padding-left: 1.5rem; padding-right: 1.5rem; padding-bottom: 3rem; }
+  .featured-article { grid-template-columns: 1fr; padding: 2rem 1.5rem; gap: 1.5rem; }
   .featured-right { display: none; }
-  .article-item { grid-template-columns: 2rem 1fr auto; gap: 1rem; }
+  .article-item { grid-template-columns: 2rem 1fr; gap: 1rem; }
+  .article-right { display: none; }
+}
+
+@media (max-width: 480px) {
+  .article-item { grid-template-columns: 1fr; }
+  .article-num { display: none; }
+  .featured-title { font-size: 1.3rem; }
 }

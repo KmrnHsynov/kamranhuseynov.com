@@ -1,77 +1,42 @@
 <!DOCTYPE html>
 <html lang="az">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SÖZLƏ</title>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Rubik',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;transition:background .3s,color .3s}
-body.dark{background:#121213;color:#fff}
-body.light{background:#fff;color:#121213}
-header{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
-.dark{--border:#3a3a3c;--tile-empty:#121213;--tile-empty-border:#565758;--tile-filled-border:#999;--correct:#538d4e;--present:#b59f3b;--absent:#3a3a3c;--key-bg:#818384;--key-text:#fff;--modal-bg:#1a1a1b;--toast-bg:#fff;--toast-text:#121213}
-.light{--border:#d3d6da;--tile-empty:#fff;--tile-empty-border:#d3d6da;--tile-filled-border:#878a8c;--correct:#6aaa64;--present:#c9b458;--absent:#787c7e;--key-bg:#d3d6da;--key-text:#121213;--modal-bg:#fff;--toast-bg:#121213;--toast-text:#fff}
-h1{font-size:1.6rem;font-weight:700;letter-spacing:0.15em}
-.header-btns{display:flex;gap:8px;align-items:center}
-.icon-btn{background:none;border:none;cursor:pointer;font-size:1.2rem;color:inherit;padding:4px;border-radius:4px}
-.mode-toggle{display:flex;gap:4px;background:var(--absent);border-radius:20px;padding:3px}
-.mode-btn{padding:4px 12px;border:none;border-radius:16px;cursor:pointer;font-family:'Rubik',sans-serif;font-size:0.75rem;font-weight:500;transition:all .2s;background:transparent;color:var(--key-text)}
-.mode-btn.active{background:var(--correct);color:#fff}
-#game{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;max-width:500px;padding:20px 16px 0}
-#grid{display:grid;grid-template-rows:repeat(6,1fr);gap:5px;width:100%;max-width:330px}
-.row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.tile{width:100%;aspect-ratio:1;border:2px solid var(--tile-empty-border);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;font-family:'Rubik',sans-serif;text-transform:uppercase;transition:transform .1s;background:var(--tile-empty);color:inherit;user-select:none}
-.tile.filled{border-color:var(--tile-filled-border);animation:pop .1s ease}
-.tile.correct{background:var(--correct);border-color:var(--correct);color:#fff}
-.tile.present{background:var(--present);border-color:var(--present);color:#fff}
-.tile.absent{background:var(--absent);border-color:var(--absent);color:#fff}
-.tile.reveal{animation:flip .5s ease forwards}
-.tile.shake{animation:shake .5s ease}
-@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
-@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(-90deg)}100%{transform:rotateX(0)}}
-@keyframes shake{0%,100%{transform:translateX(0)}10%,50%,90%{transform:translateX(-4px)}30%,70%{transform:translateX(4px)}}
-#keyboard{width:100%;max-width:500px;padding:12px 8px;display:flex;flex-direction:column;gap:6px;align-items:center}
-.kb-row{display:flex;gap:4px;justify-content:center;width:100%}
-.key{height:58px;min-width:36px;padding:0 6px;border:none;border-radius:4px;cursor:pointer;font-family:'Rubik',sans-serif;font-size:0.78rem;font-weight:700;background:var(--key-bg);color:var(--key-text);transition:all .1s;flex:1;max-width:44px}
-.key.wide{max-width:66px;font-size:0.7rem}
-.key.correct{background:var(--correct);color:#fff}
-.key.present{background:var(--present);color:#fff}
-.key.absent{background:var(--absent);color:#fff}
-.key:active{transform:scale(0.95)}
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--toast-bg);color:var(--toast-text);padding:10px 20px;border-radius:6px;font-weight:700;font-size:0.95rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:100}
-.modal{background:var(--modal-bg);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:420px;width:90%;position:relative}
-.modal h2{font-size:1.2rem;font-weight:700;text-align:center;margin-bottom:16px;letter-spacing:.1em}
-.modal p{font-size:0.9rem;line-height:1.6;margin-bottom:12px;color:inherit;opacity:.9}
-.example-tiles{display:flex;gap:4px;margin:8px 0}
-.ex-tile{width:44px;height:44px;border:2px solid var(--tile-filled-border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;font-family:'Rubik',sans-serif}
-.ex-tile.correct{background:var(--correct);border-color:var(--correct);color:#fff}
-.ex-tile.present{background:var(--present);border-color:var(--present);color:#fff}
-.ex-tile.absent{background:var(--absent);border-color:var(--absent);color:#fff}
-.close-btn{position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;font-size:1.4rem;color:inherit;line-height:1}
-.play-btn{display:block;width:100%;margin-top:16px;padding:12px;background:var(--correct);color:#fff;border:none;border-radius:8px;font-family:'Rubik',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.05em}
-.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SÖZLƏ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="sözlə.css">
 </head>
 <body class="dark">
+
 <header>
-  <a href="index.html" style="width:80px;font-family:'Rubik',sans-serif;font-size:0.72rem;color:var(--key-text);text-decoration:none;opacity:0.6;transition:opacity .2s;letter-spacing:0.05em" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">← KH.dev</a>
-  <h1>SÖZLƏ</h1>
+  <a href="index.html" class="home-link">← KH.dev</a>
+  <img class="logo_image" src="images/sözlə.png">
   <div class="header-btns">
     <div class="mode-toggle">
-      <button class="mode-btn active" id="btn-daily" onclick="setMode('daily')">Günlük</button>
-      <button class="mode-btn" id="btn-random" onclick="setMode('random')">Təsadüfi</button>
+      <button class="mode-btn active" id="btn-daily"  onclick="setMode('daily')">Günlük</button>
+      <button class="mode-btn"        id="btn-random" onclick="setMode('random')">Təsadüfi</button>
     </div>
     <button class="icon-btn" onclick="toggleTheme()">🌓</button>
     <button class="icon-btn" onclick="showHelp()">❓</button>
   </div>
 </header>
+
 <div id="game"><div id="grid"></div></div>
 <div id="keyboard"></div>
 <div class="toast" id="toast"></div>
+
+<div id="daily-reveal">
+  <button id="reveal-btn" onclick="toggleReveal()">
+    <span id="reveal-date"></span>
+    <span id="reveal-lock">🔒 Oyunu bitir</span>
+  </button>
+  <div id="reveal-panel">
+    <span id="reveal-label">Günün sözü:</span>
+    <span id="reveal-word"></span>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <button class="close-btn" onclick="closeModal()">×</button>
@@ -79,15 +44,27 @@ h1{font-size:1.6rem;font-weight:700;letter-spacing:0.15em}
     <p>5 hərfli gizli sözü 6 cəhddə tapmağa çalış.</p>
     <p>Hər cəhddən sonra hərflər rəng ilə işarələnir:</p>
     <div class="example-tiles">
-      <div class="ex-tile correct">A</div><div class="ex-tile">L</div><div class="ex-tile">M</div><div class="ex-tile">A</div><div class="ex-tile">S</div>
+      <div class="ex-tile correct">A</div>
+      <div class="ex-tile">L</div>
+      <div class="ex-tile">M</div>
+      <div class="ex-tile">A</div>
+      <div class="ex-tile">S</div>
     </div>
     <p><strong>Yaşıl</strong> — hərf düzgün yerdədir.</p>
     <div class="example-tiles">
-      <div class="ex-tile">S</div><div class="ex-tile present">Ə</div><div class="ex-tile">F</div><div class="ex-tile">Ə</div><div class="ex-tile">R</div>
+      <div class="ex-tile">S</div>
+      <div class="ex-tile present">Ə</div>
+      <div class="ex-tile">F</div>
+      <div class="ex-tile">Ə</div>
+      <div class="ex-tile">R</div>
     </div>
     <p><strong>Sarı</strong> — hərf sözdədir, amma yeri səhvdir.</p>
     <div class="example-tiles">
-      <div class="ex-tile">G</div><div class="ex-tile">Ö</div><div class="ex-tile">Z</div><div class="ex-tile absent">Ə</div><div class="ex-tile">L</div>
+      <div class="ex-tile">G</div>
+      <div class="ex-tile">Ö</div>
+      <div class="ex-tile">Z</div>
+      <div class="ex-tile absent">Ə</div>
+      <div class="ex-tile">L</div>
     </div>
     <p><strong>Boz</strong> — hərf sözdə yoxdur.</p>
     <hr class="divider">
@@ -95,181 +72,7 @@ h1{font-size:1.6rem;font-weight:700;letter-spacing:0.15em}
     <button class="play-btn" onclick="closeModal()">OYNA!</button>
   </div>
 </div>
-<script>
-// Strictly 5-letter Azerbaijani words only
-const WORDS = [
-  "SÖYÜD","TANRI","ÜZÜM","VƏTƏN","ATLAS","BAHAR","BORAN","BULUD","DƏNİZ","MARAL","NOHUR","ÖRTÜK","QIZIL","TIKAN","ULDUZ","ÜZGÜN","YETİM","ZƏFƏR","CAVAN","ÇOBAN","DƏMİR","DOLÇA","DÜNYA","LALƏR","FİDAN","QOŞUN","BADAM","BALIQ","BAĞÇA","BƏZƏK","BÖYÜK","BUDAQ","BULAQ","BUZLU","ÇƏMƏN","DAMAR","DİVAR","GÖZƏL","GÜNƏŞ","HƏDƏF","XALÇA","XƏZAN","XİYAR","KANAL","KƏNAR","MAĞAR","MAHİR","MEYVƏ","MURAD","NAXIŞ","NƏSİL","NƏZƏR","QABAN","QAÇAQ","QALİB","QAYIQ","QAZAN","QİYAM","QOYUN","SAMAN","SAVAB","SƏHƏR","SƏRGİ","TANIQ","TƏRƏF","TORBA","TƏNHA","YOLÇU","ÇƏKİC","DƏRYA","DÜZƏN","ƏMƏLİ","FAYDA","FİKİR","HƏYAT","LİRİK","NƏNƏM","YAŞIL","ŞƏHƏR","ŞİMAL","RƏVAN","ÜMMAN","LİMON","NAĞIL","NARIN","PALID","SARIQ","ÇAĞIL","DAŞLI","KÜLƏK","LÜLƏK","NƏFƏS","OTLAQ","OVÇU","ÖMRÜM","RƏQİB","SƏNƏM","SİNİF","BIÇAQ","ABİDƏ","ACILI","AÇIQI","ADLIQ","AĞDAM","AĞLIQ","AHƏNG","AXTAR","AXINI","AXŞAM","AYDIN","AYDIQ","AYRIQ","AYTƏN","AZĞIN","BAĞLI","BAXIŞ","BƏDİR","BƏHRƏ","BƏKİR","BƏLLİ","BEYİN","BİLGİ","BİLİK","BİTKİ","BİTMƏ","BOYLU","BOYNU","BOZUQ","BUDUR","BURAX","BURMA","BURUL","BÜKÜM","BÜKÜŞ","CƏBHƏ","CƏFAİ","CƏHDİ","CƏLDİ","CİDDİ","CİNSİ","CİVAN","COŞQU","ÇAĞIR","ÇALGI","ÇALIQ","ÇAPAR","ÇAPIQ","ÇATAL","ÇƏKƏR","ÇƏLİK","ÇƏPƏR","ÇƏRÇİ","ÇİÇƏK","ÇİLLƏ","ÇİMƏR","ÇİNAR","ÇİYNİ","ÇOVĞU","ÇOXLU","ÇUBUQ","ÇULĞA","DABAN","DAĞAR","DALĞA","DƏRIN","DƏRSİ","DƏRZİ","DİKİŞ","DİLİM","DİŞLİ","DİVAN","DİZİN","DOĞMA","DOĞRU","DOLUB","DONUQ","DÖYMƏ","DÖZÜM","DURUL","DURUR","DÜYMƏ","ELÇİN","ELDAR","ELMİR","ELNUR","ELMAN","ELVƏR","ƏBƏDİ","ƏCƏLİ","ƏFSUN","ƏHALİ","ƏHVAL","ƏKSİK","ƏLCƏK","ƏLVAN","ƏMİNƏ","ƏRAZİ","ƏRKİN","ARSIZ","ƏSƏBİ","ƏSİLİ","FAKİR","FATİH","FƏRDİ","FƏXRI","FİKRİ","FİŞƏK","FORMA","GƏLMƏ","GƏLİŞ","GENİŞ","GİLAS","GİRİŞ","GİZLİ","GÖRÜŞ","GÖTÜR","GÜCLÜ","GÜLƏR","GÜLÜŞ","GÜNDƏ","GÜVƏN","HALAL","HASİL","HƏKİM","HƏLİM","HƏRİF","HƏVƏS","HİKMƏ","HİSSİ","HOVUZ","HÖRÜM","HÖRMƏ","İBRƏT","İDDİA","İDEAL","İDMAN","İKİLİ","İLAHI","İLGƏK","İLKIN","İNSAN","İSLAM","İSTƏK","KAFİR","KAMİL","KATİB","KAYİŞ","KÖMƏK","KÖNÜL","KÖRPÜ","KÖTÜK","KÜÇÜK","KUSMƏ","LAYİQ","LƏPİR","LƏTİF","LİMAN","LİSAN","LÜĞƏT","MƏDƏN","MƏHƏL","MƏNİM","MÖVQEY","MUĞAM","MULKİ","NASİL","NAZİK","NƏDİM","NƏFİS","NƏĞMƏ","NİFAQ","NİŞAN","NÖQTƏ","NÜFUZ","NÜSXƏ","OBRAZ","ÖNDƏR","ÖYRƏN","QABIQ","QAİMƏ","QARŞI","QAYĞI","QAZAN","QƏBUL","QƏDİM","QƏFƏS","QƏLBİ","QƏLƏM","QƏMGİ","QƏDİM","QƏRİB","QIFIL","QOCAL","QONŞU","QURĞU","SADƏL","SAFDİ","SAHİB","SAKİN","SALAM","SALEH","SALIQ","SANKİ","SARAY","SAYAQ","SAYGI","SAYIQ","SƏBƏB","SƏFƏR","SƏHƏR","SƏHNƏ","SƏNƏT","SƏNGƏ","SƏRGİ","SƏTİR","SİLAH","SİRKƏ","SOYAD","SOYUQ","SÖZLƏ","SÖZLÜ","SÜBUT","SÜFRƏ","SÜKUT","SÜRƏT","SÜRGÜ","ŞAGİR","ŞAHİD","ŞAMAR","ŞAXTA","ŞƏKİL","ŞƏKƏR","ŞƏRƏF","ŞƏHƏR","ŞİRİN","TABEL","TALEY","TARİX","TAYFA","TƏKLİ","TƏMƏL","TƏMİZ","TƏRƏF","TƏRZİ","TƏSİR","TİKİŞ","TOXUM","TUFAN","TUTAR","TÜFAN","ULDUZ","UNVAN","ÜMUMİ","ÜSLUB","ÜSTÜN","ÜZLÜK","VAHİD","VÜQAR","VÜSAL","XAHİŞ","XARAB","XATİR","XEYİR","XİLAF","XİLAS","YAĞIŞ","YALAN","YANAR","YANĞI","YAŞAR","YAŞLI","YATAQ","YAZIQ","YERLİ","YOLÇU","YÜNGÜ","ZAHİD","ZALIM","ZAMAN","ZƏRBƏ","ZƏRİF","ZÜLÜM","HAMAM","HƏRİS","HƏYƏT","HİSSƏ","İNCƏL","İNSAF","KİTAB","MAŞIN","MİLLİ","ONLAR","ORAYA","PİŞİK","QABAQ","QAÇAQ","QADIN","QAPIN","QONAQ","QORXU","RƏSUL","SAKİT","TALEH","TƏRİF","TƏBİB", "ALMAN", "RAHAT","DARAQ","QARĞA","İSPAN","DÖNƏR","ƏLAVƏ","SƏNƏD","KƏLƏM"
-].filter(w => {
-  const clean = w.replace(/[^A-ZƏŞÇĞIÖÜa-zəşçğıöü]/gi,'');
-  return clean.length === 5;
-}).map(w => w.toUpperCase());
 
-// Remove duplicates
-const WORD_LIST = [...new Set(WORDS)];
-const VALID_SET = new Set(WORD_LIST);
-
-const WIN_MSG = ["Təbriklərrr!","Halaldır!","Bu işi bacarırsan!","Əlasan!","Babat"];
-const LOSE_MSG = ["Bu səfər alınmadı :( Söz: ","Məğlub oldun. Söz: ","Növbəti dəfə bacaracaqsan! Söz: ","Çətin idi, hə? Söz: ","Yenə cəhd et! Söz: "];
-
-const KB_ROWS = [
-  ["Q","W","E","R","T","Y","U","I","O","P"],
-  ["A","S","D","F","G","H","J","K","L"],
-  ["SİL","Z","X","C","V","B","N","M","DAXİL"],
-  ["Ə","Ş","Ç","Ğ","I","Ö","Ü"]
-];
-
-let target="", currentRow=0, currentCol=0, gameOver=false, mode="daily", revealing=false;
-let board=Array.from({length:6},()=>Array(5).fill(""));
-let keyStates={};
-
-function getDailyWord(){
-  const start=new Date(2024,0,1);
-  const diff=Math.floor((new Date()-start)/(864e5));
-  return WORD_LIST[diff%WORD_LIST.length];
-}
-
-function setMode(m){
-  mode=m;
-  document.getElementById('btn-daily').classList.toggle('active',m==='daily');
-  document.getElementById('btn-random').classList.toggle('active',m==='random');
-  initGame();
-console.log('Söz sayı:', WORD_LIST.length, WORD_LIST);
-}
-
-function initGame(){
-  target=mode==='daily'?getDailyWord():WORD_LIST[Math.floor(Math.random()*WORD_LIST.length)];
-  currentRow=0;currentCol=0;gameOver=false;
-  board=Array.from({length:6},()=>Array(5).fill(""));
-  keyStates={};
-  renderGrid();renderKeyboard();
-}
-
-function renderGrid(){
-  const g=document.getElementById('grid');g.innerHTML='';
-  for(let r=0;r<6;r++){
-    const row=document.createElement('div');row.className='row';row.id='row-'+r;
-    for(let c=0;c<5;c++){
-      const t=document.createElement('div');t.className='tile';t.id=`tile-${r}-${c}`;
-      row.appendChild(t);
-    }
-    g.appendChild(row);
-  }
-}
-
-function renderKeyboard(){
-  const kb=document.getElementById('keyboard');kb.innerHTML='';
-  KB_ROWS.forEach(row=>{
-    const rowEl=document.createElement('div');rowEl.className='kb-row';
-    row.forEach(k=>{
-      const btn=document.createElement('button');
-      btn.className='key'+(k==='SİL'||k==='DAXİL'?' wide':'');
-      btn.textContent=k;btn.id='key-'+k;
-      if(keyStates[k])btn.classList.add(keyStates[k]);
-      btn.onclick=()=>handleKey(k);
-      rowEl.appendChild(btn);
-    });
-    kb.appendChild(rowEl);
-  });
-}
-
-function updateTile(r,c,letter){
-  const t=document.getElementById(`tile-${r}-${c}`);
-  t.textContent=letter;
-  t.classList.toggle('filled',!!letter);
-}
-
-function handleKey(k){
-  if(gameOver||revealing)return;
-  if(k==='SİL'){
-    if(currentCol>0){currentCol--;board[currentRow][currentCol]="";updateTile(currentRow,currentCol,"");}
-  } else if(k==='DAXİL'){
-    submitRow();
-  } else if(currentCol<5){
-    board[currentRow][currentCol]=k;
-    updateTile(currentRow,currentCol,k);
-    currentCol++;
-  }
-}
-
-function submitRow(){
-  if(currentCol<5){showToast("5 hərf daxil edin!");shakeRow(currentRow);return;}
-  const guess=board[currentRow].join('');
-  if(!VALID_SET.has(guess)){showToast("Söz tapılmadı!");shakeRow(currentRow);return;}
-  const result=evaluateGuess(guess);
-  revealRow(currentRow,result,()=>{
-    updateKeyStates(board[currentRow],result);
-    renderKeyboard();
-    if(result.every(r=>r==='correct')){
-      gameOver=true;
-      setTimeout(()=>showToast(WIN_MSG[Math.floor(Math.random()*WIN_MSG.length)],3000),400);
-    } else if(currentRow===5){
-      gameOver=true;
-      setTimeout(()=>showToast(LOSE_MSG[Math.floor(Math.random()*LOSE_MSG.length)]+target,4000),400);
-    }
-    currentRow++;currentCol=0;
-  });
-}
-
-function evaluateGuess(guess){
-  const res=Array(5).fill('absent');
-  const tArr=target.split(''),gArr=guess.split(''),used=Array(5).fill(false);
-  for(let i=0;i<5;i++){if(gArr[i]===tArr[i]){res[i]='correct';used[i]=true;}}
-  for(let i=0;i<5;i++){
-    if(res[i]==='correct')continue;
-    for(let j=0;j<5;j++){if(!used[j]&&gArr[i]===tArr[j]){res[i]='present';used[j]=true;break;}}
-  }
-  return res;
-}
-
-function revealRow(row,result,cb){
-  revealing=true;
-  result.forEach((res,i)=>{
-    setTimeout(()=>{
-      const t=document.getElementById(`tile-${row}-${i}`);
-      t.classList.add('reveal');
-      setTimeout(()=>{t.classList.add(res);t.classList.remove('reveal');},250);
-    },i*300);
-  });
-  setTimeout(()=>{revealing=false;cb();},result.length*300+300);
-}
-
-function updateKeyStates(letters,results){
-  const p={correct:3,present:2,absent:1};
-  letters.forEach((l,i)=>{
-    const cur=keyStates[l];
-    if(!cur||(p[results[i]]||0)>(p[cur]||0))keyStates[l]=results[i];
-  });
-}
-
-function shakeRow(r){
-  document.getElementById('row-'+r).querySelectorAll('.tile').forEach(t=>{
-    t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake');
-    setTimeout(()=>t.classList.remove('shake'),500);
-  });
-}
-
-let toastTimer;
-function showToast(msg,dur=2000){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
-}
-
-function toggleTheme(){document.body.classList.toggle('dark');document.body.classList.toggle('light');}
-function showHelp(){document.getElementById('modal').style.display='flex';}
-function closeModal(){document.getElementById('modal').style.display='none';}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Backspace')handleKey('SİL');
-  else if(e.key==='Enter')handleKey('DAXİL');
-  else{
-    const k=e.key.toUpperCase();
-    if(KB_ROWS.flat().includes(k)&&k!=='SİL'&&k!=='DAXİL')handleKey(k);
-  }
-});
-
-initGame();
-</script>
+<script src="sözlə.js"></script>
 </body>
 </html>
