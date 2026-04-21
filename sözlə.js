@@ -95,7 +95,7 @@ function handleKey(k) {
     }
   } else if (k === 'DAXİL ET') {
     submitRow();
-  } else if (currentCol < 5) {
+  } else if (k.length === 1 && currentCol < 5) {
     board[currentRow][currentCol] = k;
     updateTile(currentRow, currentCol, k);
     currentCol++;
