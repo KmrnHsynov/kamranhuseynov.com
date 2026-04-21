@@ -68,11 +68,15 @@ function renderKeyboard() {
     rowEl.className = 'kb-row';
     row.forEach(k => {
       const btn = document.createElement('button');
-      btn.className = 'key' + (k === 'SİL' || k === 'DAXİL ET' ? ' wide' : '');
+      const isDelete = k === 'SİL';
+      const isEnter  = k === 'DAXİL ET';
+      btn.className = 'key' + (isDelete || isEnter ? ' wide' : '');
       btn.textContent = k;
       btn.id = 'key-' + k;
       if (keyStates[k]) btn.classList.add(keyStates[k]);
-      btn.addEventListener('click', () => handleKey(k));
+      if (isDelete)     btn.addEventListener('click', deleteLetter);
+      else if (isEnter) btn.addEventListener('click', submitRow);
+      else              btn.addEventListener('click', () => handleKey(k));
       rowEl.appendChild(btn);
     });
     kb.appendChild(rowEl);
@@ -85,17 +89,18 @@ function updateTile(r, c, letter) {
   t.classList.toggle('filled', !!letter);
 }
 
+function deleteLetter() {
+  if (gameOver || revealing) return;
+  if (currentCol > 0) {
+    currentCol--;
+    board[currentRow][currentCol] = "";
+    updateTile(currentRow, currentCol, "");
+  }
+}
+
 function handleKey(k) {
   if (gameOver || revealing) return;
-  if (k === 'SİL') {
-    if (currentCol > 0) {
-      currentCol--;
-      board[currentRow][currentCol] = "";
-      updateTile(currentRow, currentCol, "");
-    }
-  } else if (k === 'DAXİL ET') {
-    submitRow();
-  } else if (k.length === 1 && currentCol < 5) {
+  if (k.length === 1 && currentCol < 5) {
     board[currentRow][currentCol] = k;
     updateTile(currentRow, currentCol, k);
     currentCol++;
@@ -228,8 +233,8 @@ function showHelp()  { document.getElementById('modal').style.display = 'flex'; 
 function closeModal(){ document.getElementById('modal').style.display = 'none'; }
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Backspace') { handleKey('SİL'); return; }
-  if (e.key === 'Enter')     { handleKey('DAXİL ET'); return; }
+  if (e.key === 'Backspace') { deleteLetter(); return; }
+  if (e.key === 'Enter')     { submitRow(); return; }
   const k = e.key.toUpperCase();
   const allKeys = KB_ROWS.flat().filter(x => x !== 'SİL' && x !== 'DAXİL ET');
   if (allKeys.includes(k)) handleKey(k);
