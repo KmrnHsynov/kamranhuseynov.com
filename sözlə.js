@@ -14,10 +14,11 @@ const LOSE_MSG = ["Bu səfər alınmadı :( Söz: ", "Məğlub oldun. Söz: ", "
 const KB_ROWS = [
   ["Q", "Ü", "E", "R", "T", "Y", "U", "İ", "O", "P", "Ö", "Ğ"],
   ["A", "S", "D", "F", "G", "H", "J", "K", "L", "I", "Ə"],
-  ["SİL", "Z", "X", "C", "V", "B", "N", "M", "Ç", "Ş", "DAXİL"]
+  ["SİL", "Z", "X", "C", "V", "B", "N", "M", "Ç", "Ş", "DAXİL ET"]
 ];
 
 let target = "", currentRow = 0, currentCol = 0, gameOver = false, mode = "daily", revealing = false;
+let dailyCompleted = false, dailyWord = "";
 let board = Array.from({ length: 6 }, () => Array(5).fill(""));
 let keyStates = {};
 
@@ -32,6 +33,7 @@ function setMode(m) {
   document.getElementById('btn-daily').classList.toggle('active', m === 'daily');
   document.getElementById('btn-random').classList.toggle('active', m === 'random');
   initGame();
+  updateRevealBtn();
 }
 
 function initGame() {
@@ -110,10 +112,10 @@ function submitRow() {
     renderKeyboard();
     if (result.every(r => r === 'correct')) {
       gameOver = true;
-      setTimeout(() => showToast(WIN_MSG[Math.floor(Math.random() * WIN_MSG.length)], 3000), 400);
+      setTimeout(() => { showToast(WIN_MSG[Math.floor(Math.random() * WIN_MSG.length)], 3000); unlockReveal(); }, 400);
     } else if (currentRow === 5) {
       gameOver = true;
-      setTimeout(() => showToast(LOSE_MSG[Math.floor(Math.random() * LOSE_MSG.length)] + target, 4000), 400);
+      setTimeout(() => { showToast(LOSE_MSG[Math.floor(Math.random() * LOSE_MSG.length)] + target, 4000); unlockReveal(); }, 400);
     }
     currentRow++; currentCol = 0;
   });
@@ -172,6 +174,51 @@ function showToast(msg, dur = 2000) {
   toastTimer = setTimeout(() => t.classList.remove('show'), dur);
 }
 
+function initReveal() {
+  const months = ['Yanvar','Fevral','Mart','Aprel','May','İyun','İyul','Avqust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
+  const d = new Date();
+  document.getElementById('reveal-date').textContent =
+    `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  document.getElementById('reveal-panel').style.display = 'none';
+}
+
+function unlockReveal() {
+  if (mode === 'daily') {
+    dailyCompleted = true;
+    dailyWord = target;
+    updateRevealBtn();
+  }
+}
+
+function updateRevealBtn() {
+  const btn   = document.getElementById('reveal-btn');
+  const lock  = document.getElementById('reveal-lock');
+  const panel = document.getElementById('reveal-panel');
+  if (dailyCompleted) {
+    btn.classList.add('unlocked');
+    lock.textContent = '👁 Günün sözünü gör';
+  } else {
+    btn.classList.remove('unlocked');
+    lock.textContent = '🔒 Oyunu bitir';
+    panel.style.display = 'none';
+  }
+}
+
+function toggleReveal() {
+  if (!dailyCompleted) { showToast("Günlük oyunu bitir!"); return; }
+  const panel = document.getElementById('reveal-panel');
+  const word  = document.getElementById('reveal-word');
+  const lock  = document.getElementById('reveal-lock');
+  if (panel.style.display === 'none') {
+    word.textContent = dailyWord;
+    panel.style.display = 'flex';
+    lock.textContent = '🔼 Gizlə';
+  } else {
+    panel.style.display = 'none';
+    lock.textContent = '👁 Günün sözünü gör';
+  }
+}
+
 function toggleTheme() {
   document.body.classList.toggle('dark');
   document.body.classList.toggle('light');
@@ -189,3 +236,4 @@ document.addEventListener('keydown', e => {
 });
 
 initGame();
+initReveal();

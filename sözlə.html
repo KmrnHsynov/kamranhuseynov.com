@@ -26,6 +26,17 @@
 <div id="keyboard"></div>
 <div class="toast" id="toast"></div>
 
+<div id="daily-reveal">
+  <button id="reveal-btn" onclick="toggleReveal()">
+    <span id="reveal-date"></span>
+    <span id="reveal-lock">🔒 Oyunu bitir</span>
+  </button>
+  <div id="reveal-panel">
+    <span id="reveal-label">Günün sözü:</span>
+    <span id="reveal-word"></span>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <button class="close-btn" onclick="closeModal()">×</button>
