@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QuizCraft — Tələbə</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="quiz-az.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════
+     LOBBY VIEW
+═══════════════════════════════ -->
+<div id="lobby-view" class="view active">
+  <div class="lock-card" style="max-width:460px">
+    <div class="lock-icon">📝</div>
+    <h2 id="lobby-topic">İmtahan</h2>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:6px">
+      Suallar: <strong id="lobby-count">0</strong> &nbsp;·&nbsp; Vaxt: <strong>30 dəqiqə</strong>
+    </p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:28px;line-height:1.7">
+      Suallar və cavablar avtomatik qarışdırılacaq.<br/>
+      Vaxt bitdikdə test avtomatik göndəriləcək.
+    </p>
+    <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana Başla</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     QUIZ VIEW
+═══════════════════════════════ -->
+<div id="quiz-view" class="view">
+  <div class="quiz-wrap">
+    <div class="quiz-topbar">
+      <span class="quiz-title-lbl" id="quiz-disp-title">Test</span>
+      <div class="quiz-meta">
+        <span class="quiz-prog-txt" id="q-progress">1 / 1</span>
+        <div class="timer-pill hidden" id="timer-pill">0:30</div>
+      </div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    <div id="quiz-card-container"></div>
+    <div class="quiz-nav">
+      <span class="quiz-pts-lbl" id="quiz-pts-lbl"></span>
+      <div class="quiz-nav-btns">
+        <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()">← Geri</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQ()">Növbəti →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     RESULTS VIEW
+═══════════════════════════════ -->
+<div id="results-view" class="view">
+  <div class="results-wrap">
+    <div class="results-hdr">
+      <div class="score-ring" id="score-ring">
+        <div class="score-ring-inner">
+          <span class="score-pct-val" id="score-pct">0%</span>
+          <span class="score-pct-lbl">Nəticə</span>
+        </div>
+      </div>
+      <h2 class="results-title" id="result-heading">Əla!</h2>
+      <p class="results-sub" id="result-sub"></p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="stat-ok" style="color:var(--correct)">0</div><div class="stat-lbl">Doğru</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-bad" style="color:var(--wrong)">0</div><div class="stat-lbl">Yanlış</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-pts" style="color:var(--accent4)">0</div><div class="stat-lbl">Xal</div></div>
+    </div>
+
+    <div class="review-sec" id="review-sec"></div>
+
+    <div class="results-actions no-print">
+      <button class="btn btn-primary" onclick="retakeExam()">↺ Yenidən</button>
+      <button class="btn btn-accent3" onclick="printResults()">🖨 Çap Et / PDF</button>
+    </div>
+  </div>
+</div>
+
+<script src="quiz-student.js"></script>
+</body>
+</html>
