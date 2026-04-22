@@ -289,9 +289,12 @@ function renderTopics(){
         <div style="font-size:13px;font-weight:600;color:${isActive?'var(--accent3)':'var(--text)'}">${esc(topic)}${isActive?' ✓':''}</div>
         <div style="font-size:11px;color:var(--muted)">${count} sual</div>
       </div>
-      <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" onclick="publishTopic('${esc(topic).replace(/'/g,"\\'")}')">
-        ${isActive?'✓ Göndərilib':'📤 Göndər'}
-      </button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" onclick="publishTopic('${esc(topic).replace(/'/g,"\\'")}')">
+          ${isActive?'✓ Göndərilib':'📤 Göndər'}
+        </button>
+        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishQuiz()">🗑 Sil</button>`:''}
+      </div>
     </div>`;
   }).join('') : '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>';
 
@@ -342,6 +345,16 @@ function publishTopic(topicName){
       banner.textContent='❌ Xəta: '+err.message;
       setTimeout(()=>banner.remove(), 4000);
     });
+}
+
+function unpublishQuiz(){
+  if(!confirm('Göndərilmiş testi silmək istəyirsiniz?')) return;
+  db.ref('student_quiz').remove()
+    .then(()=>{
+      localStorage.removeItem(STORAGE_KEY_STUDENT);
+      renderTopics();
+    })
+    .catch(err=>alert('Xəta: '+err.message));
 }
 
 // ══════════════════════════════════════════════════════
