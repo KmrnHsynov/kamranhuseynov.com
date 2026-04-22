@@ -398,7 +398,7 @@ function _drawAnalytics(records, main, sidebar){
   main.innerHTML=`
     <div class="analytics-wrap">
       <div class="analytics-hdr">
-        <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
+        <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
         <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
       </div>
       <div class="an-table">

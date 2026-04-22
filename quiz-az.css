@@ -478,7 +478,7 @@ textarea{resize:vertical;line-height:1.6;}
 .score-ring-inner{position:relative;z-index:1;text-align:center;}
 .score-pct-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;display:block;}
 .score-pct-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
-.results-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:5px;}
+.results-title{font-family:'Nunito',sans-serif;font-size:28px;font-weight:800;margin-bottom:5px;}
 .results-sub{font-size:13px;color:var(--text2);}
 
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;animation:slideUp .45s .08s both;}
