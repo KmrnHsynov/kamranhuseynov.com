@@ -15,6 +15,8 @@ const STORAGE_KEY_ANALYTICS = 'qc_analytics';
 let questions = [];
 let qId = 0;
 let activeQId = null;
+let publishedTopics = {};   // {topicName: true} — loaded fresh from Firebase
+let analyticsFilter = 'all'; // 'all' or a Firebase exam key
 
 // quiz runtime
 let quizQs = [];
@@ -220,7 +222,7 @@ function switchTab(name){
   });
   document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  if(name==='topics') renderTopics();
+  if(name==='topics') refreshPublishedTopics(renderTopics);
   if(name==='analytics') renderAnalytics();
   // Restore editor when leaving analytics
   const main = document.getElementById('questions-container');
@@ -262,12 +264,25 @@ function renderSidebar(){
 
 function tlbl(t){return{mc:'ÇS',tf:'D/Y',short:'Qısa',fill:'Boşluq'}[t]||t;}
 
+function toKey(str){ return str.replace(/[.#$[\]/]/g,'_'); }
+
+function refreshPublishedTopics(cb){
+  const el = document.getElementById('topics-list');
+  if(el) el.innerHTML='<div style="padding:16px;font-size:12px;color:var(--muted)">⏳ Yüklənir…</div>';
+  db.ref('student_quiz').once('value').then(snap=>{
+    const val = snap.val()||{};
+    publishedTopics = {};
+    Object.values(val).forEach(exam=>{ if(exam&&exam.topic) publishedTopics[exam.topic]=true; });
+    cb && cb();
+  }).catch(()=>{ cb && cb(); });
+}
+
 function renderTopics(){
   const el = document.getElementById('topics-list');
   if(!el) return;
   const emptyCount = questions.filter(q=>!q.topic?.trim()).length;
   const topics = [...new Set(questions.map(q=>q.topic?.trim()).filter(Boolean))];
-  const published = (() => { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENT)||'{}').topic||''; }catch(e){return '';} })();
+  const isPublished = t => !!publishedTopics[t];
 
   // Bulk-assign section (always shown if there are any questions)
   const bulkHtml = questions.length ? `
@@ -283,7 +298,7 @@ function renderTopics(){
 
   const listHtml = topics.length ? topics.map(topic=>{
     const count = questions.filter(q=>q.topic?.trim()===topic).length;
-    const isActive = topic === published;
+    const isActive = isPublished(topic);
     return`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <div>
         <div style="font-size:13px;font-weight:600;color:${isActive?'var(--accent3)':'var(--text)'}">${esc(topic)}${isActive?' ✓':''}</div>
@@ -293,7 +308,7 @@ function renderTopics(){
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" onclick="publishTopic('${esc(topic).replace(/'/g,"\\'")}')">
           ${isActive?'✓ Göndərilib':'📤 Göndər'}
         </button>
-        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishQuiz()">🗑 Sil</button>`:''}
+        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishTopic('${esc(topic).replace(/'/g,"\\'")}')">🗑 Sil</button>`:''}
       </div>
     </div>`;
   }).join('') : '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>';
@@ -305,8 +320,8 @@ function assignBulkTopic(){
   const input = document.getElementById('bulk-topic-input');
   const name = input?.value.trim();
   if(!name) return;
-  let changed = 0;
-  questions.forEach(q=>{ if(!q.topic?.trim()){ q.topic = name; changed++; } });
+  let changed = 0, skipped = 0;
+  questions.forEach(q=>{ if(!q.topic?.trim()){ q.topic = name; changed++; } else { skipped++; } });
   if(!changed){ renderTopics(); return; }
   saveQs();
   renderSidebar();
@@ -316,7 +331,7 @@ function assignBulkTopic(){
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
   banner.style.cssText='padding:10px 16px;background:rgba(67,232,176,.12);border-bottom:1px solid rgba(67,232,176,.2);font-size:12px;color:var(--accent3);font-weight:600';
-  banner.textContent=`✓ ${changed} sual "${name}" mövzusuna əlavə edildi`;
+  banner.textContent=`✓ ${changed} sual əlavə edildi${skipped?` · ${skipped} artıq mövzusu olan sual atlandı`:''}`;
   el.prepend(banner);
   setTimeout(()=>banner.remove(), 3000);
 }
@@ -331,10 +346,10 @@ function publishTopic(topicName){
   banner.textContent='⏳ Göndərilir…';
   el.prepend(banner);
 
-  db.ref('student_quiz').set({questions: filtered, topic: topicName, publishedAt: Date.now()})
+  db.ref('student_quiz/'+toKey(topicName)).set({questions: filtered, topic: topicName, publishedAt: Date.now()})
     .then(()=>{
-      // keep localStorage as same-browser fallback
       localStorage.setItem(STORAGE_KEY_STUDENT, JSON.stringify({questions: filtered, topic: topicName}));
+      publishedTopics[topicName] = true;
       renderTopics();
       banner.textContent=`✓ "${topicName}" bütün cihazlara göndərildi`;
       setTimeout(()=>banner.remove(), 3000);
@@ -347,11 +362,11 @@ function publishTopic(topicName){
     });
 }
 
-function unpublishQuiz(){
-  if(!confirm('Göndərilmiş testi silmək istəyirsiniz?')) return;
-  db.ref('student_quiz').remove()
+function unpublishTopic(topicName){
+  if(!confirm(`"${topicName}" testini tələbələr üçün silmək istəyirsiniz?`)) return;
+  db.ref('student_quiz/'+toKey(topicName)).remove()
     .then(()=>{
-      localStorage.removeItem(STORAGE_KEY_STUDENT);
+      delete publishedTopics[topicName];
       renderTopics();
     })
     .catch(err=>alert('Xəta: '+err.message));
@@ -368,15 +383,47 @@ function renderAnalytics(){
   sidebar.innerHTML='';
 
   db.ref('analytics').once('value').then(snapshot=>{
-    const val = snapshot.val();
-    const records = val ? Object.values(val).sort((a,b)=>a.timestamp-b.timestamp) : [];
-    _drawAnalytics(records, main, sidebar);
+    const val = snapshot.val()||{};
+    const examKeys = Object.keys(val);
+
+    // Build records for current filter
+    let records;
+    if(analyticsFilter==='all' || !val[analyticsFilter]){
+      records = examKeys.flatMap(k=>val[k]?Object.values(val[k]):[]);
+    } else {
+      records = val[analyticsFilter] ? Object.values(val[analyticsFilter]) : [];
+    }
+    records.sort((a,b)=>a.timestamp-b.timestamp);
+
+    // Exam selector shown when more than one exam has data
+    let selectorHtml = '';
+    if(examKeys.length > 1){
+      selectorHtml = `<div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <label style="font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap">Test:</label>
+        <select onchange="switchAnalyticsExam(this.value)" style="font-size:13px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);flex:1;min-width:0">
+          <option value="all" ${analyticsFilter==='all'?'selected':''}>Bütün Testlər</option>
+          ${examKeys.map(k=>{
+            const examData = val[k]||{};
+            const examName = (Object.values(examData)[0]?.topic)||k;
+            const cnt = Object.keys(examData).length;
+            return`<option value="${k}" ${analyticsFilter===k?'selected':''}>${esc(examName)} (${cnt})</option>`;
+          }).join('')}
+        </select>
+      </div>`;
+    }
+
+    _drawAnalytics(records, main, sidebar, selectorHtml);
   }).catch(err=>{
     main.innerHTML=`<div class="analytics-empty"><p style="color:var(--wrong)">❌ Yüklənmə xətası: ${err.message}</p></div>`;
   });
 }
 
-function _drawAnalytics(records, main, sidebar){
+function switchAnalyticsExam(val){
+  analyticsFilter = val;
+  renderAnalytics();
+}
+
+function _drawAnalytics(records, main, sidebar, selectorHtml=''){
   if(!records.length){
     sidebar.innerHTML='<div style="padding:20px 16px;font-size:12px;color:var(--muted);line-height:1.7">Hələ nəticə yoxdur.<br/>Tələbələr testi bitirdikdə burada görünəcək.</div>';
     main.innerHTML='<div class="analytics-empty"><div style="font-size:48px;margin-bottom:16px">📊</div><p>Hələ heç bir tələbə testi tamamlamamışdır.</p></div>';
@@ -411,8 +458,11 @@ function _drawAnalytics(records, main, sidebar){
   main.innerHTML=`
     <div class="analytics-wrap">
       <div class="analytics-hdr">
-        <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
-        <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
+        ${selectorHtml}
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
+          <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
+        </div>
       </div>
       <div class="an-table">
         <div class="an-thead">
@@ -447,8 +497,10 @@ function fmtTime(secs){
 }
 
 function clearAnalytics(){
-  if(!confirm('Bütün tələbə nəticələri silinsin?')) return;
-  db.ref('analytics').remove().then(()=>renderAnalytics());
+  const label = analyticsFilter==='all' ? 'Bütün tələbə nəticələri' : `Bu testin nəticələri`;
+  if(!confirm(`${label} silinsin?`)) return;
+  const ref = analyticsFilter==='all' ? db.ref('analytics') : db.ref('analytics/'+analyticsFilter);
+  ref.remove().then(()=>{ analyticsFilter='all'; renderAnalytics(); });
 }
 
 function renderEditor(){

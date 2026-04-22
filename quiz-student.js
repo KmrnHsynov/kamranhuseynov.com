@@ -4,8 +4,9 @@ const STORAGE_KEY_STUDENT   = 'qc_student_qs';
 const MAX_QUESTIONS         = 30;
 const EXAM_SECONDS          = 30 * 60;
 
-let quizQs = [], quizIdx = 0, quizAns = {}, topicName = '', studentName = '';
+let quizQs = [], quizIdx = 0, quizAns = {}, topicName = '', studentName = '', examKey = '';
 let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
+let _examList = [];
 
 // ── INIT ──────────────────────────────────────────────
 (function init(){
@@ -20,14 +21,19 @@ let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
 
   db.ref('student_quiz').once('value')
     .then(snapshot=>{
-      const d = snapshot.val();
-      if(d && d.questions && d.questions.length){
-        quizQs    = d.questions;
-        topicName = d.topic || '';
+      const val = snapshot.val();
+      if(!val){ _loadFromLocalStorage(); return; }
+      const exams = Object.entries(val)
+        .map(([key,data])=>({key,...data}))
+        .filter(e=>e.questions&&e.questions.length);
+      if(!exams.length){ _loadFromLocalStorage(); return; }
+      if(exams.length===1){
+        examKey   = exams[0].key;
+        quizQs    = exams[0].questions;
+        topicName = exams[0].topic||'';
         showLobby();
       } else {
-        // fallback to localStorage (same-browser)
-        _loadFromLocalStorage();
+        showExamList(exams);
       }
     })
     .catch(()=>_loadFromLocalStorage());
@@ -53,6 +59,31 @@ function showNoQuiz(){
       <p>Müəllim hələ test göndərməyib. Daha sonra yenidən cəhd edin.</p>
     </div>`;
   showView('lobby-view');
+}
+
+function showExamList(exams){
+  _examList = exams;
+  document.getElementById('lobby-view').innerHTML=`
+    <div class="lock-card" style="max-width:460px">
+      <div class="lock-icon">📋</div>
+      <h2 style="font-family:'Nunito',sans-serif">Test Seçin</h2>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müəllim ${exams.length} test göndərib. Birini seçin:</p>
+      ${exams.map((e,i)=>`
+        <button class="btn btn-ghost btn-full" style="margin-bottom:8px;text-align:left;padding:12px 16px;display:block" onclick="selectExam(${i})">
+          <div style="font-weight:700;margin-bottom:2px">${esc(e.topic||e.key)}</div>
+          <div style="font-size:11px;color:var(--muted)">${e.questions.length} sual</div>
+        </button>
+      `).join('')}
+    </div>`;
+  showView('lobby-view');
+}
+
+function selectExam(idx){
+  const e = _examList[idx];
+  examKey   = e.key;
+  quizQs    = e.questions;
+  topicName = e.topic||e.key;
+  showLobby();
 }
 
 function showLobby(){
@@ -308,7 +339,8 @@ function finishQuiz(){
       pct,
       timeUsed: EXAM_SECONDS - timeLeft
     };
-    db.ref('analytics').push(record);
+    const key = examKey || topicName.replace(/[.#$[\]/]/g,'_') || 'default';
+    db.ref('analytics/'+key).push(record);
   }catch(e){}
 
   showView('results-view');
