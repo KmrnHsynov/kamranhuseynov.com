@@ -308,7 +308,8 @@ function renderTopics(){
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" onclick="publishTopic('${esc(topic).replace(/'/g,"\\'")}')">
           ${isActive?'✓ Göndərilib':'📤 Göndər'}
         </button>
-        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishTopic('${esc(topic).replace(/'/g,"\\'")}')">🗑 Sil</button>`:''}
+        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishTopic('${esc(topic).replace(/'/g,"\\'")}')">📤 Geri Al</button>`:''}
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="deleteTopic('${esc(topic).replace(/'/g,"\\'")}')">🗑</button>
       </div>
     </div>`;
   }).join('') : '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>';
@@ -360,6 +361,26 @@ function publishTopic(topicName){
       banner.textContent='❌ Xəta: '+err.message;
       setTimeout(()=>banner.remove(), 4000);
     });
+}
+
+function deleteTopic(topicName){
+  const count = questions.filter(q=>q.topic?.trim()===topicName).length;
+  if(!confirm(`"${topicName}" mövzusuna aid ${count} sual silinsin?`)) return;
+  questions = questions.filter(q=>q.topic?.trim()!==topicName);
+  saveQs(); renderSidebar(); renderEditor(); renderTopics();
+  if(publishedTopics[topicName]){
+    db.ref('student_quiz/'+toKey(topicName)).remove().then(()=>{
+      delete publishedTopics[topicName];
+      renderTopics();
+    });
+  }
+}
+
+function deleteAllQuestions(){
+  if(!questions.length) return;
+  if(!confirm(`Bütün ${questions.length} sual silinsin?`)) return;
+  questions = []; qId = 0; activeQId = null;
+  saveQs(); renderSidebar(); renderEditor();
 }
 
 function unpublishTopic(topicName){
