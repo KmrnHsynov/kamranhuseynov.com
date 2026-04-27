@@ -1,0 +1,103 @@
+{
+  "sections": [
+    {
+      "id": "fonetika",
+      "title": "FONETİKA (Phonetics)",
+      "nodes": [
+        {
+          "id": "fonetika-1",
+          "title": "Səs və hərf sistemi",
+          "lesson": "İngilis əlifbasında 26 hərf var: A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z.\n\nLakin bu 26 hərf 44 fərqli səsi ifadə edir. Bu o deməkdir ki, eyni hərf müxtəlif mövqelərdə müxtəlif səslər verə bilir.\n\nMəsələn:\n• 'c' hərfi 'cat' sözündə [k] kimi, 'city' sözündə isə [s] kimi oxunur.\n• 'th' birləşməsi 'the' sözündə [ð] kimi, 'think' sözündə isə [θ] kimi səslənir.\n\nBu fərqlilik ingilis dilinin fonetikasını öyrənməyi vacib edir.",
+          "questions": [
+            { "type": "multiple_choice", "question": "İngilis əlifbasında neçə hərf var?", "options": ["24", "26", "28", "30"], "answer": "26" },
+            { "type": "multiple_choice", "question": "İngilis dilindəki 26 hərf neçə fərqli səsi ifadə edir?", "options": ["26", "33", "44", "52"], "answer": "44" },
+            { "type": "fill_blank", "question": "İngilis dilində ___ hərf, lakin 44 fərqli səs var.", "answer": "26" },
+            { "type": "fill_blank", "question": "'city' sözündə 'c' hərfi ___ kimi oxunur.", "answer": "s" },
+            { "type": "true_false", "question": "İngilis dilindəki hərflərin sayı səslərin sayına bərabərdir.", "answer": false },
+            { "type": "true_false", "question": "'th' birləşməsi həmişə eyni səsi verir.", "answer": false }
+          ]
+        },
+        {
+          "id": "fonetika-2",
+          "title": "Oxunuş qaydaları",
+          "lesson": "İngilis dilində hərflərin oxunuşu sözdəki mövqeyindən asılıdır.\n\nAçıq heca qaydası: Sait hərflə bitən hecada sait öz adı ilə oxunur.\n• make [meɪk] — 'a' öz adı ilə oxunur\n• bike [baɪk] — 'i' öz adı ilə oxunur\n\nQapalı heca qaydası: Samitlə bitən hecada sait qısa oxunur.\n• cat [kæt] — 'a' qısa oxunur\n• bit [bɪt] — 'i' qısa oxunur\n\nSusqun 'e': Sözün sonundakı 'e' adətən oxunmur, lakin əvvəlki saitin uzun oxunmasına səbəb olur.\n• game [ɡeɪm] — sondakı 'e' oxunmur\n• time [taɪm] — sondakı 'e' oxunmur",
+          "questions": [
+            { "type": "multiple_choice", "question": "'make' sözündə 'a' hərfi necə oxunur?", "options": ["Qısa [æ]", "Öz adı ilə [eɪ]", "Susqun", "Uzun [aː]"], "answer": "Öz adı ilə [eɪ]" },
+            { "type": "multiple_choice", "question": "Hansı sözdə sondakı 'e' hərfi oxunmur?", "options": ["egg", "red", "game", "end"], "answer": "game" },
+            { "type": "fill_blank", "question": "Sözün sonundakı susqun 'e' əvvəlki saitin ___ oxunmasına səbəb olur.", "answer": "uzun" },
+            { "type": "fill_blank", "question": "'cat' sözündə 'a' hərfi ___ oxunur.", "answer": "qısa" },
+            { "type": "true_false", "question": "'cat' sözündə 'a' hərfi öz adı ilə oxunur.", "answer": false },
+            { "type": "true_false", "question": "'time' sözünün sonundakı 'e' hərfi oxunmur.", "answer": true }
+          ]
+        },
+        {
+          "id": "fonetika-3",
+          "title": "Saitlər",
+          "lesson": "Dərs mətni əlavə ediləcək.",
+          "questions": [
+            { "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" },
+            { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" },
+            { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }
+          ]
+        },
+        {
+          "id": "fonetika-4",
+          "title": "Samitlər",
+          "lesson": "Dərs mətni əlavə ediləcək.",
+          "questions": [
+            { "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" },
+            { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" },
+            { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }
+          ]
+        },
+        {
+          "id": "fonetika-5",
+          "title": "Heca və Vurğu",
+          "lesson": "Dərs mətni əlavə ediləcək.",
+          "questions": [
+            { "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" },
+            { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" },
+            { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "leksikologiya",
+      "title": "LEKSİKOLOGİYA (Lexicology)",
+      "nodes": [
+        { "id": "leks-1", "title": "Sözün mənası", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "leks-2", "title": "Sinonimlər və Antonimlər", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "leks-3", "title": "Sözlərin quruluşu", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "leks-4", "title": "Phrasal Verbs", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "leks-5", "title": "Sözdüzəltmə (Word Formation)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] }
+      ]
+    },
+    {
+      "id": "morfologiya",
+      "title": "MORFOLOGİYA (Morphology)",
+      "nodes": [
+        { "id": "morf-1", "title": "İsim (The Noun)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "morf-2", "title": "Artikl (The Article)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "morf-3", "title": "Sifət (The Adjective)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "morf-4", "title": "Say (The Numeral)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "morf-5", "title": "Əvəzlik (The Pronoun)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "morf-6", "title": "Feil (The Verb)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "morf-7", "title": "Zərf, Ədat və Sözönü", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] }
+      ]
+    },
+    {
+      "id": "sintaksis",
+      "title": "SİNTAKSİS (Syntax)",
+      "nodes": [
+        { "id": "sint-1", "title": "Collocations", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "sint-2", "title": "Sadə cümlə", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "sint-3", "title": "Xüsusi konstruksiyalar", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "sint-4", "title": "Mürəkkəb cümlə", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "sint-5", "title": "Budaq cümlələr", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "sint-6", "title": "Şərt budaq cümlələri (Conditionals)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
+        { "id": "sint-7", "title": "Vasitəsiz və Vasitəli nitq", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] }
+      ]
+    }
+  ]
+}

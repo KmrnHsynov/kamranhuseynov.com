@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a73e8">
+  <title>İngiliscə Öyrən</title>
+  <link rel="stylesheet" href="ingilisce.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">İngiliscə Öyrən</h1>
+  </header>
+
+  <main class="path-container" id="pathContainer"></main>
+
+  <!-- Dərs Modalı -->
+  <div class="modal-overlay hidden" id="lessonOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="lessonTitle"></h2>
+        <button class="modal-close" id="lessonClose">✕</button>
+      </div>
+      <div class="lives-bar" id="lessonLives"></div>
+      <div class="modal-body" id="lessonBody"></div>
+      <div class="modal-footer" id="lessonFooter"></div>
+    </div>
+  </div>
+
+  <!-- Quiz Modalı -->
+  <div class="modal-overlay hidden" id="quizOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="quiz-progress" id="quizProgress"></span>
+        <button class="modal-close" id="quizClose">✕</button>
+      </div>
+      <div class="lives-bar" id="quizLives"></div>
+      <div class="modal-body" id="quizBody"></div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="quizCheck" disabled>Yoxla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uğur Bildirişi -->
+  <div class="modal-overlay hidden" id="celebrationOverlay">
+    <div class="modal celebration-modal">
+      <div class="celebration-icon">🎉</div>
+      <h2 id="celebrationTitle">Əla!</h2>
+      <p id="celebrationText"></p>
+      <button class="btn-primary" id="celebrationClose">Davam et</button>
+    </div>
+  </div>
+
+  <!-- Can Bitdi -->
+  <div class="modal-overlay hidden" id="failOverlay">
+    <div class="modal celebration-modal">
+      <div class="celebration-icon">💔</div>
+      <h2>Canlar Bitdi</h2>
+      <p>5 can yeniləndi. Dərsi yenidən oxu.</p>
+      <button class="btn-primary" id="failClose">Yenidən başla</button>
+    </div>
+  </div>
+
+  <script src="ingilisce.js"></script>
+</body>
+</html>
