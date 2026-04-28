@@ -365,6 +365,13 @@ function buildReview(q){
   </div>`;
 }
 
+function exitQuiz(){
+  if(!confirm('İmtahandan çıxmaq istəyirsiniz? Cavablarınız yadda saxlanmayacaq.')) return;
+  clearInterval(totalTimer);
+  quizAns = {};
+  showLobby();
+}
+
 function retakeExam(){
   clearInterval(totalTimer);
   showLobby();
