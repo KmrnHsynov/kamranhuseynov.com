@@ -347,7 +347,8 @@ function publishTopic(topicName){
   banner.textContent='⏳ Göndərilir…';
   el.prepend(banner);
 
-  db.ref('student_quiz/'+toKey(topicName)).set({questions: filtered, topic: topicName, publishedAt: Date.now()})
+  const examMinutes = Math.max(1, parseInt(document.getElementById('exam-minutes')?.value)||30);
+  db.ref('student_quiz/'+toKey(topicName)).set({questions: filtered, topic: topicName, examMinutes, publishedAt: Date.now()})
     .then(()=>{
       localStorage.setItem(STORAGE_KEY_STUDENT, JSON.stringify({questions: filtered, topic: topicName}));
       publishedTopics[topicName] = true;

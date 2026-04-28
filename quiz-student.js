@@ -2,7 +2,7 @@
 
 const STORAGE_KEY_STUDENT   = 'qc_student_qs';
 const MAX_QUESTIONS         = 30;
-const EXAM_SECONDS          = 30 * 60;
+let EXAM_SECONDS            = 30 * 60;
 
 let quizQs = [], quizIdx = 0, quizAns = {}, topicName = '', studentName = '', examKey = '';
 let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
@@ -28,9 +28,10 @@ let _examList = [];
         .filter(e=>e.questions&&e.questions.length);
       if(!exams.length){ _loadFromLocalStorage(); return; }
       if(exams.length===1){
-        examKey   = exams[0].key;
-        quizQs    = exams[0].questions;
-        topicName = exams[0].topic||'';
+        examKey      = exams[0].key;
+        quizQs       = exams[0].questions;
+        topicName    = exams[0].topic||'';
+        EXAM_SECONDS = (exams[0].examMinutes||30)*60;
         showLobby();
       } else {
         showExamList(exams);
@@ -80,9 +81,10 @@ function showExamList(exams){
 
 function selectExam(idx){
   const e = _examList[idx];
-  examKey   = e.key;
-  quizQs    = e.questions;
-  topicName = e.topic||e.key;
+  examKey      = e.key;
+  quizQs       = e.questions;
+  topicName    = e.topic||e.key;
+  EXAM_SECONDS = (e.examMinutes||30)*60;
   showLobby();
 }
 
@@ -93,7 +95,7 @@ function showLobby(){
       <div class="lock-icon">📝</div>
       <h2 id="lobby-topic">${esc(topicName||'İmtahan')}</h2>
       <p style="font-size:13px;color:var(--text2);margin-bottom:6px">
-        Suallar: <strong>${count}</strong> &nbsp;·&nbsp; Vaxt: <strong>30 dəqiqə</strong>
+        Suallar: <strong>${count}</strong> &nbsp;·&nbsp; Vaxt: <strong>${Math.round(EXAM_SECONDS/60)} dəqiqə</strong>
       </p>
       <p style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7">
         Suallar və cavablar avtomatik qarışdırılacaq.<br/>
