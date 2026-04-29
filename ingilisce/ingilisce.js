@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'ingilisce_progress';
+const SAT_STORAGE_KEY = 'ingilisce_sat_progress';
 
 const DEFAULT_STATE = {
   completedNodes: [],
@@ -6,11 +7,17 @@ const DEFAULT_STATE = {
   currentQuizNode: null
 };
 
+let currentMode = 'normal'; // 'normal' | 'sat'
+
 // ── State ──────────────────────────────────────────────
+
+function storageKey() {
+  return currentMode === 'sat' ? SAT_STORAGE_KEY : STORAGE_KEY;
+}
 
 function loadState() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(storageKey());
     return saved ? { ...DEFAULT_STATE, ...JSON.parse(saved) } : { ...DEFAULT_STATE };
   } catch {
     return { ...DEFAULT_STATE };
@@ -18,7 +25,7 @@ function loadState() {
 }
 
 function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(storageKey(), JSON.stringify(state));
 }
 
 // ── Curriculum helpers ─────────────────────────────────
@@ -350,9 +357,29 @@ function completeNode(nodeId, curriculum) {
 // ── Init ───────────────────────────────────────────────
 
 async function init() {
-  const res = await fetch('curriculum.json');
-  const curriculum = await res.json();
-  renderPath(curriculum);
+  const [normalRes, satRes] = await Promise.all([
+    fetch('curriculum.json'),
+    fetch('sat_curriculum.json')
+  ]);
+  const normalCurriculum = await normalRes.json();
+  const satCurriculum = await satRes.json();
+
+  renderPath(normalCurriculum);
+
+  const toggleBtn = document.getElementById('modeToggle');
+  toggleBtn.addEventListener('click', () => {
+    if (currentMode === 'normal') {
+      currentMode = 'sat';
+      toggleBtn.textContent = 'Normal Rejim';
+      toggleBtn.classList.add('active');
+      renderPath(satCurriculum);
+    } else {
+      currentMode = 'normal';
+      toggleBtn.textContent = 'SAT Rejimi';
+      toggleBtn.classList.remove('active');
+      renderPath(normalCurriculum);
+    }
+  });
 }
 
 init();

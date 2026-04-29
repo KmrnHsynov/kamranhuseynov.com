@@ -1,0 +1,327 @@
+{
+  "sections": [
+    {
+      "id": "sat-info-ideas",
+      "title": "I. OXU: MƏLUMAT VƏ İDEYALAR",
+      "nodes": [
+        {
+          "id": "sat-central-ideas",
+          "title": "Mərkəzi İdeya",
+          "lesson": "Mərkəzi ideya sualları sizin mətnin əsas fikrini tapmanızı tələb edir.\n\nBu tip suallar adətən belə başlayır:\n• 'Bu mətnin əsas mövzusu nədir?'\n• 'Bu paraqrafın məqsədi nədir?'\n\nDetallar isə bu fikri dəstəkləyən faktlar, nümunələr və ya arqumentlərdir. Mərkəzi ideya bütün mətni əhatə edir, yalnız bir paraqrafı yox.\n\nStrategiya: Mətnin ilk və son cümlələrini diqqətlə oxuyun — çox vaxt mərkəzi ideya orada olur.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "SAT-da 'mərkəzi ideya' sorusu nəyi tələb edir?",
+              "options": ["Bir detalı tapmaq", "Bütün mətnin əsas fikrini tapmaq", "Sözün mənasını tapmaq", "Müəllifin adını tapmaq"],
+              "answer": "Bütün mətnin əsas fikrini tapmaq"
+            },
+            {
+              "type": "true_false",
+              "question": "Mərkəzi ideya yalnız mətnin bir paraqrafını əhatə edir.",
+              "answer": false
+            },
+            {
+              "type": "fill_blank",
+              "question": "Mərkəzi ideyalar onu dəstəkləyən ___ ilə birlikdə təqdim edilir.",
+              "answer": "detallar"
+            }
+          ]
+        },
+        {
+          "id": "sat-textual-evidence",
+          "title": "Mətn Sübutları",
+          "lesson": "Mətn sübutları (Textual Evidence) sualları sizdən bir iddianı dəstəkləyən ən uyğun sitatı mətndən seçməyi tələb edir.\n\nBu suallar adətən cüt şəkildə gəlir:\n1. Birinci sual müəyyən bir iddia edir\n2. İkinci sual isə soruşur: 'Aşağıdakılardan hansı birinci sualdakı cavabı ən yaxşı dəstəkləyir?'\n\nStrategiya: Əvvəlcə birinci suala cavab tapın, sonra o cavabı birbaşa dəstəkləyən sitatı axtarın. Ümumi ifadələrdən uzaq olun — konkret sübutlar axtarın.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "Mətn sübutları suallarında sizdən nə istənilir?",
+              "options": ["Yeni arqument yaratmaq", "İddianı dəstəkləyən sitatı mətndən seçmək", "Müəllifin niyyətini təxmin etmək", "Mətnin xülasəsini yazmaq"],
+              "answer": "İddianı dəstəkləyən sitatı mətndən seçmək"
+            },
+            {
+              "type": "true_false",
+              "question": "Mətn sübutları sualları adətən cüt şəkildə gəlir.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "Mətn sübutları sualında ümumi ifadələrdən deyil, ___ sübutlardan istifadə etmək lazımdır.",
+              "answer": "konkret"
+            }
+          ]
+        },
+        {
+          "id": "sat-quantitative-evidence",
+          "title": "Kəmiyyət Sübutları",
+          "lesson": "Kəmiyyət sübutları (Quantitative Evidence) suallarında cədvəl, qrafik və ya diaqramda verilmiş məlumatları oxumaq və mətnlə əlaqələndirmək tələb olunur.\n\nBu suallar iki cür olur:\n• Qrafik mətni dəstəkləyirmi?\n• Qrafik müəllifin iddiasını çürüdürmü?\n\nStrategiya:\n1. Qrafikin başlığını, ox etiketlərini və rəqəmləri diqqətlə oxuyun\n2. Qrafik məlumatını mətnlə müqayisə edin\n3. Hansı variantın HƏM mətnlə HƏM qrafikdəki rəqəmlə uyğun gəldiyini seçin",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "Kəmiyyət sübutları suallarında hansı elementlər istifadə olunur?",
+              "options": ["Yalnız şeirlər", "Cədvəl, qrafik və diaqramlar", "Lüğət tərifləri", "Şəkillər"],
+              "answer": "Cədvəl, qrafik və diaqramlar"
+            },
+            {
+              "type": "true_false",
+              "question": "Kəmiyyət sübutları sualında yalnız mətnə baxmaq kifayətdir.",
+              "answer": false
+            },
+            {
+              "type": "fill_blank",
+              "question": "Kəmiyyət sübutları sualında cavab HƏM mətni HƏM də ___ məlumatlarını əks etdirməlidir.",
+              "answer": "qrafik"
+            }
+          ]
+        },
+        {
+          "id": "sat-inferences",
+          "title": "Nəticə Çıxarma",
+          "lesson": "Nəticə çıxarma (Inferences) suallarında mətndə açıq şəkildə deyilməyən, lakin məntiqi olaraq çıxarıla bilən nəticələri tapmaq tələb olunur.\n\nBu suallar adətən belə başlayır:\n• 'Mətndən belə nəticə çıxarmaq olar ki...'\n• 'Müəllif güman edir ki...'\n\nStrategiya: Mətndə birbaşa yazılmış ifadəni seçməyin — bu 'inference' deyil. Mətndəki faktlara əsasən məntiqi bir addım atın. Həddindən artıq güclü iddialardan uzaq olun.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "İnference (nəticə çıxarma) nə deməkdir?",
+              "options": ["Mətndə birbaşa yazılmış faktı tapmaq", "Məntiqi olaraq çıxarıla bilən nəticəni tapmaq", "Sözün sinoniminə tapmaq", "Müəllifin adını müəyyən etmək"],
+              "answer": "Məntiqi olaraq çıxarıla bilən nəticəni tapmaq"
+            },
+            {
+              "type": "true_false",
+              "question": "Nəticə çıxarma sualında mətndə birbaşa yazılmış cümlə cavab ola bilər.",
+              "answer": false
+            },
+            {
+              "type": "fill_blank",
+              "question": "İnference sualında həddindən artıq ___ iddialardan uzaq olmaq lazımdır.",
+              "answer": "güclü"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sat-craft-structure",
+      "title": "II. OXU: SƏNƏTKARLIQ VƏ QURULUŞ",
+      "nodes": [
+        {
+          "id": "sat-words-context",
+          "title": "Kontekstdə Sözlər",
+          "lesson": "Kontekstdə sözlər (Words in Context) suallarında mətndəki boşluqlara kontekstə görə ən uyğun sinonim və ya sözü seçmək tələb olunur.\n\nBu suallar adətən belə başlayır:\n• 'Aşağıdakı cümlədə 'X' sözü hansı mənada istifadə edilib?'\n• 'X sözünü ən yaxşı əvəz edən hansıdır?'\n\nStrategiya:\n1. Sözü cümlədən çıxarın\n2. Hər variantı həmin yerə qoyun\n3. Hansının məntiqi olaraq uyğun gəldiyini yoxlayın\n4. Yadda saxlayın: sözün ümumi mənası deyil, mətndəki mənası lazımdır",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "'Words in Context' sualında nə axtarılır?",
+              "options": ["Sözün lüğət tərifi", "Sözün mətndəki konkret mənası", "Sözün heca sayı", "Sözün tarixi"],
+              "answer": "Sözün mətndəki konkret mənası"
+            },
+            {
+              "type": "true_false",
+              "question": "Kontekstdə sözlər sualında sözün ümumi mənasına baxmaq kifayətdir.",
+              "answer": false
+            },
+            {
+              "type": "fill_blank",
+              "question": "Bu tip sualda hər variantı sözün yerinə qoyub ___ uyğun gəldiyini yoxlamaq lazımdır.",
+              "answer": "hansının"
+            }
+          ]
+        },
+        {
+          "id": "sat-text-structure",
+          "title": "Mətnin Quruluşu",
+          "lesson": "Mətnin quruluşu və məqsədi (Text Structure and Purpose) suallarında mətnin necə təşkil olunduğunu və müəllifin məqsədini müəyyənləşdirmək tələb olunur.\n\nÜmumi quruluş tipləri:\n• Müqayisə/ziddiyyət\n• Səbəb-nəticə\n• Problem-həll\n• Xronoloji ardıcıllıq\n• Tezis-sübutlar\n\nStrategiya: Müəllifin niyə bu məlumatı bu ardıcıllıqla verdiyini düşünün. Paraqraflar arasındakı əlaqəyə diqqət edin.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "Hansı mətn quruluşu tipi deyil?",
+              "options": ["Müqayisə/ziddiyyət", "Səbəb-nəticə", "Problem-həll", "Rəng-şəkil"],
+              "answer": "Rəng-şəkil"
+            },
+            {
+              "type": "true_false",
+              "question": "Mətnin quruluşu sualında müəllifin məqsədi də nəzərə alınır.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "Mətnin quruluşunu anlamaq üçün paraqraflar arasındakı ___ diqqət etmək lazımdır.",
+              "answer": "əlaqəyə"
+            }
+          ]
+        },
+        {
+          "id": "sat-cross-text",
+          "title": "Çarpaz Mətn Əlaqələri",
+          "lesson": "Çarpaz mətn əlaqələri (Cross-Text Connections) suallarında iki fərqli mətnin eyni mövzuya yanaşma tərzini müqayisə etmək tələb olunur.\n\nBu suallar adətən Mətn 1 və Mətn 2 şəklində verilir. Sual soruşa bilər:\n• Mətn 2 müəllifi Mətn 1-in iddiaları ilə necə razılaşar?\n• Hər iki müəllif hansı fikirdə eyni fikirlidir?\n\nStrategiya:\n1. Hər mətni ayrı-ayrılıqda oxuyun\n2. Hər müəllifin əsas mövqeyini müəyyən edin\n3. İki mövqeyi müqayisə edin",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "Çarpaz mətn suallarında neçə mətn olur?",
+              "options": ["Bir", "İki", "Üç", "Dörd"],
+              "answer": "İki"
+            },
+            {
+              "type": "true_false",
+              "question": "Çarpaz mətn suallarında iki müəllifin fikirlərini müqayisə etmək lazımdır.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "Çarpaz mətn suallarında hər mətnin müəllifinin əsas ___ müəyyən etmək lazımdır.",
+              "answer": "mövqeyini"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sat-expression-ideas",
+      "title": "III. YAZI: İFADƏ TƏRZİ",
+      "nodes": [
+        {
+          "id": "sat-transitions",
+          "title": "Keçid Sözləri",
+          "lesson": "Keçid sözləri (Transitions) suallarında fikirlər arasındakı məntiqi əlaqəni qurmaq üçün uyğun bağlayıcı seçmək tələb olunur.\n\nÜmumi keçid növləri:\n• Əlavə: furthermore, in addition, moreover\n• Ziddiyyət: however, nevertheless, on the other hand\n• Səbəb-nəticə: therefore, consequently, as a result\n• Nümunə: for instance, for example\n\nStrategiya: Keçid sözünün əvvəlindəki və sonrakı cümlənin məntiqi əlaqəsini müəyyən edin. Ziddiyyət varsa — contrast bağlayıcısı, əlavə varsa — addition bağlayıcısı seçin.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "'However' hansı əlaqə tipini ifadə edir?",
+              "options": ["Əlavə", "Ziddiyyət", "Nümunə", "Nəticə"],
+              "answer": "Ziddiyyət"
+            },
+            {
+              "type": "true_false",
+              "question": "'Therefore' keçid sözü ziddiyyət bildirmək üçün istifadə olunur.",
+              "answer": false
+            },
+            {
+              "type": "fill_blank",
+              "question": "'For instance' keçid sözü ___ bildirmək üçün istifadə olunur.",
+              "answer": "nümunə"
+            }
+          ]
+        },
+        {
+          "id": "sat-rhetorical-synthesis",
+          "title": "Ritorik Sintez",
+          "lesson": "Ritorik sintez (Rhetorical Synthesis) suallarında verilmiş qısa qeydlərdən istifadə edərək, müəyyən bir məqsədə xidmət edən ən uyğun cümləni formalaşdırmaq tələb olunur.\n\nBu suallar belə başlayır:\n• 'Tələbə bir məqalə üçün qeydlər toplamışdır. Tələbə müqayisə məqsədi ilə hansı cümləni yazmalıdır?'\n\nStrategiya:\n1. Qeydləri diqqətlə oxuyun\n2. Tapşırığın məqsədini müəyyən edin (müqayisə? tezis? nümunə?)\n3. Həmin məqsədi yerinə yetirən variantı seçin",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "Ritorik sintez sualında nədən istifadə edilir?",
+              "options": ["Lüğətdən", "Verilmiş qısa qeydlərdən", "Şeir parçalarından", "Rəqəmli məlumatlardan"],
+              "answer": "Verilmiş qısa qeydlərdən"
+            },
+            {
+              "type": "true_false",
+              "question": "Ritorik sintez sualında tapşırığın məqsədini anlamaq vacibdir.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "Ritorik sintez sualında qeydlərdən istifadə edərək müəyyən bir ___ xidmət edən cümləni seçmək lazımdır.",
+              "answer": "məqsədə"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sat-standard-english",
+      "title": "IV. STANDART İNGİLİS DİLİ QAYDАЛАРИ",
+      "nodes": [
+        {
+          "id": "sat-punctuation",
+          "title": "Cümlə Sərhədləri",
+          "lesson": "Cümlə sərhədləri və durğu işarələri (Sentence Boundaries & Punctuation) suallarında vergül, nöqtəli vergül, iki nöqtə və tirələrin düzgün istifadəsi yoxlanılır.\n\nƏsas qaydalar:\n• İki tam cümlə: nöqtəli vergül (;) və ya bağlayıcı (and, but, so) + vergül\n• Siyahı giriş: iki nöqtə (:)\n• Əlavə məlumat: tire (—) və ya mötərizə\n• Run-on cümlə: yalnız vergüllə iki tam cümləni birləşdirmək olmaz\n\nStrategiya: Hər cümləni ayrıca oxuyun — tam cümləmi, yoxsa fraqmentmi?",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "İki tam cümləni birləşdirmək üçün nə istifadə etmək olmaz?",
+              "options": ["Nöqtəli vergül", "Yalnız vergül", "Bağlayıcı + vergül", "Nöqtə"],
+              "answer": "Yalnız vergül"
+            },
+            {
+              "type": "true_false",
+              "question": "Siyahı girişi üçün iki nöqtə (:) istifadə olunur.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "İki tam cümləni yalnız vergüllə birləşdirmək ___ cümləsinə gətirib çıxarır.",
+              "answer": "run-on"
+            }
+          ]
+        },
+        {
+          "id": "sat-subject-verb",
+          "title": "Mübtəda-Xəbər Uzlaşması",
+          "lesson": "Xəbərin mübtəda ilə uzlaşması (Subject-Verb Agreement) suallarında cümlədəki mübtəda və xəbərin şəxsə və kəmiyyətə görə uyğunlaşmasını yoxlamaq tələb olunur.\n\nÜmumi tələlər:\n• Mübtəda ilə xəbər arasında uzun bir fraza olur — fraza mübtədanı gizlədir\n• 'Each, every, either, neither' — tək sayılır\n• 'The team, the group' — adətən tək sayılır\n• 'And' ilə birləşən iki mübtəda — cəm sayılır\n\nStrategiya: Cümlədəki fraza və zərfləri silin, yalnız mübtəda və xəbərə baxın.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "'Either' sözü mübtəda olduqda xəbər necə olmalıdır?",
+              "options": ["Cəm (are)", "Tək (is)", "İkisi də olar", "Fərq etmir"],
+              "answer": "Tək (is)"
+            },
+            {
+              "type": "true_false",
+              "question": "'And' ilə birləşən iki mübtəda cəm xəbər tələb edir.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "Mübtəda ilə xəbər arasında uzun fraza olduqda frazan ___ yalnız mübtədaya baxmaq lazımdır.",
+              "answer": "silərək"
+            }
+          ]
+        },
+        {
+          "id": "sat-verb-tenses",
+          "title": "Feilin Zamanları",
+          "lesson": "Feilin zamanları (Verb Tenses) suallarında zaman formalarının mətndəki hadisələrin xronologiyasına görə düzgün seçilməsi yoxlanılır.\n\nƏsas zaman formaları:\n• Simple Past: hadisə keçmişdə baş verdi (he wrote)\n• Past Perfect: başqa keçmiş hadisədən əvvəl baş verdi (he had written)\n• Present Perfect: keçmişdə başladı, hələ davam edir (he has written)\n• Simple Present: ümumi həqiqətlər üçün (water boils at 100°C)\n\nStrategiya: Cümlədəki zaman məlumatlarına (yesterday, since, by the time) diqqət edin.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "Başqa keçmiş hadisədən ÖNCƏ baş verən hadisə üçün hansı zaman işlədilir?",
+              "options": ["Simple Past", "Past Perfect", "Present Perfect", "Simple Present"],
+              "answer": "Past Perfect"
+            },
+            {
+              "type": "true_false",
+              "question": "Present Perfect keçmişdə başlayıb hələ davam edən hadisələr üçün işlədilir.",
+              "answer": true
+            },
+            {
+              "type": "fill_blank",
+              "question": "Ümumi elmi həqiqətlər üçün ___ Present zamanı işlədilir.",
+              "answer": "Simple"
+            }
+          ]
+        },
+        {
+          "id": "sat-pronouns",
+          "title": "Əvəzliklər",
+          "lesson": "Əvəzliklər (Pronouns) suallarında şəxs və yiyəlik əvəzliklərinin özündən əvvəlki ismə (antecedent) kəmiyyət və şəxsə görə uyğunlaşmasını yoxlamaq tələb olunur.\n\nÜmumi tələlər:\n• Qeyri-müəyyən antecedent: 'The company told their employees' (company → its)\n• 'Everyone, someone, anyone' — tək sayılır (their deyil, his/her)\n• Ambiguous pronoun: 'John told Mark that he failed' — kim fail oldu?\n\nStrategiya: Əvəzliyin nəyi əvəz etdiyini tapın. Tək ism → tək əvəzlik, cəm ism → cəm əvəzlik.",
+          "questions": [
+            {
+              "type": "multiple_choice",
+              "question": "'Everyone' sözü üçün düzgün əvəzlik hansıdır?",
+              "options": ["their", "his or her", "our", "İkisi də olar"],
+              "answer": "his or her"
+            },
+            {
+              "type": "true_false",
+              "question": "'The company' üçün 'their' əvəzliyini işlətmək düzgündür.",
+              "answer": false
+            },
+            {
+              "type": "fill_blank",
+              "question": "Əvəzlik uzlaşmasında antecedent tək isə əvəzlik də ___ olmalıdır.",
+              "answer": "tək"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
