@@ -694,15 +694,13 @@ async function runCode() {
     const ex = curriculum[curLesson].exercises[curExercise];
     const combined = lines.join('\n');
     if (ex.check(combined)) {
-      fbEl.innerHTML = `<span class="fb-pass">✅ ${t('Düzgündür! Əla!', 'Correct! Well done!')}</span>`;
       if (!done[curLesson]) done[curLesson] = [];
       if (!done[curLesson].includes(curExercise)) done[curLesson].push(curExercise);
       renderExNav(); renderSidebar();
-      setTimeout(() => {
-        const ne = curExercise + 1, nl = curLesson + 1;
-        if (ne < curriculum[curLesson].exercises.length) loadExercise(ne);
-        else if (nl < curriculum.length) { curLesson = nl; loadLesson(nl); }
-      }, 1400);
+      const ne = curExercise + 1, nl = curLesson + 1;
+      const hasNext = ne < curriculum[curLesson].exercises.length || nl < curriculum.length;
+      fbEl.innerHTML = `<span class="fb-pass">✅ ${t('Düzgündür! Əla!', 'Correct! Well done!')}</span>`
+        + (hasNext ? `<button class="btn-next" onclick="nextStep()">${t('Növbəti →', 'Next →')}</button>` : '');
     } else {
       fbEl.innerHTML = `<span class="fb-hint">💡 ${t('Hint: ', 'Hint: ')}${ex.hint[lang]}</span>`;
     }
@@ -710,6 +708,12 @@ async function runCode() {
     const d = document.createElement('div');
     d.className = 'out-err'; d.textContent = '❌ ' + err.message; outEl.appendChild(d);
   }
+}
+
+function nextStep() {
+  const ne = curExercise + 1, nl = curLesson + 1;
+  if (ne < curriculum[curLesson].exercises.length) loadExercise(ne);
+  else if (nl < curriculum.length) { curLesson = nl; loadLesson(nl); }
 }
 
 function resetCode() {

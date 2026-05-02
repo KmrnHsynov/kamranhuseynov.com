@@ -572,18 +572,22 @@ function runCode(){
   const ex=curriculum[curLesson].exercises[curExercise];
   const combined=lines.join('\n');
   if(!combined.includes('❌')&&ex.check(combined)){
-    fbEl.innerHTML=`<span class="fb-pass">✅ ${t('Düzgündür!','Correct!')}</span>`;
     if(!done[curLesson])done[curLesson]=[];
     if(!done[curLesson].includes(curExercise))done[curLesson].push(curExercise);
     renderExNav();renderSidebar();
-    setTimeout(()=>{
-      const ne=curExercise+1,nl=curLesson+1;
-      if(ne<curriculum[curLesson].exercises.length)loadExercise(ne);
-      else if(nl<curriculum.length){curLesson=nl;loadLesson(nl);}
-    },1400);
+    const ne=curExercise+1,nl=curLesson+1;
+    const hasNext=ne<curriculum[curLesson].exercises.length||nl<curriculum.length;
+    fbEl.innerHTML=`<span class="fb-pass">✅ ${t('Düzgündür!','Correct!')}</span>`
+      +(hasNext?`<button class="btn-next" onclick="nextStep()">${t('Növbəti →','Next →')}</button>`:'');
   } else if(!combined.includes('❌')){
     fbEl.innerHTML=`<span class="fb-hint">💡 ${ex.hint[lang]}</span>`;
   }
+}
+
+function nextStep(){
+  const ne=curExercise+1,nl=curLesson+1;
+  if(ne<curriculum[curLesson].exercises.length)loadExercise(ne);
+  else if(nl<curriculum.length){curLesson=nl;loadLesson(nl);}
 }
 
 function resetCode(){

@@ -308,9 +308,20 @@ body {
   font-size: 11px;
 }
 
-#feedback { font-size: 11px; display: flex; align-items: center; gap: 4px; margin-left: auto; }
+#feedback { font-size: 11px; display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .fb-pass { color: #3fb950; }
 .fb-hint { color: #d29922; }
+.btn-next {
+  background: #238636;
+  border: none;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+.btn-next:hover { background: #2ea043; }
 
 #output {
   flex: 1;
