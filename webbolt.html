@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>WebBolt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+  <link rel="stylesheet" href="webbolt.css"/>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <a href="proyektlər.html" id="home-link">← Proyektlər</a>
+  <h1>⚡ WebBolt</h1>
+  <button class="lang-btn active" id="btn-az" onclick="setLang('az')">AZ</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <div id="progress-bar-wrap"><div id="progress-bar-fill" style="width:0%"></div></div>
+  <span id="progress-text">0/0</span>
+</div>
+
+<div id="main">
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="sidebar">
+    <h3 id="sidebar-title">Dərslər</h3>
+    <div id="lesson-list"></div>
+  </div>
+
+  <div id="content">
+    <div id="tabs">
+      <button id="tab-lesson" class="active" onclick="switchTab('lesson')">📖 Dərs</button>
+      <button id="tab-code" onclick="switchTab('code')">💻 Kod</button>
+    </div>
+
+    <div id="split">
+      <div id="lesson-panel" class="tab-active">
+        <h2 id="lesson-title"></h2>
+        <div class="lesson-meta" id="lesson-meta"></div>
+        <div class="lesson-body" id="lesson-body"></div>
+        <div class="task-box">
+          <h4 id="task-label">Tapşırıq</h4>
+          <p id="task-text"></p>
+        </div>
+        <button id="to-code-btn" onclick="switchTab('code')">💻 Kodu yaz →</button>
+      </div>
+
+      <div id="exercise-panel">
+        <div id="ex-header">
+          <h3 id="ex-title">Məşq 1</h3>
+          <div id="ex-nav"></div>
+        </div>
+        <div id="editor-wrap"><textarea id="editor"></textarea></div>
+        <div id="preview-bar">
+          <div id="run-row">
+            <button id="run-btn" onclick="runCode()">▶ Run</button>
+            <button id="reset-btn" onclick="resetCode()">↺</button>
+            <button id="hint-btn" onclick="showHint()">💡</button>
+            <span id="feedback"></span>
+          </div>
+          <iframe id="preview" sandbox="allow-scripts" title="preview"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="webbolt.js"></script>
+</body>
+</html>
