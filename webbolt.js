@@ -528,7 +528,7 @@ function loadLesson(i) {
 function loadExercise(ei) {
   curExercise = ei;
   const ex = curriculum[curLesson].exercises[ei];
-  document.getElementById('task-text').textContent = ex.task[lang];
+  document.getElementById('task-text').innerHTML = ex.task[lang];
   document.getElementById('ex-title').textContent  = t(`Məşq ${ei+1}`,`Exercise ${ei+1}`);
 
   const saved = getSaved(curLesson, ei);
