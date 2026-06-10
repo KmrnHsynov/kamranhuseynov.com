@@ -520,8 +520,8 @@ function loadLesson(i) {
   document.getElementById('lesson-meta').textContent  = l.meta[lang];
   document.getElementById('lesson-body').innerHTML    = l.body[lang];
   document.getElementById('task-label').textContent   = t('Tapşırıq','Exercise');
-  loadExercise(0);
   renderSidebar();
+  loadExercise(0);
   if (isMobile()) switchTab('lesson');
 }
 
@@ -560,10 +560,14 @@ function runCode() {
   setSaved(curLesson, curExercise, code);
 
   // write code into iframe
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open();
-  doc.write(code);
-  doc.close();
+  try {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(code);
+    doc.close();
+  } catch(e) {
+    iframe.srcdoc = code;
+  }
 
   const ex = curriculum[curLesson].exercises[curExercise];
   // wait a tick for iframe to render
