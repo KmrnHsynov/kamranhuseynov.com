@@ -330,6 +330,69 @@ body {
   width: 100%;
 }
 
+/* === JSBOLT CTA === */
+#jsbolt-cta { display: none; margin-top: 20px; }
+
+.jsbolt-banner {
+  background: linear-gradient(135deg, #f7c94808, #f7c94818);
+  border: 1px solid #f7c94840;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.jsbolt-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.jsbolt-banner-text span:first-child {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: #f7c948;
+}
+.jsbolt-banner-text strong {
+  font-size: 15px;
+  color: #f7c948;
+}
+.jsbolt-banner-text span:last-child {
+  font-size: 12px;
+  color: #8b949e;
+  line-height: 1.5;
+}
+
+.jsbolt-cta-btn {
+  background: #f7c948;
+  color: #0d1117;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity .15s;
+}
+.jsbolt-cta-btn:hover { opacity: .8; }
+
+.btn-jsbolt-inline {
+  background: #f7c948;
+  color: #0d1117;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-block;
+  transition: opacity .15s;
+}
+.btn-jsbolt-inline:hover { opacity: .8; }
+
 /* === MOBILE ≤ 700px === */
 @media (max-width: 700px) {
   body { height: 100dvh; }

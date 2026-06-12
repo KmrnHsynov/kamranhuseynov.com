@@ -520,6 +520,17 @@ function loadLesson(i) {
   document.getElementById('lesson-meta').textContent  = l.meta[lang];
   document.getElementById('lesson-body').innerHTML    = l.body[lang];
   document.getElementById('task-label').textContent   = t('Tapşırıq','Exercise');
+
+  const cta = document.getElementById('jsbolt-cta');
+  if (i === curriculum.length - 1) {
+    cta.style.display = 'block';
+    document.getElementById('jsbolt-cta-label').textContent = t('Sonrakı addım', 'Up next');
+    document.getElementById('jsbolt-cta-desc').textContent  = t('HTML və CSS-i bitirdin! İndi JavaScript öyrən.', 'You finished HTML & CSS! Now learn JavaScript.');
+    document.getElementById('jsbolt-cta-btn').textContent   = t('JSBolt-a keç →', 'Go to JSBolt →');
+  } else {
+    cta.style.display = 'none';
+  }
+
   renderSidebar();
   loadExercise(0);
   if (isMobile()) switchTab('lesson');
@@ -581,7 +592,9 @@ function runCode() {
         const ne = curExercise + 1, nl = curLesson + 1;
         const hasNext = ne < curriculum[curLesson].exercises.length || nl < curriculum.length;
         fbEl.innerHTML = `<span class="fb-pass">✅ ${t('Düzgündür!','Correct!')}</span>`
-          + (hasNext ? `<button class="btn-next" onclick="nextStep()">${t('Növbəti →','Next →')}</button>` : '');
+          + (hasNext
+            ? `<button class="btn-next" onclick="nextStep()">${t('Növbəti →','Next →')}</button>`
+            : `<a class="btn-jsbolt-inline" href="JSbolt.html">⚡ ${t('JSBolt-a keç →','Go to JSBolt →')}</a>`);
       }
     } catch(e) {}
   }, 80);
