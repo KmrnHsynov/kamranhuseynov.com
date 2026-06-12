@@ -592,9 +592,7 @@ function runCode() {
         const ne = curExercise + 1, nl = curLesson + 1;
         const hasNext = ne < curriculum[curLesson].exercises.length || nl < curriculum.length;
         fbEl.innerHTML = `<span class="fb-pass">✅ ${t('Düzgündür!','Correct!')}</span>`
-          + (hasNext
-            ? `<button class="btn-next" onclick="nextStep()">${t('Növbəti →','Next →')}</button>`
-            : `<a class="btn-jsbolt-inline" href="JSbolt.html">⚡ ${t('JSBolt-a keç →','Go to JSBolt →')}</a>`);
+          + (hasNext ? `<button class="btn-next" onclick="nextStep()">${t('Növbəti →','Next →')}</button>` : '');
       }
     } catch(e) {}
   }, 80);

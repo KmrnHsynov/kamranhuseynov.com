@@ -380,19 +380,6 @@ body {
 }
 .jsbolt-cta-btn:hover { opacity: .8; }
 
-.btn-jsbolt-inline {
-  background: #f7c948;
-  color: #0d1117;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  display: inline-block;
-  transition: opacity .15s;
-}
-.btn-jsbolt-inline:hover { opacity: .8; }
-
 /* === MOBILE ≤ 700px === */
 @media (max-width: 700px) {
   body { height: 100dvh; }
