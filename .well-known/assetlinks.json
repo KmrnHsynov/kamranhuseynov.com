@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.kamranhuseynov.sozle",
-    "sha256_cert_fingerprints": ["YOUR_SHA256_FINGERPRINT_HERE"]
+    "sha256_cert_fingerprints": ["15:AA:40:01:6E:F5:44:AC:4D:7E:45:89:7D:77:68:37:A9:C8:B6:E8:D7:6D:70:51:7A:DB:1D:F4:7D:73:E7:BD"]
   }
 }]
