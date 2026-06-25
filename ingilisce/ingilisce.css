@@ -343,22 +343,22 @@ body {
 
 .profile-modal {
   background: var(--white);
-  border-radius: 20px;
-  padding: 36px 28px 28px;
+  border-radius: 24px;
+  padding: 40px 32px 32px;
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
   text-align: center;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.22);
 }
-.profile-modal h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
-.profile-modal p  { color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5; }
+.profile-modal h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+.profile-modal > p { color: var(--text-muted); margin-bottom: 28px; font-size: 0.9rem; }
 
 .profile-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .profile-chip {
   background: var(--blue-light);
@@ -366,7 +366,7 @@ body {
   border: 2px solid var(--blue);
   border-radius: 20px;
   padding: 7px 18px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -376,26 +376,36 @@ body {
 
 .avatar-picker {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
-  margin-bottom: 18px;
+  margin-bottom: 28px;
 }
 
 .avatar-option {
   background: var(--gray-light);
   border: 3px solid transparent;
-  border-radius: 50%;
-  width: 64px;
-  height: 64px;
-  font-size: 2rem;
+  border-radius: 20px;
+  width: 110px;
+  height: 110px;
+  font-size: 4rem;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
 }
-.avatar-option:hover { background: var(--blue-light); }
-.avatar-option.selected { border-color: var(--blue); background: var(--blue-light); }
+.avatar-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: inherit;
+  letter-spacing: 0.3px;
+}
+.avatar-option:hover { background: var(--blue-light); transform: scale(1.06); }
+.avatar-option.selected { border-color: var(--blue); background: var(--blue-light); transform: scale(1.06); }
+.avatar-option.selected .avatar-label { color: var(--blue); }
 
 .profile-input-row {
   display: flex;
@@ -404,7 +414,7 @@ body {
 }
 .profile-input {
   flex: 1;
-  padding: 11px 14px;
+  padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
   font-size: 1rem;
