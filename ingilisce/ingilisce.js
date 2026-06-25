@@ -399,7 +399,7 @@ function showProfileModal() {
     chip.textContent = name;
     chip.addEventListener('click', () => {
       saveProfileName(name);
-      closeModal('profileOverlay');
+      document.getElementById('profileOverlay').classList.add('hidden');
       renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
     });
     listEl.appendChild(chip);
@@ -408,16 +408,19 @@ function showProfileModal() {
   const input = document.getElementById('profileNameInput');
   const startBtn = document.getElementById('profileStart');
   input.value = '';
-  input.addEventListener('keydown', e => { if (e.key === 'Enter' && input.value.trim()) startBtn.click(); });
-  startBtn.onclick = () => {
+
+  function doStart() {
     const name = input.value.trim();
     if (!name) return;
     saveProfileName(name);
-    closeModal('profileOverlay');
+    document.getElementById('profileOverlay').classList.add('hidden');
     renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
-  };
+  }
 
-  openModal('profileOverlay');
+  input.onkeydown = e => { if (e.key === 'Enter') doStart(); };
+  startBtn.onclick = doStart;
+
+  document.getElementById('profileOverlay').classList.remove('hidden');
   setTimeout(() => input.focus(), 100);
 }
 

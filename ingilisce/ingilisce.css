@@ -329,15 +329,29 @@ body {
 .celebration-modal h2 { font-size: 1.5rem; margin-bottom: 8px; }
 .celebration-modal p  { color: var(--text-muted); margin-bottom: 20px; }
 
-/* ── Profile Modal ── */
-.profile-modal {
-  text-align: center;
-  padding: 36px 24px 28px;
+/* ── Profile Overlay (always centered, never bottom-sheet) ── */
+.profile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
   align-items: center;
-  max-width: 380px;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
 }
-.profile-modal h2 { font-size: 1.4rem; margin-bottom: 8px; }
-.profile-modal p  { color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem; }
+
+.profile-modal {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 36px 28px 28px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+}
+.profile-modal h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+.profile-modal p  { color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem; line-height: 1.5; }
 
 .profile-list {
   display: flex;
@@ -351,11 +365,12 @@ body {
   color: var(--blue);
   border: 2px solid var(--blue);
   border-radius: 20px;
-  padding: 6px 16px;
+  padding: 7px 18px;
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
 }
 .profile-chip:hover { background: var(--blue); color: var(--white); }
 
@@ -366,10 +381,10 @@ body {
 }
 .profile-input {
   flex: 1;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
