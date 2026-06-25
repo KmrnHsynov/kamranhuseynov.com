@@ -2,7 +2,7 @@
   "sections": [
     {
       "id": "fonetika",
-      "title": "FONETİKA (Phonetics)",
+      "title": "The Phonetics - Fonetika",
       "nodes": [
         {
           "id": "fonetika-1",
@@ -30,73 +30,314 @@
             { "type": "true_false", "question": "'time' sözünün sonundakı 'e' hərfi oxunmur.", "answer": true }
           ]
         },
-        {
-          "id": "fonetika-3",
-          "title": "Saitlər",
-          "lesson": "Dərs mətni əlavə ediləcək.",
-          "questions": [
-            { "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" },
-            { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" },
-            { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }
-          ]
-        },
-        {
-          "id": "fonetika-4",
-          "title": "Samitlər",
-          "lesson": "Dərs mətni əlavə ediləcək.",
-          "questions": [
-            { "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" },
-            { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" },
-            { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }
-          ]
-        },
-        {
-          "id": "fonetika-5",
-          "title": "Heca və Vurğu",
-          "lesson": "Dərs mətni əlavə ediləcək.",
-          "questions": [
-            { "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" },
-            { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" },
-            { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }
-          ]
-        }
+        { "id": "fonetika-3",  "title": "Letters - Lesson 3",  "lesson": "1. A a [eı] hərfi I tip oxuda [eı] oxunur:
+ plane [pleın] təyyarə
+ name [neım] ad
+2. A a hərfi II tip oxuda [eə]oxunur. Qoşa samitlərdən əvvəl [eə]oxunur:
+ plan [pleən]plan
+ man [meən]kişi, adam
+ apple [əepl]alma
+ battle [beətl] döyüş
+3. A i hərfi birləşməsi [eı]oxunur:
+ day [deı] gün
+ main [meın] əsas, başlıca
+ Spain [speın] İspaniya
+ paid [peıd] ödədi
+ May [meı] May
+4. A i hərfi bəzi sözlərdə [e]oxunur:
+ Said [sed] dedi, (say feilinin keçmişi)
+5. Ay - bəzən sözün sonunda vurğusuz vəziyyətdə [i] oxunur:
+ Sunday [sʌndi]bazar günü
+6. Ed- hərf birləşməsi [i]oxunur:
+ Please [pli:z] buyurun
+ seat [si:t] oturacaq, yer
+7. Ed- hərf birləşməsi bəzən [e]oxunur:
+ read [red] oxudu
+ head [hed] baş
+ bread [bred] çörək
+ dead [ded] ölü8. C c [si:]hərfi i, e, y hərflərindən əvvəl [s]oxunur:
+ nice [naıs] gözəl, qəşəng
+ place [pleıs] yer
+ civie [sıvıl] vətəndaş
+ icy [aısı] buzlu
+9. C c hərfi qalan hallarda [k]oxunur:
+ cap[keəp] papaq
+ clean [kli:n] təmiz", "questions": [] },
+        { "id": "fonetika-4",  "title": "Letters - Lesson 4",  "lesson": "", "questions": [] },
+        { "id": "fonetika-5",  "title": "Letters - Lesson 5",  "lesson": "", "questions": [] },
+        { "id": "fonetika-6",  "title": "Letters - Lesson 6",  "lesson": "", "questions": [] },
+        { "id": "fonetika-7",  "title": "Letters - Lesson 7",  "lesson": "", "questions": [] },
+        { "id": "fonetika-8",  "title": "Letters - Lesson 8",  "lesson": "", "questions": [] },
+        { "id": "fonetika-9",  "title": "Letters - Lesson 9",  "lesson": "", "questions": [] },
+        { "id": "fonetika-10", "title": "Letters - Lesson 10", "lesson": "", "questions": [] },
+        { "id": "fonetika-11", "title": "Stress",              "lesson": "", "questions": [] },
+        { "id": "fonetika-12", "title": "Parts Of Speech",     "lesson": "", "questions": [] }
       ]
     },
     {
-      "id": "leksikologiya",
-      "title": "LEKSİKOLOGİYA (Lexicology)",
+      "id": "isim",
+      "title": "The Noun - İsim",
       "nodes": [
-        { "id": "leks-1", "title": "Sözün mənası", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "leks-2", "title": "Sinonimlər və Antonimlər", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "leks-3", "title": "Sözlərin quruluşu", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "leks-4", "title": "Phrasal Verbs", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "leks-5", "title": "Sözdüzəltmə (Word Formation)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] }
+        { "id": "isim-1", "title": "Common And Proper Nouns",          "lesson": "", "questions": [] },
+        { "id": "isim-2", "title": "Countable And Uncountable Nouns",  "lesson": "", "questions": [] },
+        { "id": "isim-3", "title": "İsmin Cümlədə Vəzifəsi",          "lesson": "", "questions": [] },
+        { "id": "isim-4", "title": "Plural Of The Noun",               "lesson": "", "questions": [] },
+        { "id": "isim-5", "title": "Nouns Used Only In The Singular",  "lesson": "", "questions": [] },
+        { "id": "isim-6", "title": "Nouns Used Only In The Plural",    "lesson": "", "questions": [] },
+        { "id": "isim-7", "title": "The Category Of Case The Noun",    "lesson": "", "questions": [] },
+        { "id": "isim-8", "title": "The Possessive Case",              "lesson": "", "questions": [] },
+        { "id": "isim-9", "title": "Gender Of Nouns",                  "lesson": "", "questions": [] }
       ]
     },
     {
-      "id": "morfologiya",
-      "title": "MORFOLOGİYA (Morphology)",
+      "id": "sifet",
+      "title": "The Adjective - Sifət",
       "nodes": [
-        { "id": "morf-1", "title": "İsim (The Noun)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "morf-2", "title": "Artikl (The Article)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "morf-3", "title": "Sifət (The Adjective)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "morf-4", "title": "Say (The Numeral)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "morf-5", "title": "Əvəzlik (The Pronoun)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "morf-6", "title": "Feil (The Verb)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "morf-7", "title": "Zərf, Ədat və Sözönü", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] }
+        { "id": "sifet-1", "title": "Sifətin Cümlədə Rolu",                                  "lesson": "", "questions": [] },
+        { "id": "sifet-2", "title": "Classification Of Adjectives According To Their Meaning","lesson": "", "questions": [] },
+        { "id": "sifet-3", "title": "The Category Of Degree Of Comparison Of Adjectives",     "lesson": "", "questions": [] },
+        { "id": "sifet-4", "title": "Sifətin Dərəcələrinin İşlənməsi",                       "lesson": "", "questions": [] },
+        { "id": "sifet-5", "title": "Double Comparison",                                      "lesson": "", "questions": [] },
+        { "id": "sifet-6", "title": "Substantivized Adjectives",                              "lesson": "", "questions": [] }
       ]
     },
     {
-      "id": "sintaksis",
-      "title": "SİNTAKSİS (Syntax)",
+      "id": "say",
+      "title": "The Numeral - Say",
       "nodes": [
-        { "id": "sint-1", "title": "Collocations", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "sint-2", "title": "Sadə cümlə", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "sint-3", "title": "Xüsusi konstruksiyalar", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "sint-4", "title": "Mürəkkəb cümlə", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "sint-5", "title": "Budaq cümlələr", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "sint-6", "title": "Şərt budaq cümlələri (Conditionals)", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] },
-        { "id": "sint-7", "title": "Vasitəsiz və Vasitəli nitq", "lesson": "Dərs mətni əlavə ediləcək.", "questions": [{ "type": "multiple_choice", "question": "Sual əlavə ediləcək.", "options": ["A", "B", "C", "D"], "answer": "A" }, { "type": "fill_blank", "question": "Boşluq ___ doldurul.", "answer": "A" }, { "type": "true_false", "question": "İddia əlavə ediləcək.", "answer": true }] }
+        { "id": "say-1", "title": "Cardinal Numerals",                              "lesson": "", "questions": [] },
+        { "id": "say-2", "title": "Ordinal Numerals",                               "lesson": "", "questions": [] },
+        { "id": "say-3", "title": "Miqdar Və Sıra Saylarının Cümlədə Funksiyası",  "lesson": "", "questions": [] },
+        { "id": "say-4", "title": "Fractional Numbers",                             "lesson": "", "questions": [] },
+        { "id": "say-5", "title": "İngilis Dilində Vaxtın Göstərilməsi",            "lesson": "", "questions": [] },
+        { "id": "say-6", "title": "İngiltərədə Və ABŞ-da Pul Vahidi",              "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "evezlik",
+      "title": "The Pronoun - Əvəzlik",
+      "nodes": [
+        { "id": "evezlik-1",  "title": "Personal Pronouns",      "lesson": "", "questions": [] },
+        { "id": "evezlik-2",  "title": "Possessive Pronouns",    "lesson": "", "questions": [] },
+        { "id": "evezlik-3",  "title": "Reflexive Pronouns",     "lesson": "", "questions": [] },
+        { "id": "evezlik-4",  "title": "Reciprocal Pronouns",    "lesson": "", "questions": [] },
+        { "id": "evezlik-5",  "title": "Demonstrative Pronouns", "lesson": "", "questions": [] },
+        { "id": "evezlik-6",  "title": "Interrogative Pronouns", "lesson": "", "questions": [] },
+        { "id": "evezlik-7",  "title": "Relative Pronouns",      "lesson": "", "questions": [] },
+        { "id": "evezlik-8",  "title": "Conjunctive Pronouns",   "lesson": "", "questions": [] },
+        { "id": "evezlik-9",  "title": "Defining Pronouns",      "lesson": "", "questions": [] },
+        { "id": "evezlik-10", "title": "Indefinite Pronouns",    "lesson": "", "questions": [] },
+        { "id": "evezlik-11", "title": "Negative Pronouns",      "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "feil",
+      "title": "The Verb - Feil",
+      "nodes": [
+        { "id": "feil-header-1", "title": "The Auxiliary Verbs - Köməkçi Feillər", "type": "header", "lesson": "", "questions": [] },
+        { "id": "feil-1",  "title": "The Auxiliary Verb",         "lesson": "", "questions": [] },
+        { "id": "feil-2",  "title": "To Be",                      "lesson": "", "questions": [] },
+        { "id": "feil-3",  "title": "To Have",                    "lesson": "", "questions": [] },
+        { "id": "feil-4",  "title": "To Have Tərkibli Feillər",   "lesson": "", "questions": [] },
+        { "id": "feil-5",  "title": "To Have Got",                "lesson": "", "questions": [] },
+        { "id": "feil-6",  "title": "To Make Tərkibli Feillər",   "lesson": "", "questions": [] },
+        { "id": "feil-7",  "title": "To Do",                      "lesson": "", "questions": [] },
+        { "id": "feil-8",  "title": "To Do Tərkibli Feillər",     "lesson": "", "questions": [] },
+        { "id": "feil-9",  "title": "To Be Going To",             "lesson": "", "questions": [] },
+        { "id": "feil-10", "title": "To Be About To",             "lesson": "", "questions": [] },
+
+        { "id": "feil-header-2", "title": "Tense Forms - Zaman Formaları", "type": "header", "lesson": "", "questions": [] },
+        { "id": "feil-11", "title": "Feilin Məlum Növü",                              "lesson": "", "questions": [] },
+        { "id": "feil-12", "title": "The Present Indefinite (Simple) Tense Form",     "lesson": "", "questions": [] },
+        { "id": "feil-13", "title": "The Past Indefinite (Simple) Tense Form",        "lesson": "", "questions": [] },
+        { "id": "feil-14", "title": "The Future Indefinite (Simple) Tense Form",      "lesson": "", "questions": [] },
+        { "id": "feil-15", "title": "The Future Indefinite (Simple) Tense Form In The Past", "lesson": "", "questions": [] },
+        { "id": "feil-16", "title": "The Present Continuous Tense Form",              "lesson": "", "questions": [] },
+        { "id": "feil-17", "title": "The Past Continuous Tense Form",                 "lesson": "", "questions": [] },
+        { "id": "feil-18", "title": "The Future Continuous Tense Form",               "lesson": "", "questions": [] },
+        { "id": "feil-19", "title": "The Future Continuous In The Past Tense Form",   "lesson": "", "questions": [] },
+        { "id": "feil-20", "title": "The Present Perfect Tense Form",                 "lesson": "", "questions": [] },
+        { "id": "feil-21", "title": "The Past Perfect Tense Form",                    "lesson": "", "questions": [] },
+        { "id": "feil-22", "title": "The Future Perfect Tense Form",                  "lesson": "", "questions": [] },
+        { "id": "feil-23", "title": "The Future Perfect In The Past",                 "lesson": "", "questions": [] },
+        { "id": "feil-24", "title": "The Present Perfect Continuous Tense Form",      "lesson": "", "questions": [] },
+        { "id": "feil-25", "title": "The Past Perfect Continuous Tense Form",         "lesson": "", "questions": [] },
+        { "id": "feil-26", "title": "The Future Perfect Continuous Tense Form",       "lesson": "", "questions": [] },
+        { "id": "feil-27", "title": "The Future Perfect Continuous In The Past",      "lesson": "", "questions": [] },
+
+        { "id": "feil-28", "title": "The Passive Voice",                              "lesson": "", "questions": [] },
+        { "id": "feil-29", "title": "The Present Indefinite Passive Voice",           "lesson": "", "questions": [] },
+        { "id": "feil-30", "title": "The Past Indefinite Passive Voice",              "lesson": "", "questions": [] },
+        { "id": "feil-31", "title": "The Future Indefinite In The Past Passive Voice","lesson": "", "questions": [] },
+        { "id": "feil-32", "title": "The Present Continuous Passive Voice",           "lesson": "", "questions": [] },
+        { "id": "feil-33", "title": "The Past Continuous Passive Voice",              "lesson": "", "questions": [] },
+        { "id": "feil-34", "title": "The Present Perfect Passive Voice",              "lesson": "", "questions": [] },
+        { "id": "feil-35", "title": "The Past Perfect Passive Voice",                 "lesson": "", "questions": [] },
+        { "id": "feil-36", "title": "The Future Perfect Passive Voice",               "lesson": "", "questions": [] },
+        { "id": "feil-37", "title": "The Future Perfect In The Past Passive Voice",   "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "mechul-nov",
+      "title": "The Passive Voice - Məchul Növ",
+      "nodes": [
+        { "id": "mechul-1",  "title": "The Passive Voice",                              "lesson": "", "questions": [] },
+        { "id": "mechul-2",  "title": "The Present Indefinite Passive Voice",           "lesson": "", "questions": [] },
+        { "id": "mechul-3",  "title": "The Past Indefinite Passive Voice",              "lesson": "", "questions": [] },
+        { "id": "mechul-4",  "title": "The Future Indefinite In The Past Passive Voice","lesson": "", "questions": [] },
+        { "id": "mechul-5",  "title": "The Present Continuous Passive Voice",           "lesson": "", "questions": [] },
+        { "id": "mechul-6",  "title": "The Past Continuous Passive Voice",              "lesson": "", "questions": [] },
+        { "id": "mechul-7",  "title": "The Present Perfect Passive Voice",              "lesson": "", "questions": [] },
+        { "id": "mechul-8",  "title": "The Past Perfect Passive Voice",                 "lesson": "", "questions": [] },
+        { "id": "mechul-9",  "title": "The Future Perfect Passive Voice",               "lesson": "", "questions": [] },
+        { "id": "mechul-10", "title": "The Future Perfect In The Past Passive Voice",   "lesson": "", "questions": [] },
+        { "id": "mechul-11", "title": "Modal Verbs In The Passive Voice",               "lesson": "", "questions": [] },
+        { "id": "mechul-12", "title": "Məchul Növün Canı",                              "lesson": "", "questions": [] },
+        { "id": "mechul-13", "title": "To Be Feilleri",                                 "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "murekkeb-tamam",
+      "title": "The Complex Object - Mürəkkəb Tamamlıq",
+      "nodes": [
+        { "id": "murekkeb-1", "title": "The Complex Object",                        "lesson": "", "questions": [] },
+        { "id": "murekkeb-2", "title": "Mürəkkəb Tamamlığın Vacib Hissələri",      "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "modal",
+      "title": "Modal Verbs - Modal Feillər",
+      "nodes": [
+        { "id": "modal-1", "title": "Modal Verbs",        "lesson": "", "questions": [] },
+        { "id": "modal-2", "title": "Can",                "lesson": "", "questions": [] },
+        { "id": "modal-3", "title": "May",                "lesson": "", "questions": [] },
+        { "id": "modal-4", "title": "Might",              "lesson": "", "questions": [] },
+        { "id": "modal-5", "title": "Must",               "lesson": "", "questions": [] },
+        { "id": "modal-6", "title": "Have To / Has To",   "lesson": "", "questions": [] },
+        { "id": "modal-7", "title": "Should / Ought To",  "lesson": "", "questions": [] },
+        { "id": "modal-8", "title": "Dare",               "lesson": "", "questions": [] },
+        { "id": "modal-9", "title": "Need",               "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "zerf",
+      "title": "The Adverb - Zərf",
+      "nodes": [
+        { "id": "zerf-1", "title": "The Adverb",                               "lesson": "", "questions": [] },
+        { "id": "zerf-2", "title": "Zərfin Mənaca Növləri",                    "lesson": "", "questions": [] },
+        { "id": "zerf-3", "title": "Zərfdə Əsas Diqqət Olunmalı Hissələr",    "lesson": "", "questions": [] },
+        { "id": "zerf-4", "title": "Degrees Of Comparison Of The Adverbs",    "lesson": "", "questions": [] },
+        { "id": "zerf-5", "title": "Cümlədə Zərfin Yeri",                     "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "cumle-qurulusu",
+      "title": "Sentence Structure - Cümlə Quruluşu",
+      "nodes": [
+        { "id": "cumle-1", "title": "Sentence Structure",      "lesson": "", "questions": [] },
+        { "id": "cumle-2", "title": "Declarative Sentence",    "lesson": "", "questions": [] },
+        { "id": "cumle-3", "title": "Interrogative Sentences", "lesson": "", "questions": [] },
+        { "id": "cumle-4", "title": "Imperative Sentences",    "lesson": "", "questions": [] },
+        { "id": "cumle-5", "title": "Exclamatory Sentences",   "lesson": "", "questions": [] },
+        { "id": "cumle-6", "title": "Negative Sentences",      "lesson": "", "questions": [] },
+        { "id": "cumle-7", "title": "Şəxssiz Cümlələr",        "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "there-be",
+      "title": "There + To Be",
+      "nodes": [
+        { "id": "there-1", "title": "There Is, There Are İfadəsi",      "lesson": "", "questions": [] },
+        { "id": "there-2", "title": "There Was, There Were İfadəsi",    "lesson": "", "questions": [] },
+        { "id": "there-3", "title": "There Will Be",                    "lesson": "", "questions": [] },
+        { "id": "there-4", "title": "There Has / Have Been İfadəsi",    "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "mubteda-cumle",
+      "title": "Mübtəda Sualları / Mürəkkəb Cümlə",
+      "nodes": [
+        { "id": "mubteda-1",  "title": "Mübtəda Sualları",                       "lesson": "", "questions": [] },
+        { "id": "mubteda-2",  "title": "Mübtəda Və Onun Təyininə Verilən Sual",  "lesson": "", "questions": [] },
+        { "id": "mubteda-3",  "title": "The Composite Sentence - Mürəkkəb Cümlə","lesson": "", "questions": [] },
+        { "id": "mubteda-4",  "title": "The Compound Sentence",                  "lesson": "", "questions": [] },
+        { "id": "mubteda-5",  "title": "The Complex Sentences",                  "lesson": "", "questions": [] },
+        { "id": "mubteda-6",  "title": "The Subject Subordinate Clause",         "lesson": "", "questions": [] },
+        { "id": "mubteda-7",  "title": "The Predicative Subordinate Clause",     "lesson": "", "questions": [] },
+        { "id": "mubteda-8",  "title": "The Object Subordinate Clause",          "lesson": "", "questions": [] },
+        { "id": "mubteda-9",  "title": "The Attributive Subordinate Clause",     "lesson": "", "questions": [] },
+        { "id": "mubteda-10", "title": "The Adverbial Subordinate Clause",       "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "vasiteli-nitq",
+      "title": "Direct And Indirect Speech - Vasitəli Və Vasitəsiz Nitq",
+      "nodes": [
+        { "id": "nitq-1", "title": "Direct And Indirect Speech", "lesson": "", "questions": [] },
+        { "id": "nitq-2", "title": "Zamanların Çevrilməsi",      "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "sexssiz-formalar",
+      "title": "The Non-Finite Forms Of The Verb - Feilin Şəxssiz Formaları",
+      "nodes": [
+        { "id": "sexssiz-1", "title": "The Participle II", "lesson": "", "questions": [] },
+        { "id": "sexssiz-2", "title": "Participle I",      "lesson": "", "questions": [] },
+        { "id": "sexssiz-3", "title": "The Gerund",        "lesson": "", "questions": [] },
+        { "id": "sexssiz-4", "title": "The Infinitive",    "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "vasiteli-sekiller",
+      "title": "The Oblique Moods - Feilin Vasitəli Şəkilləri",
+      "nodes": [
+        { "id": "mood-1", "title": "Subjunctive I",           "lesson": "", "questions": [] },
+        { "id": "mood-2", "title": "Subjunctive II",          "lesson": "", "questions": [] },
+        { "id": "mood-3", "title": "The Suppositional Mood",  "lesson": "", "questions": [] },
+        { "id": "mood-4", "title": "The Conditional Mood",    "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "cumle-tamamlama",
+      "title": "Sentence Completion - Cümlə Tamamlama",
+      "nodes": [
+        { "id": "tamamlama-1", "title": "Sentence Completion", "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "artikl",
+      "title": "The Article - Artikl / The Preposition - Sözönləri",
+      "nodes": [
+        { "id": "artikl-1", "title": "The Indefinite Article",        "lesson": "", "questions": [] },
+        { "id": "artikl-2", "title": "The Definite Article",          "lesson": "", "questions": [] },
+        { "id": "artikl-3", "title": "The Preposition - Sözönləri",   "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "baglayi",
+      "title": "The Conjunction - Bağlayıcı / The Particle - Ədat",
+      "nodes": [
+        { "id": "baglayi-1", "title": "Qoşa Bağlayıcılar",   "lesson": "", "questions": [] },
+        { "id": "baglayi-2", "title": "The Particle - Ədat",  "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "musteqil",
+      "title": "The Independent Elements Of The Sentence - Cümlənin Müstəqil Elementləri",
+      "nodes": [
+        { "id": "musteqil-1", "title": "Xitab",        "lesson": "", "questions": [] },
+        { "id": "musteqil-2", "title": "Ara Sözlər",   "lesson": "", "questions": [] },
+        { "id": "musteqil-3", "title": "Modal Sözlər", "lesson": "", "questions": [] },
+        { "id": "musteqil-4", "title": "Nida",         "lesson": "", "questions": [] }
+      ]
+    },
+    {
+      "id": "lugat",
+      "title": "Vocabulary And Irregular Verbs - Lüğət Və Qaydasız Feillər",
+      "nodes": [
+        { "id": "lugat-1", "title": "İnkarlıq Bildirən Sözdüzəldici Prefikslər Vasitəsilə Əmələ Gələn Sifətlər", "lesson": "", "questions": [] },
+        { "id": "lugat-2", "title": "Confusing Words",  "lesson": "", "questions": [] },
+        { "id": "lugat-3", "title": "Qaydasız Feillər", "lesson": "", "questions": [] }
       ]
     }
   ]
