@@ -126,11 +126,19 @@ function openLesson(nodeId, curriculum, isReview) {
   if (isReview) {
     footer.innerHTML = '';
   } else {
-    footer.innerHTML = '<button class="btn-primary" id="lessonDone">Bitirdim →</button>';
-    document.getElementById('lessonDone').addEventListener('click', () => {
-      closeModal('lessonOverlay');
-      startQuiz(nodeId, curriculum);
-    });
+    if (node.questions && node.questions.length > 0) {
+      footer.innerHTML = '<button class="btn-primary" id="lessonDone">Bitirdim →</button>';
+      document.getElementById('lessonDone').addEventListener('click', () => {
+        closeModal('lessonOverlay');
+        startQuiz(nodeId, curriculum);
+      });
+    } else {
+      footer.innerHTML = '<button class="btn-primary" id="lessonDone">Bitirdim →</button>';
+      document.getElementById('lessonDone').addEventListener('click', () => {
+        closeModal('lessonOverlay');
+        completeNode(nodeId, curriculum);
+      });
+    }
   }
 
   document.getElementById('lessonClose').onclick = () => closeModal('lessonOverlay');
