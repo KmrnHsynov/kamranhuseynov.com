@@ -7,49 +7,49 @@
 {
   "id": "fonetika-1",
   "title": "Oxu Qaydaları - Oxu Tipləri və E hərfi",
-  "lesson": "İngilis dilində 26 hərf, 44 səs var. Hərflərdən 20-si samit, 6-sı saitdir. Səslərdən isə 20-si sait, 24-ü samitdir.\n\nİngilis dilində sözləri düzgün oxumaq üçün 4 əsas oxu tipini bilmək lazımdır:\n\n1. I tip oxu: Sonu saitlə bitən hecalara açıq heca deyilir.\n2. II tip oxu: Sonu samitlə bitən hecalara qapalı heca deyilir.\n3. III tip oxu: Sait + r + samit (samit ola da bilər, olmaya da bilər).\n4. IV tip oxu: Sait + r + sait.\n\nE e hərfinin bəzi əsas oxu qaydaları:\n• E e hərfi vurğulu açıq hecada (I tip) [i:] oxunur. Məsələn: me [mi:], be [bi:], Pete [pi:t].\n• E e hərfi vurğulu qapalı hecada (II tip) [e] oxunur. Məsələn: ten [ten], pen [pen].\n• Əgər vurğulu 'e' hərfindən sonra 2 yaxud 3 samit gələrsə, II tipdəki kimi [e] oxunur. Məsələn: meddle [medl].\n• Qoşa samitlər 1 səs kimi oxunur. Məsələn: tell [tel], sell [sel].\n• Qoşa 'ee' hərf birləşməsi I tip oxudakı kimi [i:] oxunur. Məsələn: meet [mi:t], seed [si:d].",
+  "lesson": "İngilis dilində 26 hərf, 44 səs var. Hərflərdən 20-si samit, 6-sı saitdir. Səslərdən isə 20-si sait, 24-ü samitdir.\n\nİngilis dilində sözləri düzgün oxumaq üçün 4 əsas oxu tipini bilmək lazımdır:\n\n1. I tip oxu: Sonu saitlə bitən hecalara açıq heca deyilir.\n2. II tip oxu: Sonu samitlə bitən hecalara qapalı heca deyilir.\n3. III tip oxu: Sait + r + samit.\n4. IV tip oxu: Sait + r + sait.\n\nE e hərfinin bəzi əsas oxu qaydaları:\n• E e hərfi vurğulu açıq hecada (I tip) [i:] oxunur. Məsələn: me [mi:], be [bi:], Pete [pi:t].\n• E e hərfi vurğulu qapalı hecada (II tip) [e] oxunur. Məsələn: ten [ten], pen [pen].\n• Qoşa 'ee' hərf birləşməsi [i:] oxunur. Məsələn: meet [mi:t], seed [si:d].",
   "questions": [
     {
       "type": "multiple_choice",
-      "question": "İngilis dilində neçə sait hərf və neçə sait səs var?",
+      "question": "İngilis dilində neçə hərf var?",
       "options": [
-        "6 sait hərf, 20 sait səs",
-        "20 sait hərf, 24 sait səs",
-        "6 sait hərf, 24 sait səs",
-        "20 sait hərf, 20 sait səs"
+        "24",
+        "26",
+        "28",
+        "44"
       ],
-      "answer": "6 sait hərf, 20 sait səs"
+      "answer": "26"
     },
     {
       "type": "multiple_choice",
-      "question": "'Sait + r + sait' formulu hansı oxu tipinin əlamətidir?",
+      "question": "Sonu saitlə bitən heca necə adlanır?",
       "options": [
-        "I tip",
-        "II tip",
-        "III tip",
-        "IV tip"
+        "Qapalı heca",
+        "Açıq heca",
+        "Qoşa heca",
+        "Vurğulu heca"
       ],
-      "answer": "IV tip"
+      "answer": "Açıq heca"
     },
     {
       "type": "fill_blank",
-      "question": "Sonu samitlə bitən hecalara ___ heca deyilir və bu II tip oxu hesab olunur.",
+      "question": "Sonu samitlə bitən hecaya ___ heca deyilir.",
       "answer": "qapalı"
     },
     {
       "type": "fill_blank",
-      "question": "'meet' sözündəki qoşa 'ee' hərf birləşməsi ___ kimi tələffüz olunur.",
+      "question": "'me' sözündə E hərfi ___ kimi oxunur.",
       "answer": "[i:]"
     },
     {
       "type": "true_false",
-      "question": "'tell' və 'sell' sözlərindəki qoşa samitlər iki ayrı səs kimi oxunur.",
-      "answer": false
+      "question": "'ten' sözündə E hərfi [e] kimi oxunur.",
+      "answer": true
     },
     {
       "type": "true_false",
-      "question": "Vurğulu 'e' hərfindən sonra 2 və ya 3 samit gəldikdə o, [e] səsini verir.",
-      "answer": true
+      "question": "'meet' sözündəki 'ee' birləşməsi [e] kimi oxunur.",
+      "answer": false
     }
   ]
 },
@@ -297,18 +297,246 @@
     }
   ]
 },
-        { "id": "fonetika-8",  "title": "Letters - Lesson 8",  "lesson": "", "questions": [] },
-        { "id": "fonetika-9",  "title": "Letters - Lesson 9",  "lesson": "", "questions": [] },
-        { "id": "fonetika-10", "title": "Letters - Lesson 10", "lesson": "", "questions": [] },
-        { "id": "fonetika-11", "title": "Stress",              "lesson": "", "questions": [] },
-        { "id": "fonetika-12", "title": "Parts Of Speech",     "lesson": "", "questions": [] }
+{
+  "id": "fonetika-8",
+  "title": "Letters - Lesson 8",
+  "lesson": "1. E e, I i, Y y, U u hərfləri III tip oxuya [ə:] oxunur:\n™ her [hə:] onun, ona\n™ firm [fə:m] firma, möhkəm, qəti\n™ byrd [bə:d] Berd (soyad)\n™ turn [tə:n] növbə, dönmək.\n2. Wa dan sonra əgər samit r hərfindən başqa, yada samit birləşmələri gələrsə wa [wɔ] oxunur:\n™ want [wɔunt] istəmək\n™ watch [wɔtʃ]müşahidə etmək, cib saatı\n™ wash [wɔʃ] yumaq\n™ wasp [wɔʃp] eşşək arısı\n3. Wh dan sonra O hərfindən başqa digər hərf gələrsə, wh [w] oxunur. H oxunmur:\n™ white [waıt] ağ\n™ what [wɔt] nə, hansı\n™ when [wen] nə vaxt\n4. Wh dan sonra O hərfi gələrsə , Wh [h] oxunur. [w] oxunmur:\n™ Who [hu:] kim,\n™ whose [hu:z] kimin,\n™ whole [houl] bütün.\n5. Ar hərfbirləşməsi w və wh hərfbirləşməsindən sonra [ɔ:] oxunur.\n™ war [wɔ:] müharibə\n™ warm [wɔ:m] isti\n™ wharf [wɔ:f] liman, sahil\n™ warship [wɔ:sip] hərfi, gəmi\n™ warn [wɔ:n] xəbərdarlıq etmək\n™ wordrobe [wɔ:drəub] paltar şkafı",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "'E, i, y, u' hərfləri III tip oxuda hansı səsi verir?",
+      "options": ["[ɔ:]", "[ə:]", "[w]", "[h]"],
+      "answer": "[ə:]"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Wh birləşməsindən sonra hansı hərf gəldikdə 'w' oxunmur və birləşmə [h] səsini verir?",
+      "options": ["a hərfi", "e hərfi", "i hərfi", "o hərfi"],
+      "answer": "o hərfi"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'white', 'what' və 'when' sözlərində 'wh' birləşməsindən sonra 'o'-dan başqa hərf gəldiyi üçün ___ hərfi oxunmur.",
+      "answer": "h"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'war', 'warm' və 'warn' sözlərindəki 'ar' birləşməsi 'w' hərfindən sonra gəldiyi üçün ___ kimi oxunur.",
+      "answer": "[ɔ:]"
+    },
+    {
+      "type": "true_false",
+      "question": "'her', 'firm' və 'turn' sözlərindəki saitlər III tip oxuya aid olaraq [ə:] oxunur.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'watch' və 'wash' sözlərindəki 'wa' birləşməsi [ə:] kimi tələffüz olunur.",
+      "answer": false
+    }
+  ]
+},
+        {
+  "id": "fonetika-9",
+  "title": "Letters - Lesson 9",
+  "lesson": "1. IV tip oxunur əlaməti sait+r+saitdir.\na) A hərfi IV tip oxuda [ɛə] oxunur:\n™ Mary [mɛəri] Meri\n™ parents [pɛərənts] valideynlər\n™ care [kɛə] qayğı, diqqət\nb) E hərfi IV tip oxuda [iə] oxunur:\n™ here [hiə] bura, burada\n¾ Ancaq qaydaya tabe olmayanlar da var:\n™ there [əɛə] ora, orada\n™ where [wɛə] hara harada, ( tabe deyil)\nc) İ və y hərfləri IV tip oxuda [aıə] oxunur:\n™ fire [faıə] alov, ocaq\n™ tyre [taıə] şin, təkər, qurşağı\nd) O hərfi IV tip oxuda [ɔ:] oxunur:\n™ more [mɔ:] daha çox\n™ sore [sɔ:] ağrı, yara\ne) U hərfi IV tip oxuda [juə]oxunur:\n™ Cure [kjuə] müalicə etmək\n™ pure [pjuə] təmiz, xalis\n2) eer hərfbirləşməsi [ıə] oxunur:\n™ engineer [endʒınıə] mühəndis\n™ deer [dıə] maral\n3) airhərfbirləşməsi [ɛə] oxunur:\n™ air [hɛə] hava\nAncaq aşağıdakı sözlərdə diqqətli olmaq lazımdır:\n™ ear [ıə] qulaq\n™ heard [hə:d] eşitdi\n™ bear [bıə] ayı\n™ player [pleıə] oyunçu\n4) our hərfbirləşməsi[auə] oxunur:\n™ our [auə] bizim,\n™ sour [sauə] turş.\n5) wor hərfbirləşməsi samitdən əvvəl [wə:] oxunur:\n™ work [wə:k] iş (ləmək),\n™ world [wə:ld] dünya,\n™ word [wə:d] söz,\n™ worst [wə:st] daha pis.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Hansı söz IV tip oxu qaydasına tabe olmayaraq 'E' hərfi ilə [wɛə] səsini verir?",
+      "options": ["here", "where", "fire", "pure"],
+      "answer": "where"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "'wor' hərfbirləşməsi samitdən əvvəl (məsələn: 'work', 'world') necə tələffüz olunur?",
+      "options": ["[ɔ:]", "[auə]", "[wə:]", "[ɛə]"],
+      "answer": "[wə:]"
+    },
+    {
+      "type": "fill_blank",
+      "question": "İ və y hərfləri IV tip oxuda (məsələn: 'fire', 'tyre') ___ səsini ifadə edir.",
+      "answer": "[aıə]"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'our' və 'sour' sözlərindəki 'our' hərfbirləşməsi ___ oxunur.",
+      "answer": "[auə]"
+    },
+    {
+      "type": "true_false",
+      "question": "'engineer' və 'deer' sözlərindəki 'eer' hərfbirləşməsi [ıə] oxunur.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'O' hərfi IV tip oxuda (məsələn: 'more', 'sore') [juə] səsini verir.",
+      "answer": false
+    }
+  ]
+},
+       {
+  "id": "fonetika-10",
+  "title": "Letters - Lesson 10",
+  "lesson": "1. Q q [kju:] hərfi quhərfbirləşməsi kimi vurğulu saitdən əvvəl [kw] oxunur:\n™ Quick [kwaı] tamamilə\nQu hərfbirləşməsi sözün sonunda [k] kimi oxunur:\n™ Mosque [mosk] məscid\n™ cheque [tʃek] çek\n2. Al hərfbirləşməsi K hərfindən qabaq [ɔ:] oxunur:\n™ chalk [tʃɔ:k] təbaşir\n™ talk [tɔ:k] söhbət etmək\nqalan samitlərdən əvvəl və vurğulu hecada [ɔ:l] oxunur:\n™ small [smɔ:l] balaca\n™ all [ɔ:l] hamı\n™ also [ɔ:lsou] həmçinin\n3. Ew hərfbirləşməsiəksər sözlərdə [ju:]kimi oxunur:\n™ New [nju:] təzə, yeni\n™ few [fju:] bir az, az\n4. W hərfi r hərfindən əvvəl oxunmur:\n™ write [raıt] yazmaq\n5. İgh hərfbirləşməsində gh oxunmur:\n™ light [laıt] işıq (lı)\n™ fight [faıt] vuruşmaq\n™ bright [braıt] parlaq\n6. Gh hərfbirləşməsi bəzi sözlərdə [f] oxunur:\n™ cough [kɔf] öskürək\n™ enough [inaf] kifayyət qədər\n™ laugh [la:f] gülüş\n7. Ph hərfbirləşməsi həmişə [f] oxunur:\n™ phone [foun] telefon\n™ hotograph [foutogra:f] fotoşəkil\n™ physic [fiziks] fizika\n8. Ng hərfbirləşməsi [l, r, w] səslərindən əvvəl [Ƞg] oxunur:\n™ english [ıƞglis] ingilis dili\n™ angry [æƞgri] hirsli, acıqlı\n™ language [læƞgwidʒ] dil\n™ angrey [æƞgwidʒ] dil\n™ anger [æƞgə] qəzəb, hiddət",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Qu hərfbirləşməsi sözün sonunda (məsələn: 'Mosque', 'cheque') necə oxunur?",
+      "options": ["[kw]", "[k]", "[f]", "[ju:]"],
+      "answer": "[k]"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "'Al' hərfbirləşməsi 'K' hərfindən qabaq gəldikdə hansı səsi verir?",
+      "options": ["[ɔ:l]", "[ɔ:]", "[al]", "[ju:]"],
+      "answer": "[ɔ:]"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'light', 'fight' və 'bright' sözlərindəki 'igh' hərfbirləşməsində ___ hərfləri oxunmur.",
+      "answer": "gh"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Ph' hərfbirləşməsi ingilis dilində həmişə ___ səsini verir.",
+      "answer": "[f]"
+    },
+    {
+      "type": "true_false",
+      "question": "'New' və 'few' sözlərindəki 'ew' hərfbirləşməsi [ju:] kimi oxunur.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'english' və 'language' sözlərindəki 'ng' hərfbirləşməsi yalnız [f] səsini ifadə edir.",
+      "answer": false
+    }
+  ]
+},
+        {
+  "id": "fonetika-11",
+  "title": "Stress",
+  "lesson": "İki və daha çox hecalı sözlərdə vurğu [’] işarəsi qoyulur. Vurğu hansı heca üzərində qoyularsa həmin hecalar qüvvətli\ntələffüz olunmalıdır. İki cür vurğu var:\n1. Əsas vurğu\n2. İkinci dərəcəli vurğu\nƏsas vurğu həmişə hecanın yuxarısında [’] qoyulur:\n™ examination [ıgzæmineıʃən] imtahan\n™ engineer [endʒınə]mühəndis\n2 ci dərəcəli vurğu aşağıdan qoyulur. Elə sözlər var ki, onlar həm isim kimi həm də feil kimi işlədilir. Əgər vurğu I heca\nüzərində düşərsə, söz isim olur, II heca üzərində düşərsə, söz feil olur:\n™ İncrease [’ınkri:z] artım\n™ to increase [’inkri:z] artırmaq\n™ export [ekspə:t’] ekport\n™ to export[ıks’pə:t] ixrac etmək\n™ present [’prezent] hədiyyə\n™ to present [prı’zent] hədiyyə etmək\nVurğulu heca vurğusuz hecadan daha qüvvətli tələffüz olunur. Vurğu ilə tələffüz olunan sözlər isimlər, sifətlər, əsas feillər,\nsaylar, zərflər, sual və işarə əvəzlikləri daxildir.\nVurğusuz tələffüz olunan sözlərə artikillar, bağlayıcılar, sözönləri, köməkçi feillər və həmçinin şəxs və yiyilik əvəzlikləri\ndaxldir.\nVurğulu heva bəzən qalxan tonla, bəzən düşən tonla tələffüz olunur:\nMeet Ted - Tedi qarşıla\nA map, a pen, and a plan",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Həm isim, həm də feil kimi işlənən eyni yazılışlı sözlərdə vurğu birinci hecaya düşərsə, söz nitq hissəsi bəımindən nə olur?",
+      "options": ["Feil", "İsim", "Sifət", "Zərf"],
+      "answer": "İsim"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Aşağıdakı nitq hissələrindən hansı adətən cümlədə vurğusuz tələffüz olunur?",
+      "options": ["Əsas feillər", "İsimlər", "Bağlayıcılar", "Sifətlər"],
+      "answer": "Bağlayıcılar"
+    },
+    {
+      "type": "fill_blank",
+      "question": "İngilis dilində əsas vurğu həmişə hecanın ___ tərəfindən [’] işarəsi ilə qoyulur.",
+      "answer": "yuxarısında"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'to present' sözündə vurğu ikinci hecaya düşdüyü üçün bu söz ___ funksiyasını daşıyır.",
+      "answer": "feil"
+    },
+    {
+      "type": "true_false",
+      "question": "Şəxs və yiyilik əvəzlikləri adətən vurğulu tələffüz olunan sözlər qrupuna daxildir.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "İngilis dilində əsas vurğudan başqa həm də ikinci dərəcəli vurğu mövcuddur.",
+      "answer": true
+    }
+  ]
+},
+        {
+  "id": "fonetika-12",
+  "title": "Parts Of Speech",
+  "lesson": "Nitq hissələri 2 əsas qismə bölünür:\n1) Əsas nitq hssələri - The International Part of Speech\n2) Köməkçi nitq hissələri - The Structural Part of Speech\nI. Əsas nitq hissələri aşağıdakılardır:\n1) İsim - the Noun\n2) Sifət- The Adjective\n3) Say - The Numeral\n4) Əvəzlik - The Pronoun\n5) Feil - The Verb\n6) Zərf - The Adverb\n7) Modal sözlər - The Modal Verbs\n8) Nida- The Interjection\nII. Köməkçi nitq hisslərinə isə bunlar daxildir:\nÖnlük - The Preposition\n1. Bağlayıcı - the Conjunction\n2. Ədat - The Particle\n3. Artikl - the Article\nƏsas nitq hissələri cümlədə mübtəda, xəbər, təyin, tamamlıq, zərflik vəzifəsində çıxış edir. Köməkçi nitq hissələri isə\ncümlədə müstəqil məna daşımır. Onlar ya sözlərin arasında olan münasibəti, ya da cümlədə sözlərin mənasını daha da\naydın ifadə etmək üçün işlənir.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Cümlədə mübtəda, xəbər, təyin və tamamlıq vəzifəsində hansı nitq hissələri çıxış edir?",
+      "options": ["Köməkçi nitq hissələri", "Əsas nitq hissələri", "Yalnız bağlayıcılar", "Yalnız artikllar"],
+      "answer": "Əsas nitq hissələri"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Aşağıdakılardan hansı köməkçi (The Structural) nitq hissələrinə aid deyil?",
+      "options": ["The Preposition", "The Conjunction", "The Adverb", "The Article"],
+      "answer": "The Adverb"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Köməkçi nitq hissələri cümlədə müstəqil ___ daşımır.",
+      "answer": "məna"
+    },
+    {
+      "type": "fill_blank",
+      "question": "İngilis dilində 'The Pronoun' əsas nitq hissələrindən ___ deməkdir.",
+      "answer": "Əvəzlik"
+    },
+    {
+      "type": "true_false",
+      "question": "Modal feillər (The Modal Verbs) və nidalar (The Interjection) əsas nitq hissələri qrupuna daxildir.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "Köməkçi nitq hissələri sözlərin arasında olan münasibəti və ya sözlərin mənasını daha aydın ifadə etmək üçün işlənir.",
+      "answer": true
+    }
+  ]
+}
       ]
     },
     {
       "id": "isim",
       "title": "The Noun - İsim",
       "nodes": [
-        { "id": "isim-1", "title": "Common And Proper Nouns",          "lesson": "", "questions": [] },
+        {
+  "id": "isim-1",
+  "title": "Common And Proper Nouns",
+  "lesson": "İsim - canlı və cansız əşyaların ( map - xəritə, Tom -Tom ); hadisələrin adlarını ( revolution- inqilab); əşyalara məxsus\nxüsusiyyətləri ( clearness- aydınlıq, love- sevgi ); vəziyyəti ( xoşbəxtlik – happiness; yorğunluq – tiredness ) və s bildirir.\nİngilis dilində isimin əsas əlaməti artikllar və önlüklə işlədilməsidir:\n™ a room-otaq ( hər hansı bir) the room- otaq (müəyyən)\n™ in the room (otaqda)\nİsmin aşağıdakı morfoloji xüsusiyyətləri var:\n™ İsim cəmdə ( plural ) və təkdə ( singular ) olur.\n™ Ümumi ( common ) və xüsusi ( proper ) olur.\n™ İsim həmişə artikılla işlənir.\n™ Sayılan ( countable ) və sayılmayan ( uncountable )\n™ Quruluşca 3 növü var.\n™ Sintaktik vəzifəsi\nQuruluşuna görə isimlər 3 qrupa bölünür:\n1. Sadə isimlər – The Simple Nouns. Bunlar 1 kökdən ibarət olur:\n™ a book\n™ a pen\n™ a desk\n™ a map\n2. Düzəltmə isimlər - The Derivative Nouns. Düzəltmə isimlər ya prefiks ya da sufiks ilə düzəlir. İsim düzəldən\nşəkilçilər bunlardır:\n1. Er, or: to buy- buyer, (almaq-alıcı); To invent - inventor (ixtira etmək, ixtiraçı)\n2. İst: siyasi və ictimai cərəyanlara mənsubiyyəti bildirir. Communist - kommunist, physicist – fizik,\n3. İsm: materialism – materializm\n4. İan: Milliyət bildirir: russian- rusiyalı\n5. Age: feillərdən mücərrəd anlayışlı isim əmələ gətirir. To marry- evlənmək, marriage – nigah, to pass- keçmək,\npassage- keçid.\n6. Ance, ence: importance- vaciblik, difference- müxtəliflik, resistance – gərginlik\n7. Dom: isimdən və sifətdən isim əmələ gəlir. Free-azad, wise- ağıllı, king- kral, freedom-azadlıq, wisedom-\nağıl, kingdom- krallıq\n8. Hood: isimdən yeni isim əmələ gətirir. Brother- qardaş, brotherhood- qardaşlıq, child- uşaq, chilhood- uşalıq\ndövrü, neighbour [neıbə] qonşu, neighbourhood- qonşuluq, [neıbəhud]\n9. İon: (action, tion, sion, ssion) şəkilçiləri feildən isim əmələ gətirir. İon şəkilçisi t və qoşa ss-dən sonra [ʃn]\noxunur, tək s dən sonra isə [ʒn] oxunur.\nTo dictate - imla demək, dictation [dıkteıʃn] imla, to discuss – müzakirə etmək, discussion [diʃkʌʃn]\nmüzakirə, ; to revise- təkrar etmək, revision [revinʒn] təkrar; to decided – qərara almaq, decision [disiʒn]\nqərar\n10. Ment: feillərdən isim düzəldir.\nTo agree - razılaşmaq, agreement- razılıq ; to govern – idarə etmək, government- dövlət, hökumət\n11. Ness: sifətdən isim düzəldir.\nCold- soyuq, dark- qaranlıq, weakness- zəiflik,\n12. Ship: isimdən yeni isim yaradır.\nFriend- dost, leader- rəhbər, member- üzv; friendship- dostluq, leadership- rəhbərlik, membership- üzvlük,\n13. Ess (qadın c.): to act- hərəkət etmək, actress – aktrisa, poet- şair, , poetess- şairə, lion- şir, lioness- ana şir,\n14. İan: music- musiqi, musician- musiqiçi, library – kitabxana, librarian – kitabxanaçı,\n15. Ure: press- sıxmaq, təkid etmək, pressure - təzyiq,sıxılma\n3. Mürəkkəb isimlər: The Compound nouns. İki və daha çox sözdən ibarət olub bir anlayışı ifadə edən isimlərə\nmürəkkəb isimlər deyilir:\n™ News - xəbər\n™ black - qara\n™ Paper - kağız\n™ board- lövhə\n™ Newspaper-qəzet\n™ blackboard- yazı löhvəsi\n¾ İki sözdən ibarət olub önlüklə bağlanan mürəkkəb isimlər var.\n™ Mother- in- law- qaynana\n™ Editor-in- chies- baş redaktor\n™ Mother of pearl [pə:l] sədəf",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Quruluşuna görə 'newspaper' və 'blackboard' necə isimlərdir?",
+      "options": ["Sadə isimlər", "Düzəltmə isimlər", "Mürəkkəb isimlər", "Mücərrəd isimlər"],
+      "answer": "Mürəkkəb isimlər"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "'-ion (-tion, -sion)' şəkilçisi tək 's' hərfindən sonra (məsələn: 'revision', 'decision') necə oxunur?",
+      "options": ["[ʃn]", "[ʒn]", "[tʃn]", "[ment]"],
+      "answer": "[ʒn]"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Bir kökdən ibarət olan isimlərə (məsələn: 'book', 'pen') ___ isimlər deyilir.",
+      "answer": "Sadə"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Sifətlərdən isim düzəldən '-ness' şəkilçisi 'weak' (zəif) sözünə qoşularaq ___ sözünü formalaşdırır.",
+      "answer": "weakness"
+    },
+    {
+      "type": "true_false",
+      "question": "'-ess' şəkilçisi ingilis dilində isimlərə qoşularaq qadın cinsini (məsələn: 'actress', 'poetess') düzəldir.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'Mother-in-law' və 'editor-in-chief' sözləri sadə isimlərə nümunədir.",
+      "answer": false
+    }
+  ]
+},
         { "id": "isim-2", "title": "Countable And Uncountable Nouns",  "lesson": "", "questions": [] },
         { "id": "isim-3", "title": "İsmin Cümlədə Vəzifəsi",          "lesson": "", "questions": [] },
         { "id": "isim-4", "title": "Plural Of The Noun",               "lesson": "", "questions": [] },
