@@ -1,6 +1,3 @@
-const STORAGE_KEY = 'ingilisce_progress';
-const SAT_STORAGE_KEY = 'ingilisce_sat_progress';
-
 const DEFAULT_STATE = {
   completedNodes: [],
   lives: 5,
@@ -8,11 +5,25 @@ const DEFAULT_STATE = {
 };
 
 let currentMode = 'normal'; // 'normal' | 'sat'
+let currentProfile = null;
 
-// ── State ──────────────────────────────────────────────
+// ── Profile management ─────────────────────────────────
+
+function getProfiles() {
+  try { return JSON.parse(localStorage.getItem('ingilisce_profiles') || '[]'); } catch { return []; }
+}
+
+function saveProfileName(name) {
+  const profiles = getProfiles();
+  if (!profiles.includes(name)) { profiles.push(name); localStorage.setItem('ingilisce_profiles', JSON.stringify(profiles)); }
+  localStorage.setItem('ingilisce_current_profile', name);
+  currentProfile = name;
+  document.getElementById('profileName').textContent = name;
+}
 
 function storageKey() {
-  return currentMode === 'sat' ? SAT_STORAGE_KEY : STORAGE_KEY;
+  const base = currentMode === 'sat' ? 'ingilisce_sat_progress' : 'ingilisce_progress';
+  return currentProfile ? `${base}_${currentProfile}` : base;
 }
 
 function loadState() {
@@ -196,6 +207,20 @@ function renderQuestion() {
   } else if (question.type === 'fill_blank') {
     renderFillBlank(body, checkBtn);
   }
+
+  if (question.hint) {
+    const hintBtn = document.createElement('button');
+    hintBtn.className = 'hint-btn';
+    hintBtn.innerHTML = '💡 İpucu';
+    hintBtn.addEventListener('click', () => {
+      hintBtn.remove();
+      const hintEl = document.createElement('div');
+      hintEl.className = 'hint-text';
+      hintEl.textContent = question.hint;
+      body.appendChild(hintEl);
+    });
+    body.appendChild(hintBtn);
+  }
 }
 
 function renderMCOptions(question, body) {
@@ -362,6 +387,40 @@ function completeNode(nodeId, curriculum) {
   renderPath(curriculum);
 }
 
+// ── Profile modal ──────────────────────────────────────
+
+function showProfileModal() {
+  const profiles = getProfiles();
+  const listEl = document.getElementById('profileList');
+  listEl.innerHTML = '';
+  profiles.forEach(name => {
+    const chip = document.createElement('button');
+    chip.className = 'profile-chip';
+    chip.textContent = name;
+    chip.addEventListener('click', () => {
+      saveProfileName(name);
+      closeModal('profileOverlay');
+      renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
+    });
+    listEl.appendChild(chip);
+  });
+
+  const input = document.getElementById('profileNameInput');
+  const startBtn = document.getElementById('profileStart');
+  input.value = '';
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && input.value.trim()) startBtn.click(); });
+  startBtn.onclick = () => {
+    const name = input.value.trim();
+    if (!name) return;
+    saveProfileName(name);
+    closeModal('profileOverlay');
+    renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
+  };
+
+  openModal('profileOverlay');
+  setTimeout(() => input.focus(), 100);
+}
+
 // ── Init ───────────────────────────────────────────────
 
 async function init() {
@@ -369,10 +428,18 @@ async function init() {
     fetch('curriculum.json'),
     fetch('sat_curriculum.json')
   ]);
-  const normalCurriculum = await normalRes.json();
-  const satCurriculum = await satRes.json();
+  window._normalCurriculum = await normalRes.json();
+  window._satCurriculum   = await satRes.json();
 
-  renderPath(normalCurriculum);
+  const saved = localStorage.getItem('ingilisce_current_profile');
+  if (saved) {
+    saveProfileName(saved);
+    renderPath(window._normalCurriculum);
+  } else {
+    showProfileModal();
+  }
+
+  document.getElementById('profileBtn').addEventListener('click', showProfileModal);
 
   const toggleBtn = document.getElementById('modeToggle');
   toggleBtn.addEventListener('click', () => {
@@ -380,12 +447,12 @@ async function init() {
       currentMode = 'sat';
       toggleBtn.textContent = 'Normal Rejim';
       toggleBtn.classList.add('active');
-      renderPath(satCurriculum);
+      renderPath(window._satCurriculum);
     } else {
       currentMode = 'normal';
       toggleBtn.textContent = 'SAT Rejimi';
       toggleBtn.classList.remove('active');
-      renderPath(normalCurriculum);
+      renderPath(window._normalCurriculum);
     }
   });
 }

@@ -11,10 +11,27 @@
 
   <header class="app-header">
     <h1 class="app-title">İngiliscə Öyrən</h1>
-    <button class="mode-toggle" id="modeToggle">SAT Rejimi</button>
+    <div class="header-right">
+      <button class="profile-btn" id="profileBtn">👤 <span id="profileName"></span></button>
+      <button class="mode-toggle" id="modeToggle">SAT Rejimi</button>
+    </div>
   </header>
 
   <main class="path-container" id="pathContainer"></main>
+
+  <!-- Profil Seçimi -->
+  <div class="modal-overlay" id="profileOverlay">
+    <div class="modal profile-modal">
+      <div class="celebration-icon">👤</div>
+      <h2>Xoş gəldiniz!</h2>
+      <p>Tərəqqinizi saxlamaq üçün adınızı daxil edin.</p>
+      <div id="profileList" class="profile-list"></div>
+      <div class="profile-input-row">
+        <input type="text" id="profileNameInput" class="profile-input" placeholder="Adınızı yazın..." maxlength="24" />
+        <button class="btn-primary" id="profileStart">Başla</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Dərs Modalı -->
   <div class="modal-overlay hidden" id="lessonOverlay">
