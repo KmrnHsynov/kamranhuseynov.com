@@ -13,12 +13,17 @@ function getProfiles() {
   try { return JSON.parse(localStorage.getItem('ingilisce_profiles') || '[]'); } catch { return []; }
 }
 
-function saveProfileName(name) {
+function getAvatar(name) {
+  return localStorage.getItem('ingilisce_avatar_' + name) || '👤';
+}
+
+function saveProfileName(name, avatar) {
   const profiles = getProfiles();
   if (!profiles.includes(name)) { profiles.push(name); localStorage.setItem('ingilisce_profiles', JSON.stringify(profiles)); }
+  if (avatar) localStorage.setItem('ingilisce_avatar_' + name, avatar);
   localStorage.setItem('ingilisce_current_profile', name);
   currentProfile = name;
-  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileName').textContent = getAvatar(name) + ' ' + name;
 }
 
 function storageKey() {
@@ -208,18 +213,35 @@ function renderQuestion() {
     renderFillBlank(body, checkBtn);
   }
 
-  if (question.hint) {
+  if (question.type !== 'true_false') {
     const hintBtn = document.createElement('button');
     hintBtn.className = 'hint-btn';
-    hintBtn.innerHTML = '💡 İpucu';
+    hintBtn.textContent = '💡 İpucu';
     hintBtn.addEventListener('click', () => {
-      hintBtn.remove();
-      const hintEl = document.createElement('div');
-      hintEl.className = 'hint-text';
-      hintEl.textContent = question.hint;
-      body.appendChild(hintEl);
+      hintBtn.disabled = true;
+      hintBtn.style.opacity = '0.4';
+      applyAutoHint(question, body);
     });
     body.appendChild(hintBtn);
+  }
+}
+
+function applyAutoHint(question, body) {
+  if (question.type === 'multiple_choice') {
+    const wrongBtns = [...body.querySelectorAll('.quiz-option')]
+      .filter(btn => normalizeAnswer(btn.dataset.value) !== normalizeAnswer(question.answer) && !btn.disabled);
+    if (wrongBtns.length === 0) return;
+    const target = wrongBtns[Math.floor(Math.random() * wrongBtns.length)];
+    target.disabled = true;
+    target.style.opacity = '0.3';
+    target.style.textDecoration = 'line-through';
+  } else if (question.type === 'fill_blank') {
+    const answer = String(question.answer);
+    const revealed = answer[0].toUpperCase() + ' ' + '_'.repeat(Math.max(0, answer.length - 1)).split('').join(' ');
+    const hintEl = document.createElement('div');
+    hintEl.className = 'hint-text';
+    hintEl.textContent = 'İlk hərf: ' + revealed;
+    body.appendChild(hintEl);
   }
 }
 
@@ -396,7 +418,7 @@ function showProfileModal() {
   profiles.forEach(name => {
     const chip = document.createElement('button');
     chip.className = 'profile-chip';
-    chip.textContent = name;
+    chip.textContent = getAvatar(name) + ' ' + name;
     chip.addEventListener('click', () => {
       saveProfileName(name);
       document.getElementById('profileOverlay').classList.add('hidden');
@@ -409,10 +431,20 @@ function showProfileModal() {
   const startBtn = document.getElementById('profileStart');
   input.value = '';
 
+  const avatarBtns = document.querySelectorAll('.avatar-option');
+  let selectedAvatar = '👦';
+  avatarBtns.forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.avatar === selectedAvatar);
+    btn.onclick = () => {
+      selectedAvatar = btn.dataset.avatar;
+      avatarBtns.forEach(b => b.classList.toggle('selected', b === btn));
+    };
+  });
+
   function doStart() {
     const name = input.value.trim();
     if (!name) return;
-    saveProfileName(name);
+    saveProfileName(name, selectedAvatar);
     document.getElementById('profileOverlay').classList.add('hidden');
     renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
   }

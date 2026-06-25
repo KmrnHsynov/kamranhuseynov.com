@@ -374,6 +374,29 @@ body {
 }
 .profile-chip:hover { background: var(--blue); color: var(--white); }
 
+.avatar-picker {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.avatar-option {
+  background: var(--gray-light);
+  border: 3px solid transparent;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-option:hover { background: var(--blue-light); }
+.avatar-option.selected { border-color: var(--blue); background: var(--blue-light); }
+
 .profile-input-row {
   display: flex;
   gap: 8px;
