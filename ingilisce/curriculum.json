@@ -30,39 +30,7 @@
             { "type": "true_false", "question": "'time' sözünün sonundakı 'e' hərfi oxunmur.", "answer": true }
           ]
         },
-        { "id": "fonetika-3",  "title": "Letters - Lesson 3",  "lesson": "1. A a [eı] hərfi I tip oxuda [eı] oxunur:
- plane [pleın] təyyarə
- name [neım] ad
-2. A a hərfi II tip oxuda [eə]oxunur. Qoşa samitlərdən əvvəl [eə]oxunur:
- plan [pleən]plan
- man [meən]kişi, adam
- apple [əepl]alma
- battle [beətl] döyüş
-3. A i hərfi birləşməsi [eı]oxunur:
- day [deı] gün
- main [meın] əsas, başlıca
- Spain [speın] İspaniya
- paid [peıd] ödədi
- May [meı] May
-4. A i hərfi bəzi sözlərdə [e]oxunur:
- Said [sed] dedi, (say feilinin keçmişi)
-5. Ay - bəzən sözün sonunda vurğusuz vəziyyətdə [i] oxunur:
- Sunday [sʌndi]bazar günü
-6. Ed- hərf birləşməsi [i]oxunur:
- Please [pli:z] buyurun
- seat [si:t] oturacaq, yer
-7. Ed- hərf birləşməsi bəzən [e]oxunur:
- read [red] oxudu
- head [hed] baş
- bread [bred] çörək
- dead [ded] ölü8. C c [si:]hərfi i, e, y hərflərindən əvvəl [s]oxunur:
- nice [naıs] gözəl, qəşəng
- place [pleıs] yer
- civie [sıvıl] vətəndaş
- icy [aısı] buzlu
-9. C c hərfi qalan hallarda [k]oxunur:
- cap[keəp] papaq
- clean [kli:n] təmiz", "questions": [] },
+        { "id": "fonetika-3",  "title": "Letters - Lesson 3",  "lesson": "", "questions": [] },
         { "id": "fonetika-4",  "title": "Letters - Lesson 4",  "lesson": "", "questions": [] },
         { "id": "fonetika-5",  "title": "Letters - Lesson 5",  "lesson": "", "questions": [] },
         { "id": "fonetika-6",  "title": "Letters - Lesson 6",  "lesson": "", "questions": [] },
