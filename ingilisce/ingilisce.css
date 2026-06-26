@@ -303,7 +303,14 @@ body {
   line-height: 1.7;
   font-size: 0.95rem;
   white-space: pre-wrap;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue) var(--blue-light);
 }
+
+.modal-body::-webkit-scrollbar { width: 6px; }
+.modal-body::-webkit-scrollbar-track { background: var(--blue-light); border-radius: 99px; }
+.modal-body::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 99px; }
 
 .modal-footer {
   padding: 16px 20px;
