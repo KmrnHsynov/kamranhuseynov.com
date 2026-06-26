@@ -94,7 +94,7 @@ async function doSignIn(name, password) {
 
   const email = await nameToEmail(name);
   const { data, error } = await db.auth.signInWithPassword({ email, password });
-  if (error)         throw new Error('Ad və ya şifrə yanlışdır.');
+  if (error)         throw new Error(error.message);
 
   const { data: profile, error: profErr } = await db.from('profiles').select('*').eq('id', data.user.id).single();
   if (profErr || !profile) throw new Error('Profil tapılmadı.');
