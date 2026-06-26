@@ -121,7 +121,7 @@ function updateDropdownStats() {
 
   document.getElementById('dropdownCompleted').textContent = completed;
   document.getElementById('dropdownTotal').textContent     = total;
-  document.getElementById('dropdownLives').textContent     = '❤️'.repeat(lives) + '🤍'.repeat(5 - lives);
+  document.getElementById('dropdownLives').textContent     = `❤️ ${lives} / 5`;
   document.getElementById('dropdownStreak').textContent    = `🔥 ${streak.count}`;
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   document.getElementById('dropdownProgressFill').style.width = pct + '%';

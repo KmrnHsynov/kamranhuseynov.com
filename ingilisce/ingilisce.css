@@ -87,12 +87,12 @@ body {
 }
 
 .profile-dropdown-stats {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   background: var(--gray-light);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   width: 100%;
 }
 
@@ -100,26 +100,26 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+  background: var(--white);
+  border-radius: 8px;
+  padding: 8px 4px;
 }
 
 .dropdown-stat-value {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .dropdown-stat-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   margin-top: 2px;
+  text-align: center;
 }
 
-.dropdown-stat-divider {
-  width: 1px;
-  height: 32px;
-  background: #ddd;
-}
+.dropdown-stat-divider { display: none; }
 
 .dropdown-progress-bar-track {
   width: 100%;

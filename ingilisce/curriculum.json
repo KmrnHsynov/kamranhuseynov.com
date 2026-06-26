@@ -410,18 +410,301 @@
     }
   ]
 },
-        { "id": "isim-5", "title": "Nouns Used Only In The Singular",  "lesson": "", "questions": [] },
-        { "id": "isim-6", "title": "Nouns Used Only In The Plural",    "lesson": "", "questions": [] },
-        { "id": "isim-7", "title": "The Category Of Case The Noun",    "lesson": "", "questions": [] },
-        { "id": "isim-8", "title": "The Possessive Case",              "lesson": "", "questions": [] },
-        { "id": "isim-9", "title": "Gender Of Nouns",                  "lesson": "", "questions": [] }
+        {
+  "id": "isim-5",
+  "title": "Nouns Used Only In The Singular",
+  "lesson": "ANCAQ TƏKDƏ İŞLƏNƏN İSİMLƏR\n1. Bütün sayılmayan (uncountable) isimlər, maddi və mücərrəd isimlər həmişə təkdə işlənir:\n视觉 sugar, mud (palçıq), friendship və.s\n2. Ancaq təkdə işlənən isimlər bunlardır:\n视觉 work – iş\n视觉 news- xəbər\n视觉 accommodation- sığınacaq\n视觉 advice- məsləhət\n视觉 luggage- yük\n视觉 baggage- baqaj\n视觉 behaviour- davranış\n视觉 luck- bəxt, tale\n视觉 chaos [keıəs] qarşılıq\n视觉 damage- ziyan\n视觉 knowledge- bilik\n视觉 furniture- mebel\n视觉 information- məlumat\n视觉 scenery- mənzərə\n视觉 permission- icazə\n视觉 traffic- nəqliyyat\n视觉 progress- inkişaf, progres\n视觉 permission- icazə\nBu isimlər mübtəda funksiyasında işlənərsə feildə təkdə olur.\n视觉 These doctors’ advice helps me a lot. – Bu həkimlərin məsləhəti mənə çox kömək edir.\n3. Bəzi isimlərin sonu –ics qurtarır. Bunlar ancaq təkdə olur:\n视觉 athletics- atletika\n视觉 mathematics- riyaziyyat\n视觉 electronics- elektronika\n视觉 economics- iqtisadiyyat\n视觉 gymnastics- gimnastika\n视觉 physics- fizika\n视觉 politics- siyasət\n4. –s qurtaran bəzi isimlər həm təkdə, həm cəmdə işlənə bilər:\nMeans (vasitə, növ):\na means of transport / many means of transport\nseries ( seriya):\na television series / two television series\nspecies (növ):\na species of bird / 200 species of bird\n5. Bütün fənn adları, idman oyunlarının adları təkdə işlənir:\n视觉 literature\n视觉 history\n视觉 russian\n视觉 tennis\n视觉 football\n视觉 volley-ball\n视觉 basket- ball\n6. Pulun məbləği, müddət, məsafə sözləri cəmdə işlənməsinə baxmayaraq bunlar təkdə sayılır və özündən sonra gələn feil həmişə təkdə işlənir:\n视觉 Twenty thousand pounds (it) was stolen yesterday. - Dünən 20 min funt ( pul) oğurlandı.\n视觉 Tree years (it) is a long time to be without a job. - 3 il işsiz olmaq uzun müddətdir.\n视觉 Six mils (it) is a long way to walk everyday. - Hər gün 6 mil ( uzunluq ölçüsü) yol getmək çox uzundur.\n7. Person – şəxs sözü həmişə təkdə olur, ancaq cəmi people-dir.\n视觉 He is a nice person. - O, yaxşı şəxsdir.\n视觉 These are nice people. - Bunlar yaxşı adamlardır.\n8. a) Hair – saç mənasında ancaq təkdə işlənir. Tük mənasında cəmdə işlənir:\n视觉 I have some white hairs ; My hair is white.\nb) Fruit- meyvə; adətən təkdə işlənir. Ancaq müxtəlif meyvədən söhbət gedəndə cəmdə olur:\n视觉 Fruit is cheap in Autumn. - Meyvə payızda ucuz olur.\n视觉 There are a lot of fruits in our garden.- Bizim bağda çoxlu meyvələr var.\nc) Paper- kağız mənasında sayılmır; qəzet mənasında sayılır.\n视觉 I need some paper and a pen .–Mənə bir çox kağız və qələm lazımdır.\n视觉 I read a paper every day.- Mən hər gün qəzet oxuyuram.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "'News', 'advice' və 'knowledge' kimi isimlər mübtəda vəzifəsində çıxış edərkən onlardan sonra gələn xəbər necə olmalıdır?",
+      "options": [
+        "Həmişə cəmdə olur",
+        "Həmişə təkdə olur",
+        "Həm təkdə, həm cəmdə ola bilər",
+        "Qarşısındakı təyinə görə dəyişir"
+      ],
+      "answer": "Həmişə təkdə olur"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Pul məbləği, müddət və məsafə bildirən sözlər (məsələn: 'twenty thousand pounds', 'three years') quruluşca cəmdə görünsə də, xəbəri necə tələffüz və ifadə olunur?",
+      "options": [
+        "Cəmdə sayılır və xəbəri cəmdə olur",
+        "Təkdə sayılır və xəbəri həmişə təkdə işlənir",
+        "Xəbər qəbul etmir",
+        "Cümlədəki yerinə görə xəbəri dəyişir"
+      ],
+      "answer": "Təkdə sayılır və xəbəri həmişə təkdə işlənir"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Mathematics', 'physics' və 'politics' kimi sonu '-ics' ilə bitən elm və fənn adları ancaq ___ şəklində işlənir.",
+      "answer": "təkdə"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Fruit' sözü ümumi mənada meyvə bildirdikdə sayılmır, lakin müxtəlif ___ nəzərdə tutulduqda cəmlənə bilir.",
+      "answer": "meyvələrdən"
+    },
+    {
+      "type": "true_false",
+      "question": "'Means', 'series' və 'species' sözləri həm təkdə, həm də cəmdə eyni formada işlənə bilən isimlərdir.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'Paper' sözü qəzet mənasında işləndikdə sayılmayan (uncountable) isim hesab olunur.",
+      "answer": false
+    }
+  ]
+},
+        {
+  "id": "isim-6",
+  "title": "Nouns Used Only In The Plural",
+  "lesson": "ANCAQ CƏM FORMASINDA OLAN İSİMLƏR\n1. İki eyni hissədən ibarət olan isimlər:\n视觉 tongs- kəlbətin\n视觉 scissors [sızəz] - qayçı\n视觉 jeans – cins\n视觉 spectacles- eynək\n视觉 glasses- eynək\n视觉 scales- tərəzi\n视觉 shorts – şortik\n视觉 trousers – şalvar\n视觉 tights – kalqotka\n视觉 pyjamas [pədʒa:məz] - pijama\n视觉 binoculars [b(a)ınəkjulər] - durbin\nBu isimlərlə a pair of(bir cüt) sözü işlənir:\n视觉 Those are nice jeans. That is a nice pair of jeans – Bir cüt yaxşı cinsdir.\n2. Topluluq bildirən isimlər. Bunlar da 2 qrupa bölünür.\na) Konkret əşya bildirənlər:\n视觉 goods mal, mallar\n视觉 stairs- pilləkən, pilləkənlər\nb) Mücərrəd məfhum bildirənlər:\n视觉 contents- məzmun, mündəricat\n视觉 beginning- başlanğıc\n视觉 holidays- tətil (lər)\n视觉 wages-əmək haqqı( ları) (bəzəndə təkdə işlənir)\nPolice – polis sözü həmişə cəmdə işlənir.\nPeople - adamlar mənasında həmişə cəmdə işlənir, baxmayaraq ki, o formaca təkdir:\n视觉 There are many people in the room – otaqda çoxlu adamlar var.\nAncaq people- xalq, millət, mənasında işləndikdə -s cəm şəkilçisi qəbul edir:\n视觉 The peoples of our country are fighting for peace. - Ölkəmizin xalqları sülh uğrunda mübarizə aparır.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "İki eyni hissədən ibarət olan isimlərin (məsələn: 'jeans', 'scissors') sayını bildirmək üçün hansı ifadədən istifadə olunur?",
+      "options": [
+        "a piece of",
+        "a pair of",
+        "a pack of",
+        "a glass of"
+      ],
+      "answer": "a pair of"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "'People' sözü hansı mənada işləndikdə sonuna '-s' şəkilçisi qəbul edərək 'peoples' formasına düşə bilər?",
+      "options": [
+        "Adamlar, şəxslər",
+        "Xalq, millət",
+        "Polis, asayiş keşikçiləri",
+        "Ailə üzvləri"
+      ],
+      "answer": "Xalq, millət"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Scissors', 'trousers' və 'binoculars' kimi iki eyni hissədən ibarət olan isimlər ingilis dilində həmişə ___ formasında olur.",
+      "answer": "cəm"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Formaca tək görünməsinə baxmayaraq, 'police' sözü cümlədə mübtəda olduqda xəbəri həmişə ___ uzlaşır.",
+      "answer": "cəmdə"
+    },
+    {
+      "type": "true_false",
+      "question": "'Goods' (mallar) və 'stairs' (pilləkən) sözləri mücərrəd məfhum bildirən topluluq isimləridir.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "'There are many people in the room' cümləsində 'people' sözü 'adamlar' mənasını ifadə etdiyi üçün cəmdə götürülür.",
+      "answer": true
+    }
+  ]
+},
+{
+  "id": "isim-7",
+  "title": "The Category Of Case The Noun",
+  "lesson": "Müasir İngilis dilində ismin 2 halı var.\n1. Ümumi hal - The Common Case\n2. Yiyəlik hal – The Possessive Case\n\n– Ümumi halda isimlər heç bir şəkilçi qəbul etmir və dilimizdə adlıq hala uyğun gəlir. Önlüksüz isim xəbərdən əvvəl gələrsə mübtəda funksiyasında işlənir:\n视觉 The students begin their lessons at 9. – Tələbələr dərslərini saat 9-da başlayırlar.\n\nÜmumi isimlər önlüklərlə işləndikdə aşağıdakı hallara uyğun gəlir:\n– of – sözönü ilə işləndikdə dilimizdə yiyəlik hala uyğun gəlir:\n视觉 The author of this book is my friend. – Kitabın müəllifi dostumdur.\n– to – sözönü ilə işlənən isim dilimizdə yönlük hala uyğun gəlir:\n视觉 I have given my book to my friend. – Kitabı dostuma vermişəm.\n– by – önlüyü ilə ümumi halda olan isim vasitəli tamamlıq vəzifəsində olub dilimizdə “tərəfindən”, “vasitəsi ilə”, “ilə, -la, -lə” kimi tərcümə edilir:\n视觉 The book is written by Aliev. – Kitab Əliyev tərəfindən yazılmışdır.\n– with – önlüyü ilə ümumi isim vasitəli tamamlıq olub dilimizə -ilə (-la, -lə) qoşması kimi tərcümə olunur:\n视觉 The letter is written with a pen. – Məktub qələmlə yazılmışdır.\n\nÖnlüksüz işlənən isim xəbərdən sonra gəldikdə cümlədə tamamlıq (vasitəli və ya vasitəsiz) olur, dilimizdə ismin təsirlik və ya yönlük halına uyğundur:\n视觉 He saw the students in the library. – O, tələbələri kitabxanada gördü.\n视觉 I showed the students my new book. – Mən tələbələrə öz təzə kitabımı göstərdim.\n\nAşağıdakı cümlədə isə çıxışlıq hala uyğun gəlir:\n视觉 The teacher asked the student his address. – Müəllim tələbədən onun ünvanını soruşdu.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "İngilis dilində 'of' önlüyü ilə işlənən isim Azərbaycan dilində əsasən hansı hala uyğun gəlir?",
+      "options": [
+        "Adlıq hal",
+        "Yiyəlik hal",
+        "Yönlük hal",
+        "Çıxışlıq hal"
+      ],
+      "answer": "Yiyəlik hal"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "'The book is written by Aliev' cümləsindəki 'by' önlüyü dilimizə necə tərcümə olunur?",
+      "options": [
+        "Əliyevin daxilində",
+        "Əliyev tərəfindən",
+        "Əliyevə doğru",
+        "Əliyev haqqında"
+      ],
+      "answer": "Əliyev tərəfindən"
+    },
+    {
+      "type": "fill_blank",
+      "question": "İngilis dilində önlüksüz isim xəbərdən əvvəl gəldikdə cümlədə ___ vəzifəsində çıxış edir.",
+      "answer": "mübtəda"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Hər hansı bir alətlə hərəkətin icrasını bildirmək üçün (məsələn: 'with a pen') ___ önlüyündən istifadə olunur.",
+      "answer": "with"
+    },
+    {
+      "type": "true_false",
+      "question": "Müasir ingilis dilində ismin adlıq, yiyəlik, təsirlik və yönlük daxil olmaqla dörd qrammatik hal kateqoriyası var.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "'I have given my book to my friend' cümləsindəki 'to my friend' ifadəsi Azərbaycan dilində yönlük hala uyğun gəlir.",
+      "answer": true
+    }
+  ]
+},
+{
+  "id": "isim-8",
+  "title": "The Possessive Case",
+  "lesson": "YİYƏLİK HAL\nYiyəlik halda isim sahiblik bildirir və başqa bir ismin təyini kimi işlənir və whose ?–kimin? sualına cavab verir.\n1) Tək isimlərin yiyəlik hal ’s (apastrof s ) ilə düzəlir və dilimizə ın⁴ kimi tərcümə olunur.\n܀ boy‘s book- whose book? ( kimin kitbı? )\n܀ Jane’s sister – whose sister?\n2) Cəmdə olan isimlərin cəmi (’) apastrofla düzəlir.\n܀ the boys’ books – oğlanların kitabları - whose books?\n3) Cəmi kökdəki saitin dəyişməsi ilə düzələn isimlərin təki və cəmi (’s) olur.\n܀ a man’s cap ( kişinin papağı ) - men’s caps ( kişilərin papaqları )\n܀ a child’s wish ( uşağın arzusu) - children’s wishes ( uşaqların arzuları )\n4) Sonu s hərfi ilə bitən isimlərin yiyəlik halı həm ‘s həm də ’apastrofladüzəlir.\n܀ Dickens’s father - Dickens’ father.\n5) Eyni bir əşya iki və daha çox şəxsə məxsus olduqda yiyəlik halı sonuncu sözə artırılır:\n܀ Mary, Ann and Nick’s mother is a doctor.\n6) Mürəkkəb isimlərin yiyəlik halı sonuncu komponentə artırılır:\n܀ the editor – in - chief’sproposals – Baş redaktorun təklifləri\n܀ my father – in – law’shouse- qaynatanın evi\nCansız varlıqları bildirən isimlər çox vaxt of (-ın⁴) sözönü ilə işlədilir, bəzən canlı varlıqlarla da işlənə bilir;\n܀ the leg of the table – stolun qıçı\n܀ the centre of the city – şəhərin mərkəzi\n܀ the dress of the girl= the girl’sdress- qızın paltarı .\nMüasir ingilis dilində yiyəlik hal şəkilçisi yalnız canlı varlıqları bildirən isimlərlə deyil, həm də cansız isimlərlə, mücərrəd isimlərlə, hətta bəzən zərflərlə də işlənə bilir.\n1) Zaman bildirən isimlər:\n܀ a moment’s silence – 1 anlıq sükut\n܀ 2 days’ leave- 2 günlük məzuniyyət\n܀ yesterday’s event – dünənki hadisə\n܀ a day’s journey – 1 günlük səyahət\n2) Fəsillərin, ayların, günlərin adını bildirən isimlərlə:\n܀ summer’s day – yayın günü\n܀ December’s frost- dekabrın şaxtası\n3) Ölkə, şəhər adı bildirən isimlər:\n܀ Ganja’s students- Gəncənin tələbələr\n܀ Baku’s peace policy – Bakının sülh siyasəti\n4) Bütün hallarda yeganə olan isimlərlə :\n܀ the sun’s ray- günəşin şüası;\n܀ the world’s population – dünyanın əhalisi;\n܀ the moon’s surface – ayın səthi;\n܀ the city’s view – şəhərin görünüşü;\n܀ the river’s bank – çayın sahili.\n5) Today, tomorrow, yesterday zaman zərfləri ilə;\n܀ today’s news – bu günkü xəbər;\n܀ tomorrow’s work- sabahkı iş.\n6) Qədim ingilis dilindən qalmış bir neçə frazeoloji birləşmələrlə:\n܀ to be at one’s finger’s ends – beş barmağı kimi bilmək\n܀ For old acquiantance [ə’kweıntəns] sake – köhnə dostluq xatirinə\n܀ for heaven’s (god’s) – Allah (tanrı) xatirinə\n܀ out of harm’s way – xatadan, bəladan ( şərdən ) uzaq\n7) Yiyəlik halda olan isim yer, məkan, bildirdikdə ondan sonra isim işlənmir və bu müstəqil yiyəlik halı The Absolute Genitive Case adlanır:\n܀ I spent New Year at my aunt Sona’s. – Mən yeni ili xalamgildə keçirdim.\n܀ Yesterday I was at my sister’s. - Dünən mən bacımgildə idim.\nBəzən qoşa yiyəlik hala da rast gəlirik. The Double Possessive. Bu halda həm of sözönü, həm də ’s yiyəlik hal şəkilçisi işlənir:\n܀ the name of my sister’s son – bacımın oğlunun adı\n܀ the father of my brother’s wife– qardaşımın arvadının atası\nBəzən of+ yiyəlik əvəzliyinə də rast gəlirik.\n܀ A friend of ours will be with us – Dostlarımdan biri bizimlə olacaq.\nBu halda of+ yiyəlik əvəzliyi – one of ( biri) mənasını verir.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Kökündən dəyişərək cəmlənən isimlərin (məsələn: 'men', 'children') yiyəlik halı necə düzəlir?",
+      "options": [
+        "Yalnız apostrof (') ilə",
+        "Apostrof s ('s) ilə",
+        "Sonuna '-es' artırmaqla",
+        "Yalnız 'of' önlüyü ilə"
+      ],
+      "answer": "Apostrof s ('s) ilə"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "'Mary, Ann and Nick’s mother' ifadəsində yiyəlik halın sonuncu sözə artırılması nəyi bildirir?",
+      "options": [
+        "Hər uşağın ayrı-ayrı anası var",
+        "Ana yalnız Nick-ə məxsusdur",
+        "Eyni bir ana hər üç şəxsə (ortaq) məxsusdur",
+        "İfadə qrammatik cəhətdən səhvdir"
+      ],
+      "answer": "Eyni bir ana hər üç şəxsə (ortaq) məxsusdur"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Yesterday's event' və 'tomorrow's work' ifadələrində yiyəlik hal ___ bildirən sözlərə artırılmışdır.",
+      "answer": "zaman"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Yiyəlik halda olan isim yer, məkan bildirdikdə və özündən sonra isim gəlmədikdə (məsələn: 'at my sister's') bu hal ___ yiyəlik hal (The Absolute Genitive Case) adlanır.",
+      "answer": "müstəqil"
+    },
+    {
+      "type": "true_false",
+      "question": "'The world's population' və 'the sun's ray' ifadələrində dünyada yeganə olan varlıqlar olduğu üçün cansız olsalar da 's ilə yiyəlik hal düzəldilmişdir.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "Mürəkkəb isimlərin yiyəlik halı (məsələn: 'the editor-in-chief's proposals') həmişə birinci komponentə artırılır.",
+      "answer": false
+    }
+  ]
+},
+{
+  "id": "isim-9",
+  "title": "Gender Of Nouns",
+  "lesson": "İSİMLƏRIN CİNSİ\nİngilis dilində ismin cinsini göstərə biləcək heç bir morfoloji forma, şəkilçi mövcud deyil. Ancaq ingilis dilində isimlər 3 cinsə malikdir.\n1. Kişi cinsi – Masculine [ma:skjlin] Gender\n2. Qadın cinsi – Feminine Gender\n3. Orta cins – Neuter [nju:tə] Gender\n\nİngilis dilində isimlər leksik mənalarına görə cinsə bölünür:\n1. Kişi cinsi: man, boy, brother, son, father, grandpa və s.\n2. Qadın cinsi: woman, girl, sister, daughter, mother, grandma və s.\n3. Orta cins: a map, table, desk, chair, book, pen və s.\n\nElə isimlər var ki, onların mənalarından aydın olmur (ümumi cins): teacher, doctor.\n\n1) –ess şəkilçisi yeganə qadın cinsini düzəldən şəkilçidir:\n视觉 a host - a hostess – ev sahibəsi\n视觉 a poet - a poetess – şairə\n视觉 a waiter – a waitress – xörək paylayan qadın\n视觉 an actress - aktrisa\n\nHeyvan adları adətən orta cinsə aid edilir və 'it' əvəzliyi ilə əvəz olunur:\n视觉 The boy pushed the dog aside, but it came back. – Oğlan iti yana itələdi, ancaq o geri qayıtdı.\n\nDanışıq dilində heyvan adları bəzən kişi ya qadın cinsinə aid edilir. Ancaq onların cinsi məlum olmadıqda güclü və böyük heyvanlar (horse, elephant, dog, eagle, wolf) kişi cinsinə; zəif və kiçik heyvanlar (mouse, rat, bat (yarasa), fox, hare) qadın cinsinə aid edilir. Bu zaman həmin isimlərin yerinə kişi cinsində - he, qadın cinsində - she işlənir.\n\nCansız varlıqları bildirən ismlərin adətən orta cinsə hesab edilməsinə baxmayaraq, bəzən onlar bədii dildə və ya ənənəvi olaraq kişi və ya qadın cinsinə aid edilir. Bunlar aşağıdakılardan ibarətdir:\n1) the sun – kişi cinsi; the moon, the earth – qadın cinsi\n2) Gəmi adları: boat, ship, steamer (paraxod) – qadın cinsi\n3) Ölkə adları bir qayda olaraq – qadın cinsinə aid edilir. Ölkə adları coğrafi ərazi mənasında işlənərsə, orta cinsə (it) aid edilir:\n视觉 Azerbaijan is famous for her oil. – Azərbaycan öz nefti ilə məşhurdur.\n视觉 Azerbaijan is our country. - It is situated in the South of Russia.\n4) Mücərrəd isimlərdən dəhşət və güc bildirənlər – kişi cinsinə aid olur: death (ölüm), war (müharibə), hate (nifrət).\nZəiflik, zəriflik, gözəllik bildirənlər isə qadın cinsinə aid olunur: beauty (gözəllik), spring (bahar), friendship (dostluq).",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "İngilis dilində yeganə qadın cinsi düzəldən şəkilçi hansıdır?",
+      "options": ["-tion", "-ess", "-ment", "-ness"],
+      "answer": "-ess"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Ölkə adları siyasi və ya iqtisadi bir dövlət kimi öz xüsusiyyətləri ilə ifadə olunduqda (məsələn: 'Azerbaijan is famous for... oil') hansı cinsə aid edilir?",
+      "options": [
+        "Kişi cinsinə (his)",
+        "Qadın cinsinə (her)",
+        "Yalnız orta cinsə (its)",
+        "İngilis dilində ölkə adları cinsə bölünmür"
+      ],
+      "answer": "Qadın cinsinə (her)"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Teacher' və 'doctor' kimi həm qadın, həm də kişi cinsinə aid edilə bilən isimlərin cinsini mətndəki ___ mənadan anlamaq olur.",
+      "answer": "leksik"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Bədii və ənənəvi yanaşmada 'the sun' (günəş) sözü ___ cinsinə aid edilir.",
+      "answer": "kişi"
+    },
+    {
+      "type": "true_false",
+      "question": "Gəmi və paraxod adları (ship, steamer) ingilis dilində ənənəvi olaraq qadın cinsinə aid edilir.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "Mücərrəd isimlərdən dəhşət və güc bildirən 'death' (ölüm) və 'war' (müharibə) kimi sözlər qadın cinsinə aid edilir.",
+      "answer": false
+    }
+  ]
+}
       ]
     },
     {
       "id": "sifet",
       "title": "The Adjective - Sifət",
       "nodes": [
-        { "id": "sifet-1", "title": "Sifətin Cümlədə Rolu",                                  "lesson": "", "questions": [] },
+        {
+  "id": "sifet-1",
+  "title": "Sifətin Cümlədə Rolu",
+  "lesson": "SİFƏT\nAzərbaycan dilində olduğu kimi ingilis dilində də sifət şəxs və ya əşyanın əlamətini, keyfiyyətini, rəngini və s. bildirir. What? (hansı?), Which? (hansı), What kind of? (necə? nə cür? hansı?), What colour? (hansı rəngdə?) suallarına cavab verir. Sifət həmişə cümlələrlə sintaktik əlaqədə olur və cümlədə əsasən ismin təyini funksiyasında çıxış edir. İsmin təkdə, cəmdə və ya hansı halda olmasından asılı olmayaraq sifət eyni formada olur. Sifət kəmiyyətə, şəxslərə və hallara görə dəyişmir. Yalnız əgər sifət sayılan tək isimlərlə işlənirsə, artikl sifətin qarşısına keçir və ismə aid olur. Məsələn:\n܀ an interesting book – maraqlı kitab\n܀ five interesting books – 5 maraqlı kitab\n܀ Baku is a sunny city. – Bakı günəşli şəhərdir.\n\nMüasir ingilis dilində sifətin qarşısında too (çox, həddindən artıq çox), very (çox) sözləri də işlənə bilir və sifət onda adi dərəcədə işlənir. Məsələn:\n܀ The task was too difficult. – Tapşırıq çox çətin idi .\n܀ He is very quiet. – O çox sakitdir.\n\nSifətlər quruluşuna görə 3 qrupa bölünürlər:\n1. Sadə sifətlər: Ancaq bir kökdən ibarətdir, heç bir ön şəkilçisi (prefiks) və son şəkilçisi (suffiks) qəbul etmirlər:\n܀ long – uzun\n܀ short – qısa\n܀ quiet – sakit\n܀ bad – pis\n܀ good – yaxşı\n\n2. Düzəltmə sifətlər: Kök və şəkilçidən ibarət olur. Bəzi şəkilçilər (prefiks) sözün əvvəlinə, bəzi şəkilçilər (suffiks) isə sözün sonuna artırılır. Düzəltmə sifətlər əsasən isim, sifət və feillərə həmin şəkilçiləri artırmaqla yaranır.\nİngilis dilində əsasən sifət düzəldən şəkilçilər aşağıdakılardır:\n\nSUFFİKSLƏR\n- Less: homeless – evsiz; useless – faydasız; hopeless – ümidsiz\n- Like: manlike – kişisayağı\n- Ish: foolish – axmaq; selfish – xudbin, eqoist\n- Al: cultural – mədəni; comical – gülmeli\n- Ial: financial – maliyyə\n- Ed (d): lion-hearted – şir ürəkli; blue-eyed – mavi gözlü; educated – təhsilli\n- Ful: careful – qayğıkeş, diqqətli; beautiful – gözəl; useful – faydalı\n- Y: sunny – günəşli; windy – küləkli; snowy – qarlı\n- Ly: lonely – yalqız; lively – canlı; weekly – həftəlik; lovely – sevimli; friendly – mehriban\nQeyd: Ly şəkilçisi həm sifət, həm də zərf düzəldən şəkilçidir.\n- Ing: amusing - əyləncəli; interesting – maraqlı\n- Ic: artistic – bədii\n- Ern: northern – şimalı; southern – cənubi; eastern – şərqi; western – qərbi\n- Ible: responsible – cavabdeh; accessible - əlçatan; impossible – qeyri-mümkün\n- Able: comfortable – rahat; reliable – etibarlı; eatable – yeməli; hospitable – qonaqpərvər\n- Ant: important – mühüm; significant - əhəmiyyətli; dominant – hökmranlıq edən\n- Ent: silent – sakit; dependent – asılı (nədənsə); different – müxtəlif\n- En: woolen – yun (dan); wooden – taxta (dan); golden – qızılı; silken – ipək (dən)\n- Ous: famous – məşhur; dangerous – təhlükəli; cautious – ehtiyyatlı\n- Some: handsome – yaraşıqlı\n\nVə aşağıdakı ön şəkilçilər ( PREFİKS) ilə düzəlirlər:\n- Un: happy – xoşbəxt, unhappy – bədbəxt; known – məlum, unknown – naməlum\n- In: correct – düz, incorrect – səhv\n- Pre: war – müharibə, prewar – müharibə öncəsi\n- Il: legal – illegal\n- Ir: responsible – məsuliyyətli, irresponsible – məsuliyyətsiz\n- Im: possible – impossible; polite – impolite\n- Extra: ordinary – extraordinary\n- Inter: national – international\n\n3. Mürəkkəb sifətlər: 2 və daha artıq sözdən ibarət olur:\n܀ Snow-white – qar kimi ağ\n܀ deaf-mute – lal-kar\n܀ freedom-loving – azadlıq sevən\n܀ shame-faced – utancaq\n܀ four-wheeled – 4 təkərli\n܀ two-sided – 2 tərəfli\n\nQeyd: Bəzi sözlər var ki, onlar həm ED, həm də ING şəkilçisi qəbul edirlər.\nAncaq bu fərqli şəkilçili sözlərin bir – birindən fərqi nədir?\nFərq: ED şəkilçisi ile sonlanan sifətlər canlılara aid olur, lakin ING şəkilçisi ilə sonlanan sifətlər isə həm canlılara, həm də cansızlara aid ola bilir. Lakin bu işlənmə yerindən asılıdır.\n⮚ Yesterday I was so bored. Dünən mən çox darıxırdım.\n⮚ Yesterday’s meeting was so boring. Dünənki iclas çox darıxdırıcı idi.\n⮚ Our teacher is not a boring person. Bizim müəllim darıxdırıcı şəxs deyil.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Sayılan tək ismin qarşısında sifət işləndikdə artiklın yeri necə müəyyən olunur?",
+      "options": [
+        "Artikl ismin düz sonuna artırılır",
+        "Artikl sifətin qarşısına keçir və ismə aid olur",
+        "Sifət işləndiyi üçün artikl tamamilə düşür",
+        "Artikl sifətlə ismin arasında yerləşir"
+      ],
+      "answer": "Artikl sifətin qarşısına keçir və ismə aid olur"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "-ed və -ing şəkilçili sifətlərin fərqi barədə verilənlərdən hansı doğrudur?",
+      "options": [
+        "-ed şəkilçili sifətlər yalnız cansızlara aid olur",
+        "-ed şəkilçisi qəbul edən sifətlər canlılara, -ing şəkilçililər isə kontekstdən asılı olaraq həm canlılara, həm də cansızlara aid ola bilir",
+        "-ing şəkilçili sifətlər heç vaxt canlı insanları təsvir edə bilməz",
+        "Hər iki şəkilçi yalnız mürəkkəb sifətlərdə işlənir"
+      ],
+      "answer": "-ed şəkilçisi qəbul edən sifətlər canlılara, -ing şəkilçililər isə kontekstdən asılı olaraq həm canlılara, həm də cansızlara aid ola bilir"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Homeless', 'useless' və 'hopeless' sözlərindəki son şəkilçi (suffiks) ___ şəkilçisidir.",
+      "answer": "-less"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Snow-white' və 'freedom-loving' kimi iki və daha artıq sözün birləşməsindən yaranan sifətlərə ___ sifətlər deyilir.",
+      "answer": "mürəkkəb"
+    },
+    {
+      "type": "true_false",
+      "question": "İngilis dilində sifətlər aid olduqları ismin kəmiyyətinə (tək və ya cəm olmasına) görə formaca dəyişirlər.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "-ly şəkilçisi ingilis dilində həm sifət, həm də zərf düzəldə bilən şəkilçidir.",
+      "answer": true
+    }
+  ]
+},
         { "id": "sifet-2", "title": "Classification Of Adjectives According To Their Meaning","lesson": "", "questions": [] },
         { "id": "sifet-3", "title": "The Category Of Degree Of Comparison Of Adjectives",     "lesson": "", "questions": [] },
         { "id": "sifet-4", "title": "Sifətin Dərəcələrinin İşlənməsi",                       "lesson": "", "questions": [] },
