@@ -1,0 +1,17 @@
+Quick wins (easy to build):
+
+Progress stats in the dropdown — show "X/Y dərslər tamamlandı" so users can see their progress at a glance
+Lives regeneration — lives currently reset only when you fail out, not over time. Could auto-restore 1 life every X minutes or fully restore each day
+Section progress indicators — show a small progress bar or "3/8" count under each section header on the path
+Streak counter — track consecutive days the user studied, show it in the header
+Medium features:
+
+Dark mode — toggle between light/dark, save preference
+Resume button — instead of scrolling to find where you left off, a "Davam et" button that jumps to the next uncompleted node
+Search — let users search lesson titles to jump directly to a topic
+Quiz review mode — after completing a quiz, let users review which questions they got wrong
+Bigger ideas:
+
+Leaderboard — show top users by completed nodes (Supabase already has all the data)
+Multiple languages — the curriculum structure already supports it
+The biggest practical improvement right now would probably be the resume button and section progress bars since they directly help navigation as the curriculum grows. Which of these sounds useful to you?

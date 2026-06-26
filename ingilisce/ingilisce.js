@@ -50,6 +50,17 @@ function validatePassword(pwd) {
   return null;
 }
 
+function checkDailyLivesReset() {
+  const today = new Date().toDateString();
+  const key   = `igp_lives_date_${currentProfile}`;
+  if (localStorage.getItem(key) !== today) {
+    const state = loadState();
+    state.lives = 5;
+    saveState(state);
+    localStorage.setItem(key, today);
+  }
+}
+
 function setActiveProfile(userId, profile) {
   currentUserId  = userId;
   currentProfile = profile.display_name;
@@ -61,9 +72,30 @@ function setActiveProfile(userId, profile) {
   localStorage.setItem(nKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.normal_progress || [] }));
   localStorage.setItem(sKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.sat_progress  || [] }));
 
+  checkDailyLivesReset();
+
   document.getElementById('profileName').textContent = profile.avatar + ' ' + profile.display_name;
   document.getElementById('dropdownAvatar').textContent = profile.avatar;
   document.getElementById('dropdownName').textContent   = profile.display_name;
+  updateDropdownStats();
+}
+
+function updateDropdownStats() {
+  if (!currentProfile) return;
+  const curriculum = currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum;
+  const total = curriculum ? getAllNodeIds(curriculum).filter(id => {
+    const node = findNode(id, curriculum);
+    return node && node.type !== 'header';
+  }).length : 0;
+  const state = loadState();
+  const completed = state.completedNodes.length;
+  const lives     = state.lives;
+
+  document.getElementById('dropdownCompleted').textContent = completed;
+  document.getElementById('dropdownTotal').textContent     = total;
+  document.getElementById('dropdownLives').textContent     = '❤️'.repeat(lives) + '🤍'.repeat(5 - lives);
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  document.getElementById('dropdownProgressFill').style.width = pct + '%';
 }
 
 async function doSignUp(name, avatar, password, confirm) {
@@ -144,18 +176,31 @@ function renderPath(curriculum) {
     const block = document.createElement('div');
     block.className = 'section-block';
 
+    const collapseKey = `igp_collapsed_${section.id}`;
+    const isCollapsed = localStorage.getItem(collapseKey) === '1';
+
     const titleEl = document.createElement('div');
-    titleEl.className = 'section-title';
-    titleEl.textContent = section.title;
+    titleEl.className = 'section-title collapsible';
+    titleEl.innerHTML = `<span>${section.title}</span><span class="section-chevron">${isCollapsed ? '▶' : '▼'}</span>`;
     block.appendChild(titleEl);
+
+    const nodesContainer = document.createElement('div');
+    nodesContainer.className = 'nodes-container' + (isCollapsed ? ' collapsed' : '');
+    block.appendChild(nodesContainer);
+
+    titleEl.addEventListener('click', () => {
+      const collapsed = nodesContainer.classList.toggle('collapsed');
+      titleEl.querySelector('.section-chevron').textContent = collapsed ? '▶' : '▼';
+      localStorage.setItem(collapseKey, collapsed ? '1' : '0');
+    });
 
     section.nodes.forEach((node, ni) => {
       const status = getNodeStatus(node.id, allNodeIds, state);
 
-      if (si > 0 || ni > 0) {
+      if (ni > 0) {
         const line = document.createElement('div');
         line.className = 'path-line' + (status === 'completed' ? ' done' : '');
-        block.appendChild(line);
+        nodesContainer.appendChild(line);
       }
 
       const wrapper = document.createElement('div');
@@ -172,7 +217,7 @@ function renderPath(curriculum) {
 
       wrapper.appendChild(nodeEl);
       wrapper.appendChild(label);
-      block.appendChild(wrapper);
+      nodesContainer.appendChild(wrapper);
     });
 
     container.appendChild(block);
@@ -410,7 +455,7 @@ function checkAnswer() {
 
   disableQuizInputs();
   showVisualFeedback(question, isCorrect);
-  showFeedbackToast(isCorrect);
+  showFeedbackToast(isCorrect, question);
 
   const state = loadState();
   if (!isCorrect) {
@@ -468,18 +513,32 @@ function showVisualFeedback(question, isCorrect) {
     });
   } else {
     const input = document.querySelector('.fill-blank-input');
-    if (input) input.classList.add(isCorrect ? 'correct' : 'wrong');
+    if (input) {
+      input.classList.add(isCorrect ? 'correct' : 'wrong');
+      if (!isCorrect) {
+        const hint = document.createElement('div');
+        hint.className = 'correct-answer-hint';
+        hint.textContent = `Düzgün cavab: ${question.answer}`;
+        input.parentNode.insertBefore(hint, input.nextSibling);
+      }
+    }
   }
 }
 
-function showFeedbackToast(isCorrect) {
+function showFeedbackToast(isCorrect, question) {
   const existing = document.querySelector('.feedback');
   if (existing) existing.remove();
   const fb = document.createElement('div');
   fb.className = `feedback ${isCorrect ? 'correct' : 'wrong'}`;
-  fb.textContent = isCorrect ? '✓ Düzgün!' : '✗ Yanlış!';
+  if (isCorrect) {
+    fb.textContent = '✓ Düzgün!';
+  } else if (question.type === 'multiple_choice' || question.type === 'true_false') {
+    fb.textContent = `✗ Düzgün cavab: ${question.answer}`;
+  } else {
+    fb.textContent = '✗ Yanlış!';
+  }
   document.body.appendChild(fb);
-  setTimeout(() => fb.remove(), 1400);
+  setTimeout(() => fb.remove(), 2000);
 }
 
 // ── Node completion ────────────────────────────────────
@@ -491,6 +550,7 @@ function completeNode(nodeId, curriculum) {
   }
   state.lives = 5;
   saveState(state);
+  updateDropdownStats();
   closeModal('quizOverlay');
 
   const allNodeIds = getAllNodeIds(curriculum);
@@ -621,6 +681,7 @@ async function init() {
     e.stopPropagation();
     if (!currentProfile) return;
     document.getElementById('profileDropdown').classList.toggle('hidden');
+    updateDropdownStats();
   });
 
   // Close dropdown when clicking outside

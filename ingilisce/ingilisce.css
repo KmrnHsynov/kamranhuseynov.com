@@ -86,6 +86,58 @@ body {
   margin: 6px 0 2px;
 }
 
+.profile-dropdown-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gray-light);
+  border-radius: 12px;
+  padding: 10px 14px;
+  width: 100%;
+}
+
+.dropdown-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.dropdown-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dropdown-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.dropdown-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: #ddd;
+}
+
+.dropdown-progress-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.dropdown-progress-bar-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
 .profile-dropdown-signout {
   background: none;
   border: 1.5px solid var(--danger);
@@ -163,6 +215,38 @@ body {
   letter-spacing: 1px;
   margin: 24px 0 8px;
   text-align: center;
+}
+
+.section-title.collapsible {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.section-title.collapsible:hover { background: var(--blue-dark); }
+
+.section-chevron {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.nodes-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  max-height: 9999px;
+  opacity: 1;
+}
+
+.nodes-container.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .path-line {
@@ -379,6 +463,17 @@ body {
 .fill-blank-input:focus   { border-color: var(--blue); }
 .fill-blank-input.correct { border-color: var(--success); background: #e6f4ea; }
 .fill-blank-input.wrong   { border-color: var(--danger);  background: #fce8e6; }
+
+.correct-answer-hint {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #e6f4ea;
+  border: 1.5px solid var(--success);
+  border-radius: 10px;
+  color: #1e6b3a;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
 
 /* ── Celebration / Fail Modal ── */
 .celebration-modal {
