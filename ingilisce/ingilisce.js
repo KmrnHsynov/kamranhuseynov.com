@@ -62,6 +62,8 @@ function setActiveProfile(userId, profile) {
   localStorage.setItem(sKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.sat_progress  || [] }));
 
   document.getElementById('profileName').textContent = profile.avatar + ' ' + profile.display_name;
+  document.getElementById('dropdownAvatar').textContent = profile.avatar;
+  document.getElementById('dropdownName').textContent   = profile.display_name;
 }
 
 async function doSignUp(name, avatar, password, confirm) {
@@ -193,17 +195,47 @@ function openLesson(nodeId, curriculum, isReview) {
   document.getElementById('lessonTitle').textContent = node.title;
   const lessonBody = document.getElementById('lessonBody');
   lessonBody.innerHTML = '';
-  if (node.audio) {
-    const audio = document.createElement('audio');
-    audio.controls = true;
-    audio.className = 'lesson-audio';
-    audio.src = node.audio;
-    lessonBody.appendChild(audio);
-  }
   const lessonText = document.createElement('p');
   lessonText.className = 'lesson-text';
   lessonText.textContent = node.lesson;
   lessonBody.appendChild(lessonText);
+  if (node.audio) {
+    const audio = new Audio(node.audio);
+    const player = document.createElement('div');
+    player.className = 'custom-audio-player';
+    player.innerHTML = `
+      <button class="cap-play-btn" id="capPlay">&#9654;</button>
+      <div class="cap-bar">
+        <div class="cap-progress" id="capProgress"></div>
+      </div>
+      <span class="cap-time" id="capTime">0:00</span>
+    `;
+    lessonBody.appendChild(player);
+
+    const playBtn  = player.querySelector('#capPlay');
+    const progress = player.querySelector('#capProgress');
+    const timeEl   = player.querySelector('#capTime');
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) { audio.play(); playBtn.innerHTML = '&#10074;&#10074;'; }
+      else              { audio.pause(); playBtn.innerHTML = '&#9654;'; }
+    });
+    audio.addEventListener('timeupdate', () => {
+      const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+      progress.style.width = pct + '%';
+      const m = Math.floor(audio.currentTime / 60);
+      const s = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+      timeEl.textContent = `${m}:${s}`;
+    });
+    audio.addEventListener('ended', () => { playBtn.innerHTML = '&#9654;'; });
+    player.querySelector('.cap-bar').addEventListener('click', (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    });
+
+    // stop audio when lesson closes
+    document.getElementById('lessonClose').addEventListener('click', () => audio.pause(), { once: true });
+  }
   renderLives('lessonLives', state.lives);
 
   const footer = document.getElementById('lessonFooter');
@@ -584,13 +616,28 @@ async function init() {
     showAuthModal();
   }
 
-  // Profile button → sign out
-  document.getElementById('profileBtn').addEventListener('click', async () => {
+  // Profile button → toggle dropdown
+  document.getElementById('profileBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
     if (!currentProfile) return;
-    if (!confirm(`${currentProfile} hesabından çıxmaq istəyirsiniz?`)) return;
+    document.getElementById('profileDropdown').classList.toggle('hidden');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    document.getElementById('profileDropdown').classList.add('hidden');
+  });
+
+  document.getElementById('profileDropdown').addEventListener('click', (e) => e.stopPropagation());
+
+  // Sign out button
+  document.getElementById('btnSignOut').addEventListener('click', async () => {
+    document.getElementById('profileDropdown').classList.add('hidden');
     await db.auth.signOut();
     currentUserId = null; currentProfile = null; currentAvatar = '👦';
     document.getElementById('profileName').textContent = '';
+    document.getElementById('dropdownAvatar').textContent = '';
+    document.getElementById('dropdownName').textContent = '';
     showAuthModal();
   });
 

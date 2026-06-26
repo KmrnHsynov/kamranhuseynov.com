@@ -12,7 +12,13 @@
   <header class="app-header">
     <h1 class="app-title">İngiliscə Öyrən</h1>
     <div class="header-right">
-      <button class="profile-btn" id="profileBtn">👤 <span id="profileName"></span></button>
+      <button class="profile-btn" id="profileBtn"><span id="profileName"></span></button>
+      <div class="profile-dropdown hidden" id="profileDropdown">
+        <div class="profile-dropdown-avatar" id="dropdownAvatar"></div>
+        <div class="profile-dropdown-name" id="dropdownName"></div>
+        <hr class="profile-dropdown-divider">
+        <button class="profile-dropdown-signout" id="btnSignOut">Çıxış et</button>
+      </div>
       <button class="mode-toggle" id="modeToggle">SAT Rejimi</button>
     </div>
   </header>
