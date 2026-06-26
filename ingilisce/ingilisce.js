@@ -236,7 +236,7 @@ function openLesson(nodeId, curriculum, isReview) {
     // stop audio when lesson closes
     document.getElementById('lessonClose').addEventListener('click', () => audio.pause(), { once: true });
   }
-  renderLives('lessonLives', state.lives);
+  document.getElementById('lessonLives').innerHTML = '';
 
   const footer = document.getElementById('lessonFooter');
   if (isReview) {
