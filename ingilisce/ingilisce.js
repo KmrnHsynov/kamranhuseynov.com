@@ -50,6 +50,31 @@ function validatePassword(pwd) {
   return null;
 }
 
+function getStreak() {
+  try {
+    const saved = localStorage.getItem(`igp_streak_${currentProfile}`);
+    return saved ? JSON.parse(saved) : { count: 0, lastDate: null };
+  } catch { return { count: 0, lastDate: null }; }
+}
+
+function recordStudyDay() {
+  const today    = new Date().toDateString();
+  const streak   = getStreak();
+  if (streak.lastDate === today) return;
+  const yesterday = new Date(Date.now() - 864e5).toDateString();
+  streak.count  = streak.lastDate === yesterday ? streak.count + 1 : 1;
+  streak.lastDate = today;
+  localStorage.setItem(`igp_streak_${currentProfile}`, JSON.stringify(streak));
+  updateDropdownStats();
+  updateStreakDisplay();
+}
+
+function updateStreakDisplay() {
+  const streak = getStreak();
+  const el = document.getElementById('streakDisplay');
+  if (el) el.textContent = `🔥 ${streak.count}`;
+}
+
 function checkDailyLivesReset() {
   const today = new Date().toDateString();
   const key   = `igp_lives_date_${currentProfile}`;
@@ -78,6 +103,7 @@ function setActiveProfile(userId, profile) {
   document.getElementById('dropdownAvatar').textContent = profile.avatar;
   document.getElementById('dropdownName').textContent   = profile.display_name;
   updateDropdownStats();
+  updateStreakDisplay();
 }
 
 function updateDropdownStats() {
@@ -91,9 +117,12 @@ function updateDropdownStats() {
   const completed = state.completedNodes.length;
   const lives     = state.lives;
 
+  const streak = getStreak();
+
   document.getElementById('dropdownCompleted').textContent = completed;
   document.getElementById('dropdownTotal').textContent     = total;
   document.getElementById('dropdownLives').textContent     = '❤️'.repeat(lives) + '🤍'.repeat(5 - lives);
+  document.getElementById('dropdownStreak').textContent    = `🔥 ${streak.count}`;
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   document.getElementById('dropdownProgressFill').style.width = pct + '%';
 }
@@ -166,11 +195,40 @@ function renderLives(containerId, lives) {
 
 // ── Path rendering ─────────────────────────────────────
 
+function getNextNodeId(curriculum) {
+  const state      = loadState();
+  const allNodeIds = getAllNodeIds(curriculum);
+  return allNodeIds.find(id => getNodeStatus(id, allNodeIds, state) === 'available');
+}
+
+function resumeProgress(curriculum) {
+  const nextId = getNextNodeId(curriculum);
+  if (!nextId) return;
+
+  const collapseKey = `igp_collapsed_${curriculum.sections.find(s => s.nodes.some(n => n.id === nextId))?.id}`;
+  if (localStorage.getItem(collapseKey) === '1') {
+    localStorage.setItem(collapseKey, '0');
+    renderPath(curriculum);
+  }
+
+  setTimeout(() => {
+    const el = document.querySelector(`[data-node-id="${nextId}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
 function renderPath(curriculum) {
   const state = loadState();
   const allNodeIds = getAllNodeIds(curriculum);
   const container = document.getElementById('pathContainer');
   container.innerHTML = '';
+
+  const resumeBtn = document.getElementById('resumeBtn');
+  if (resumeBtn) {
+    const hasNext = !!getNextNodeId(curriculum);
+    resumeBtn.classList.toggle('hidden', !hasNext);
+    resumeBtn.onclick = () => resumeProgress(curriculum);
+  }
 
   curriculum.sections.forEach((section, si) => {
     const block = document.createElement('div');
@@ -208,6 +266,7 @@ function renderPath(curriculum) {
 
       const nodeEl = document.createElement('div');
       nodeEl.className = `node ${status}`;
+      nodeEl.dataset.nodeId = node.id;
       nodeEl.textContent = status === 'locked' ? '🔒' : status === 'completed' ? '✅' : '📖';
       nodeEl.addEventListener('click', () => handleNodeClick(node.id, status, curriculum));
 
@@ -550,6 +609,7 @@ function completeNode(nodeId, curriculum) {
   }
   state.lives = 5;
   saveState(state);
+  recordStudyDay();
   updateDropdownStats();
   closeModal('quizOverlay');
 

@@ -12,6 +12,7 @@
   <header class="app-header">
     <h1 class="app-title">İngiliscə Öyrən</h1>
     <div class="header-right">
+      <span class="streak-display" id="streakDisplay"></span>
       <button class="profile-btn" id="profileBtn"><span id="profileName"></span></button>
       <div class="profile-dropdown hidden" id="profileDropdown">
         <div class="profile-dropdown-avatar" id="dropdownAvatar"></div>
@@ -31,6 +32,11 @@
             <span class="dropdown-stat-value" id="dropdownLives">❤️❤️❤️❤️❤️</span>
             <span class="dropdown-stat-label">can</span>
           </div>
+          <div class="dropdown-stat-divider"></div>
+          <div class="dropdown-stat">
+            <span class="dropdown-stat-value" id="dropdownStreak">🔥 0</span>
+            <span class="dropdown-stat-label">gün ardıcıl</span>
+          </div>
         </div>
         <div class="dropdown-progress-bar-track">
           <div class="dropdown-progress-bar-fill" id="dropdownProgressFill"></div>
@@ -43,6 +49,7 @@
   </header>
 
   <main class="path-container" id="pathContainer"></main>
+  <button class="resume-btn hidden" id="resumeBtn">▶ Davam et</button>
 
   <!-- Profil / Auth -->
   <div class="profile-overlay hidden" id="profileOverlay">

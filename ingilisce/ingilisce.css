@@ -172,6 +172,36 @@ body {
 }
 .profile-btn:hover { background: rgba(255,255,255,0.25); }
 
+.resume-btn {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: 99px;
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(26,115,232,0.4);
+  z-index: 50;
+  transition: background 0.15s, transform 0.15s;
+}
+.resume-btn:hover { background: var(--blue-dark); transform: translateY(-2px); }
+.resume-btn.hidden { display: none; }
+
+.streak-display {
+  color: var(--white);
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 12px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
 .mode-toggle {
   background: rgba(255,255,255,0.15);
   color: var(--white);
