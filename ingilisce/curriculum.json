@@ -56,445 +56,132 @@
 },
 {
   "id": "fonetika-2",
-  "title": "Lesson 2",
-  "lesson": "1. S s [es] hərfi samitlərdən əvvəl sözlərin əvvəlində kar samitlərdən sonra sözlərin sonunda [s] oxunur:\n܀ test [test] sınaq, test\n܀ send [send] göndərmək\n܀ sit [sıt] oturmaq\n܀ lists [lists] siyahılar\n2. Qoşa ss hərf birləşməsi [s] oxunur:\n܀ miss [mis] daramaq\n3. Ss hərfi sözlərin sonunda cingiltili samitlərdən sonra işləndikdə oxunur və saitlərdən sonra sözlərin sonunda və 2\nsait arasında [z] oxunur:\n܀ Pens [penz] qələmlər\n܀ bess [bi:z] arılar\n܀ visit [vizit] səfər, baş çəkmək, visit\n4. Z z [zed] [zi:] hərfi həmişə [z] oxunur:\n܀ Size [saız] ölçü\n܀ zoo [zu:], heyvanxana, zoopark\n5. I i [aı] və Y y [waı] hərfləri I tip oxuda [aı] oxunur:\n܀ life [laıf] həyat\n܀ tie [taı] qalstuq\n܀ my [maı] mənim\n܀ type [taıp] tip, növ\n6. I i/ Y y hərfləri II tip oxuda [i] oxunur:\n܀ in [in] içində\n܀ it [it] o, (c.ə)\n܀ myth [miθ] əfsanə, əsatir\n⮚ Qoşa samitdən əvvəl [i] oxunur:\n܀ middle [midl] orta\n܀ little [litl] kiçik",
+  "title": "Sounds / Səslər",
+  "audio": "audio/fonetika 2.mp3",
+  "lesson": "Sounds / Səslər\n\nSəslər hərflərdən fərqləndirilmək üçün transkripsiya [ ] içərisində verilir. Bəzi sait səsləri uzun tələffüz etmək üçün iki nöqtədən [:] istifadə olunur. Səslər 2 yerə bölünür:\n\n1. Vowels / Saitlər (20)\n2. Consonants / Samitlər (24)\n\nSait səslər də 2 yerə bölünür:\n\n1. Monophthongs / Monoftonqlar (12)\n2. Diphthongs / Diftonqlar (8)\n\nMonoftonqlar:\n[a:] [ʌ] [i:] [i] [u:] [u] [ɔ:] [ɔ] [e] [ə] [æ] [ə:]\n\nDiftonqlar:\n[aı] [eı] [ɔı] [ɛə] [ıə] [uə] [au] [ɔu] = [əu]\n\nSamit səslər də öz növbəsində 2 yerə bölünür:\n\n1. Voiced consonants / Cingiltili samitlər (15)\n2. Voiceless consonants / Kar samitlər (9)\n\nCingiltili samitlər:\n[b] [d] [g] [v] [z] [ʒ] [dʒ] [ð] [l] [m] [n] [r] [j] [w] [ŋ]\n\nKar samitlər:\n[p] [t] [k] [f] [s] [ʃ] [tʃ] [θ] [h]",
   "questions": [
     {
       "type": "multiple_choice",
-      "question": "'visit' sözündə 's' hərfi niyə [z] oxunur?",
+      "question": "İngilis dilində cəmi neçə sait səs (Vowels) və neçə samit səs (Consonants) var?",
       "options": [
-        "Sözlərin əvvəlində gəldiyi üçün",
-        "Kar samitlərdən sonra gəldiyi üçün",
-        "2 sait arasında olduğu üçün",
-        "Qoşa samitdən əvvəl gəldiyi üçün"
+        "12 sait, 8 samit",
+        "20 sait, 24 samit",
+        "24 sait, 20 samit",
+        "15 sait, 9 samit"
       ],
-      "answer": "2 sait arasında olduğu üçün"
+      "answer": "20 sait, 24 samit"
     },
     {
       "type": "multiple_choice",
-      "question": "Z z [zed] [zi:] hərfi həmişə necə oxunur?",
-      "options": ["[s]", "[z]", "[i]", "[aı]"],
-      "answer": "[z]"
+      "question": "Səslərin transkripsiyasında istifadə olunan iki nöqtə [:] işarəsi nəyi bildirir?",
+      "options": [
+        "Səsin qısa tələffüzünü",
+        "Səsin cingiltili olduğunu",
+        "Səsin uzun tələffüzünü",
+        "Səsin kar olduğunu"
+      ],
+      "answer": "Səsin uzun tələffüzünü"
     },
     {
       "type": "fill_blank",
-      "question": "I i və Y y hərfləri I tip oxuda ___ oxunur.",
-      "answer": "[aı]"
+      "question": "İngilis dilində mürəkkəb saitlər olan diftonqların (Diphthongs) sayı ___ bərabərdir.",
+      "answer": "8"
     },
     {
       "type": "fill_blank",
-      "question": "'middle' və 'little' sözlərində qoşa samitdən əvvəl ___ oxunur.",
-      "answer": "[i]"
+      "question": "Samit səslər öz növbəsində iki qrupa bölünür: kar samitlər və ___ samitlər.",
+      "answer": "cingiltili"
     },
     {
       "type": "true_false",
-      "question": "Qoşa ss hərf birləşməsi [z] oxunur.",
+      "question": "İngilis dilində 15 kar samit (Voiceless consonants) və 9 cingiltili samit (Voiced consonants) mövcuddur.",
       "answer": false
     },
     {
       "type": "true_false",
-      "question": "'Pens' sözünün sonunda 's' hərfi cingiltili samitdən sonra işləndiyi üçün [z] oxunur.",
+      "question": "[a:], [i:] və [u:] səsləri monoftonqlara (Monophthongs) nümunədir.",
       "answer": true
     }
   ]
 },
 {
   "id": "fonetika-3",
-  "title": "Letters - Lesson 3",
-  "lesson": "1. A a [eı] hərfi I tip oxuda [eı] oxunur:\n܀ plane [pleın] təyyarə\n܀ name [neım] ad\n2. A a hərfi II tip oxuda [eə]oxunur. Qoşa samitlərdən əvvəl [eə]oxunur:\n܀ plan [pleən]plan\n܀ man [meən]kişi, adam\n܀ apple [əepl]alma\n܀ battle [beətl] döyüş\n3. A i hərfi birləşməsi [eı]oxunur:\n܀ day [deı] gün\n܀ main [meın] əsas, başlıca\n܀ Spain [speın] İspaniya\n܀ paid [peıd] ödədi\n܀ May [meı] May\n4. A i hərfi bəzi sözlərdə [e]oxunur:\n܀ Said [sed] dedi, (say feilinin keçmişi)\n5. Ay - bəzən sözün sonunda vurğusuz vəziyyətdə [i] oxunur:\n܀ Sunday [sʌndi]bazar günü\n6. Ed- hərf birləşməsi [i]oxunur:\n܀ Please [pli:z] buyurun\n܀ seat [si:t] oturacaq, yer\n7. Ed- hərf birləşməsi bəzən [e]oxunur:\n܀ read [red] oxudu\n܀ head [hed] baş\n܀ bread [bred] çörək\n܀ dead [ded] ölü",
+  "title": "İki və daha artıq səs verən samitlər",
+  "lesson": "İki və daha artıq səs verən samitlər\n\n1. Cc\n[s]\n[k]\n– i, e, y hərflərindən əvvəl [s] kimi:\ncity [sıtı] - şəhər, face [feıs] - üz, cycle [saıkl] - velosiped\n– qalan hallarda [k] kimi:\ncage [keıdʒ] - qəfəs, clean [kli:n] - təmiz, count [kaunt] - saymaq\n\n2. Gg\n[dʒ]\n[g]\n– i, e, y hərflərindən əvvəl [dʒ] kimi:\ngipsy [dʒıpsı] - qaraçı, gentry [dʒentrı] - zadəganlar, gym [dʒım] - idman zalı\n– qalan hallarda [g] chemistry kimi:\ngarden [ga:dn] - bağ, green [gri:n] - yaşıl, guess [ges] - güman etmək\nİstisnalar:\ngive [gıv] - vermək, get [get] - almaq, əldə etmək, begin [bıgın] - başlamaq, girl [gə:l] - qız, gift [gıft] - hədiyyə, geese [gi:s] - qazlar\n\n3. Ss\n[z]\n[s]\n– İki sait arasında [z] kimi:\nrose [rouz] - qızıl gül, nose [nouz] - burun, easy [i:zı] - asan\n– saitlər və cingiltili samitlərdən sonra [z] kimi:\nhas [hæz] - malik olmaq, bees [bi:z] - arılar, pens [penz] - qələmlər, pencils [penslz] - karandaşlar\n– sözlərin əvvəlində [s] kimi:\nsafe [seıf] - təhlükəsiz; seyf, sign [saın] - işarə; imzalamaq\n– kar samitlərdən əvvəl və sonra [s] kimi:\nİstisnalar:\ngoose [gu:s] - qaz, this [ðıs] - bu\n\n4. Xx\n[gz]\n[ks]\n– vurğulu saitlərin qarşısında [gz] kimi:\nexam [ıgzæm] - imtahan, exist [ıgzıst] - mövcud olmaq\n– kar samitlərin qarşısında və sözlərin sonunda [ks] kimi:\ntext [tekst] - mətn, except [ıksept] - gözləmək, six [sıks] - altı\n\n5. Yy\n[j]\n[ı]\n[aı]\nYy hərfi həm samit, həm də sait səslər verir.\n– sözlərin əvvəlində [j] kimi:\nyard [ja:d] - həyət, yellow [jelou] - sarı\n– sözlərin ortasında və sonunda [aı] və [ı] kimi:\ncycle [saıkl] - velosiped, my [maı] - mənim, gym [dʒım] - idman zalı, quickly [kwıklı] - cəld, tez",
   "questions": [
     {
       "type": "multiple_choice",
-      "question": "'plane' və 'name' sözlərində 'A a' hərfi hansı tip oxu qaydasına görə [eı] oxunur?",
-      "options": ["I tip oxuda", "II tip oxuda", "III tip oxuda", "IV tip oxuda"],
-      "answer": "I tip oxuda"
+      "question": "'Cc' hərfi hansı hərflərdən əvvəl gəldikdə [s] kimi tələffüz olunur?",
+      "options": ["a, o, u", "i, e, y", "b, d, g", "r, l, w"],
+      "answer": "i, e, y"
     },
     {
       "type": "multiple_choice",
-      "question": "Hansı sözdə 'A i' hərf birləşməsi istisna olaraq [e] kimi oxunur?",
-      "options": ["main", "Spain", "Said", "paid"],
-      "answer": "Said"
+      "question": "Qaydaya əsasən 'Gg' hərfi 'i, e, y' hərflərindən əvvəl [dʒ] səsi verməlidir. Hansı variantdakı söz bu qaydanın istisnasıdır (yəni [g] oxunur)?",
+      "options": ["gym", "gipsy", "girl", "gentry"],
+      "answer": "girl"
     },
     {
       "type": "fill_blank",
-      "question": "'Sunday' sözünün sonunda 'ay' birləşməsi vurğusuz vəziyyətdə ___ oxunur.",
-      "answer": "[i]"
+      "question": "'Ss' hərfi 'rose' və 'nose' sözlərində olduğu kimi iki ___ arasında gəldikdə [z] kimi oxunur.",
+      "answer": "sait"
     },
     {
       "type": "fill_blank",
-      "question": "'head', 'bread' və 'dead' sözlərindəki 'ed-' birləşməsi ___ kimi tələffüz olunur.",
-      "answer": "[e]"
+      "question": "'Xx' hərfi vurğulu saitlərin qarşısında gəldikdə (məsələn: 'exam', 'exist') ___ səsini verir.",
+      "answer": "[gz]"
     },
     {
       "type": "true_false",
-      "question": "'apple' və 'battle' sözlərində qoşa samitlərdən əvvəl gələn 'a' hərfi [eı] oxunur.",
-      "answer": false
-    },
-    {
-      "type": "true_false",
-      "question": "'Please' və 'seat' sözlərindəki 'ed-' hərf birləşməsi [i] oxunur.",
+      "question": "'Yy' hərfi 'yard' və 'yellow' sözlərində olduğu kimi sözün əvvəlində gəldikdə [j] səsini verir.",
       "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'goose' və 'this' sözlərindəki 'Ss' hərfi iki sait arasında gəldiyi üçün [z] kimi tələffüz olunur.",
+      "answer": false
     }
   ]
 },
 {
   "id": "fonetika-4",
-  "title": "Letters - Lesson 4",
-  "lesson": "1. K k [keı]hərfi həmişə [k] oxunur:\n܀ Kate [keıt] Katya, (q. Adı)\n܀ take [teık] götürmək.\n2. K n hərfbirləşməsidə k hərfi oxunur:\n܀ knight [naıt]cəngavər\n܀ know [nou] bilmək\n܀ knee [ni] diz\n3. CK hərfbirləşməsi [k] oxunur:\n܀ Black [blaek]qara\n܀ sack [səek] kisə, torba\n4. G g [dʒi:] hərfi e, i, y hərflərindən əvvəl [dʒ] oxunur:\n܀ page [peıdʒ] səhifə\n܀ gym [dʒim] gimnastika zalı\n⮚ Qaydalara tebe olmayan sözlər də var:\n܀ Give [giv] vermək\n܀ get [get] almaq, əldə etmək\n܀ gift [gift] hədiyyə\n5. G g hərfi bəzi sözlərdə [ʒ] oxunur:\n܀ garage [gəerə:ʒ] qaraj\n܀ regime [re(ı)ʒi:m]rejim.\n6. G g hərfi qalan hallarda [g]oxunur:\n܀ game [geım] oyun\n܀ glad [gləed] şad, razı\n܀ bag [bəeg] çanta\n܀ go [gou] getmək\n7. J j [dʒeı] hərfi həmişə [dʒ] oxunur.\n܀ Jane [dʒeın] Ceyn, (q.a)\n܀ jam [dʒəem] mürəbbə\n8. Sh - hərfbirləşməsi [ʃ] oxunur:\n܀ she [ʃi:] o (q.c)\n܀ ship [ʃip] gəmi\n9. Tch - hərfbirləşməsi [tʃ] oxunur:\n܀ Match [məetʃ] yarış, kibrit\n10. Ch- hərfbirləşməsi 3 cür səs verir:\n1. [tʃ]\n܀ chess [tʃes] sahmat\n܀ teach [ti:tʃ] öyrətmək\n܀ charity [tʃəeriti] xeyriyyə\n2. [k]\n܀ school [sku:l]məktəb\n܀ character [kəerıktə] xasiyyət\n܀ chours [kɔ:rəs] xor\n܀ chemestry [kemistri] kimya\n3. [ʃ]\n܀ champagne [ʃəempeın] şampan,\n܀ Chicago [ʃika:qou] Çikaqo\n܀ machine [məʃi:n] maşın, dərgah\n11. Th - hərf birləşməsi müstəqil mənalı sözlərin əvvəlində və sonunda [θ] oxunur:\n܀ thick [θik] qalın, yorğun\n܀ thin [θin] nazik, arıq\n܀ faith [feıθ] inam, etibar\n܀ theme [θi:m] mövzu, tema\n⮚ Bu sözlərdə isə diqqətli olmaq lazımdır:\n܀ breathe [breθ] nəfəs\n܀ brethe [bri:Ə] nəfəs almaq\n܀ bathe [ba:θ] vanna\n܀ bathe [beıƏ] çimmək",
+  "title": "Bəzi samit hərf birləşmələri",
+  "lesson": "Bəzi samit hərf birləşmələri\n\n1. ch - üç cür oxunur:\n– adətən [tʃ] kimi oxunur:\ncheese [tʃi:z] - pendir, cheek [tʃi:k] - yanaq\n– fransız dilindən alınma sözlərdə [ʃ] kimi oxunur:\nmachine [mə'ʃi:n] - maşın, champagne [ʃæm'peın] - şampan\n– yunan və latın dillərindən alınma sözlərdə [k] kimi oxunur:\nschool [sku:l] - məktəb, chemistry [kemıstrı] - kimya\n\n2. tch - [tʃ] kimi oxunur:\ncatch [kætʃ] - tutmaq, watch [wɔtʃ] - qol saatı; baxmaq; seyr etmək\n\n3. sh - [ʃ] kimi oxunur:\nsheep [ʃi:p] - qoyun, fish [fıʃ] - balıq\n\n4. ck - [k] kimi oxunur:\nblack [blæk] - qara, pack [pæk] - qablaşdırmaq\n\n5. ph - yunan dilindən alınma sözlərdə [f] kimi oxunur:\nphone [foun] - zəng etmək, elephant [elıfənt] - fil\n\n6. kn - [n] kimi oxunur:\nknee [ni:] - diz, know [nou] - bilmək\n\n7. wr - [r] kimi oxunur:\nwrite [raıt] - yazmaq, wrong [rɔŋ] - səhv\n\n8. th - iki cür oxunur:\n– əvəzliklərdə, köməkçi sözlərdə, sözlərin sonunda saitdən əvvəl və iki sait arasında [ð] kimi:\nthis [ðıs] - bu, the [ðə], [ðı] (artikl), bathe [beıð] - çimmək\n– sözlərin əvvəlində (köməkçi sözlərdən və əvəzliklərdən başqa), sonunda, başqa dillərdən alınma sözlərin ortasında [θ] kimi:\nthin [θın] - arıq, tenth [tenθ] - onuncu, method [meθəd] - metod, üsul\n\n9. gh - iki vəziyyətdə işlənə bilir:\n– sözlərin ortasında oxunur:\nright [raıt] - sağ; düzgün; haqlı, fight [faıt] - döyüşmək; savaşmaq\n– sözlərin sonunda [f] kimi:\nenough [ınʌf] - kifayət qədər, cough [kɔf] - öskürək; öskürmək\n\n10. wh - iki cür oxunur:\n– o hərfindən əvvəl gəldikdə [h] kimi:\nwho [hu:] - kim, whom [hu:m] - kimi, kimə\n– qalan hallarda [w] kimi:\nwhere [weə] - hara, harada, when [wen] - nə vaxt, nə zaman",
   "questions": [
     {
       "type": "multiple_choice",
-      "question": "Hansı sözdə 'Ch' hərf birləşməsi [k] səsini verir?",
-      "options": ["chess", "school", "machine", "charity"],
-      "answer": "school"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "G g hərfi hansı hərflərdən əvvəl gəldikdə [dʒ] səsini verir?",
-      "options": ["a, o, u", "e, i, y", "k, n, th", "s, z, ch"],
-      "answer": "e, i, y"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'knight', 'know' və 'knee' sözlərində yer alan 'Kn' birləşməsində ___ hərfi oxunur.",
-      "answer": "k"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'Sh' hərf birləşməsi ingilis dilində ___ səsini ifadə edir.",
-      "answer": "[ʃ]"
-    },
-    {
-      "type": "true_false",
-      "question": "J j hərfi ingilis dilində həmişə [dʒ] oxunur.",
-      "answer": true
-    },
-    {
-      "type": "true_false",
-      "question": "'give', 'get' və 'gift' sözlərindəki 'G g' hərfi qaydaya tabe olaraq [dʒ] oxunur.",
-      "answer": false
-    }
-  ]
-},
- {
-  "id": "fonetika-5",
-  "title": "Letters - Lesson 5",
-  "lesson": "1. h [eıtʃ] hərfi sözün əvvəlində saitdən əvvəl [h] oxunur:\n܀ he [hi:] o ( k.c)\n܀ hat [həet] şlyapa\n2. Th hərfi bəzi sözlərdə oxunmur:\n܀ hour [auə] saat\n܀ honour [ɔnə] şərəf, namus\n܀ honourable [ɔnərəbl] hörmətli\n܀ honesty [ɔnısti] düzgünlük\n܀ honest [ɔnıst] namuslu\n3. Y y [waı] hərfinin 3 cür oxunuşu var:\n1. I tip oxuda [aı]:\n܀ my [maı] mənim\n2. II tip oxuda və sözlərin sonunda vurğusuz vəziyyətdə [i] oxunur:\n܀ myth [miθ] əfsanə\n܀ baby [beıbi] uşaq, körpə\n3. Sözlərin əvvəlində saitdən əvvəl [j] oxunur:\n܀ yet [jet] hələ\n܀ yes [jes] bəli\n4. R r [α:] hərfi oxunmayan e hərfindən başqa qalan saitlərdən əvvəl [r] oxunur:\n܀ read [ri:d] oxumaq\n܀ red [red] qırmızı\n܀ theatre [θiətə] teatr\n⮚ Bu sözlərdə r oxunmur:\nIII tip oxunun əlaməti: sait+r+(samit) dir. Samit ola da bilər olmaya da bilər.\n5. Aa [eı] hərfi III tip oxuda [a:] oxunur:\n܀ car [ka:] maşın, avtomobil\n܀ mark [ma:k] qiymət\n    6. Aa hərfi th, st, sk, ss- dən əvvəldə [a:] oxunur:\n܀ last [la:st] axırıncı, davam etmək\n܀ class [klas] sinif\n܀ ask [a:sk] soruşmaq\n܀ father [fa:Əə] ata\n⮚ Ancaq gather [gæƏə] toplamaq. Bu sözdə diqqətli olun.\n7. Ng [Ƞ] oxunur:\n܀ thing [θıƞ] əşya\n܀ song [sɔƞ] mahnı\nBəzi sözlərdə isə [Ƞ] səsini tamam başqa hərfbirləşmələri verir:\n܀ handkerchief [hændıhæȠkətsi:f] burun dəsmalı\n܀ restaurant [rest(ə)ro:Ƞ] restoran\n8. Nk [Ƞk] kimi oxunur:\n܀ ink [ıƞk]mürəkkəb (çernil)\n܀ think [θıƞk] fikirləşmək\n9. X x [eks] hərfi samitlərdən əvvəl və sözün sonunda [ks] oxunur:\n܀ exhbiton [eksibıʃn] sərgi\n܀ text [tekst] mətn\nX x hərfi vurğulu saitdən əvvəl [gz] oxunur.\n܀ exam [ıgzəm] imtahan,\n܀ exhibit [igzıbit] nümayiş etdirmək,\n܀ exits [ıgzıst] mövcud olmaq,\n܀ exact [ıgzækt] dəqiq.",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Hansı variantda 'X x' hərfi vurğulu saitdən əvvəl gəldiyi üçün [gz] səsini verir?",
-      "options": ["text", "exhibition", "exam", "handkerchief"],
-      "answer": "exam"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "'Y y' hərfi hansı vəziyyətdə [j] səsini ifadə edir?",
-      "options": [
-        "I tip oxuda",
-        "Sözlərin əvvəlində saitdən əvvəl",
-        "Sözlərin sonunda vurğusuz vəziyyətdə",
-        "II tip oxuda"
-      ],
-      "answer": "Sözlərin əvvəlində saitdən əvvəl"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'hour', 'honour' və 'honest' sözlərində ___ hərfi oxunmur.",
-      "answer": "Th"
-    },
-    {
-      "type": "fill_blank",
-      "question": "Aa hərfi III tip oxuda (məsələn: 'car', 'mark') ___ səsini verir.",
-      "answer": "[a:]"
-    },
-    {
-      "type": "true_false",
-      "question": "'gather' sözündəki 'aa' hərfi th-dən əvvəl gəldiyi üçün [a:] oxunur.",
-      "answer": false
-    },
-    {
-      "type": "true_false",
-      "question": "'thing' və 'song' sözlərindəki 'ng' hərf birləşməsi [Ƞ] səsini verir.",
-      "answer": true
-    }
-  ]
-},
- {
-  "id": "fonetika-6",
-  "title": "Letters - Lesson 6",
-  "lesson": "1. O o [ou/əu] hərfi I tip oxuda [ou/əu]oxunur:\n܀ no [nou] xeyr\n܀ note [nout] qeyd, qeyd etmək\n[ou] səsinə başqa sözlərdə də rast gəlirik:\n܀ don’t [dount] inkar (indiki zaman)\n܀ wont [wount] inkar (gələcək zaman)\n܀ nobody [noubədı] heç kəs ( inkar əvəzliyi)\nBəzi sözlərdə isa oa hərf birləşməsi [ou] kimi oxunur:\n܀ coat [kout] palto\n܀ coast [koust] sahil\n܀ boat [bout] qayıq\n܀ boast [boust] lovğalanmaq\n܀ soap [soup] sabun\n܀ most [moust] ən, çox, əksər\n2. Oo [ou] hərfi II tip oxuda [ɔ] oxunur:\n܀ dog [dɔg] it\n܀ not [nɔt] deyil\n܀ on [ɔn] üstündə (söz önü)\n⮚ o hərfinin oxunuşunda aşağıdakı sözlərdə diqqətli olmaq lazımdır!\n܀ donkey [dɔnki] eşşek\n܀ sorry [sɔri] üzr istəmək\n܀ cough [kɔf] öskürmək\n܀ want [wɔnt] istəmək\n܀ policy [pɔlisi] siyasət\n܀ moth [mɔθ] güvə, kəpənək\n܀ bother [bɔƏə] narahat etmək\nmonkey [mʌnki] meymun\n܀ London [lʌndn] London\n܀ police [pəl:s] polis\n܀ mother [mʌƏə] ana\n܀ son [sʌn] oğul\n܀ brother [brʌə] qardaş\n܀ worry [wʌri] narahat olmaq\n܀ wonder [wʌndə] heyrətlənmək\n3. O o [ou] hərfi III tip oxuda [ɔ:] kimi oxunur:\n܀ Or [ɔ:] yoxsa\n܀ fork [fɔ:k]çəngəl\n܀ orphan [ɔ:fən] yetim\n⮚ Ancaq : forehead [forid] alın, sözündə qısa [o] oxunur:\n[ɔ:] sözünə aşağıdakı sözlərdə də rast gəlinir.\n܀ Autumn [ɔ:təm] payız\n܀ august [ɔ:gɔst] avqust\n܀ bought [bɔ:t] aldı\n܀ law [lɔ:] qanun\n܀ taught [tɔ:t] öyrətdi\n܀ thought [θɔ:t] tutdu\n܀ saw [sɔ:] mişar, gördü\n4. O o hərfbirləşməsi k, r, m hərflərindən başqa qalan samitlərdən əvvəl və sözün sonunda [u:] oxunur:\n܀ room [rum] otaq\n܀ soon [su:n] tezliklə\n܀ spoon [spu:n] qaşıq\n܀ too [tu:] həəmçinin\n⮚ Ancaq bəzi sözlər qaydaya tabe olmur:\n܀ blood [blʌd] qan\n܀ flood [flʌd] daşqın, sel\n܀ good [gud] yaxşı\nQoşa Oo hərfbirləşməsi K hərfindən əvvəl [u] oxunur:\n܀ book [buk] kitab\n܀ look [luk] baxmaq\n܀ shook [ʃuk] sirkələnd",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Qoşa Oo hərfbirləşməsi 'K' hərfindən əvvəl gəldikdə (məsələn: 'book', 'look') necə oxunur?",
-      "options": ["[u:]", "[u]", "[ʌ]", "[ɔ]"],
-      "answer": "[u]"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "Hansı söz qaydaya tabe olmayaraq qoşa 'Oo' birləşməsi ilə [ʌ] səsini verir?",
-      "options": ["room", "good", "blood", "soon"],
-      "answer": "blood"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'coat', 'boat' və 'soap' sözlərindəki 'oa' hərf birləşməsi ___ kimi oxunur.",
-      "answer": "[ou]"
-    },
-    {
-      "type": "fill_blank",
-      "question": "O o hərfi III tip oxuda (məsələn: 'or', 'fork') ___ kimi tələffüz olunur.",
-      "answer": "[ɔ:]"
-    },
-    {
-      "type": "true_false",
-      "question": "'dog', 'not' və 'on' sözlərindəki 'o' hərfi II tip oxuya uyğun olaraq [ɔ] oxunur.",
-      "answer": true
-    },
-    {
-      "type": "true_false",
-      "question": "'monkey', 'mother' və 'son' sözlərindəki 'o' hərfi [ou] səsini verir.",
-      "answer": false
-    }
-  ]
-},
-{
-  "id": "fonetika-7",
-  "title": "Letters - Lesson 7",
-  "lesson": "1. U u [ju:] hərfi I tip oxuda [ju:] oxunur:\n܀ tune [tju:n] melodiya\n܀ mule [mju:l] qatır\n܀ mute [mju:t] lal, dinməz\n2. U u hərfi II tip oxuda [ʌ] oxunur:\n܀ cut [kʌt] kəsmək,\n܀ cup [kʌp] fincan\n܀ but [bʌt] amma, ancaq, lakin\n⮚ Qaydaya tabe olmuyan sözlərdə var:\n܀ bush [buʃ] kol\n܀ put [put] qoymaq\n܀ push [puʃ] itələmək\n܀ pull [pul] dartmaq    \n3. W w [dʌblju:] sözün əvvəəlində [w] oxunur:\n܀ we [wi:]biz\n܀ week [wi:k] həftə\n܀ weak [wi:k] zəif\nWr - hərf birləşməsində [w] oxunmur:\n܀ wrong [rɔƞ] səhv\n܀ write [raıt] yazmaq\n܀ wrestle [resl] güləşmək.\n4. Oi və oy [ɔı] oxunur:\n܀ point [pɔınt] nöqtə, punkt\n܀ coin [kɔın] ingilis pulu\n܀ boy [bɔı] oğlan\n܀ toy [tɔı] oyuncaq\n5. Ow birləşməsi birhecalı sözlərdə vurğulu vəziyyətdə [au] oxunur:\n܀ now [nou] indi\n܀ how [hou] necə?\n܀ dawn [daun] aşağıda\n܀ brow [broun] qəhvəyi\nAncaq low [lou] alçaq-sözü qaydaya tabe olmur. Ow ikihecalı sözlərin sonunda vurğusuz vəziyyətdə [ou] oxunur:\n܀ Yellow [yellou] sarı\n܀ window [windou] pəncərə\n܀ shadow [ʃəedou] kölgə\n6. Ou hərfbirləşməsi [au] oxunur:\n܀ out [aut] kənar, çöl\n܀ found [faund] tapdı\n܀ graund [graund] yer\n⮚ Bəzi sözlər var ki, onlar qaydaya tabe olmur, aşağıdakılardır:\n܀ country [kʌntri] ölkə, vətən, kənd\n܀ couple [kʌpl] cüt, qoşa, ər-arvad\n܀ cousin [kʌzn] əmi, (dayı, xala, bibi) uşağı\n7. Er və or hərfbirləşmələri sözün sonunda vurğusuz vəziyyətdə neytral səs [ə] kimi oxunur. Neytral səs [ə] lap zəif\ntələffüz olunur:\n܀ teacher [ti:tʃə] müəllim\n܀ writer [raıtə] yazıçı\n܀ actor [əektə] aktyor\n܀ translator [tra:nsleətə] tərcüməçi",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Hansı sözdə 'Wr' hərf birləşməsindəki 'w' hərfi oxunmur?",
-      "options": ["week", "write", "weak", "window"],
-      "answer": "write"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "'country', 'couple' və 'cousin' sözlərində 'ou' birləşməsi istisna olaraq hansı səsi verir?",
-      "options": ["[au]", "[ou]", "[ʌ]", "[ju:]"],
-      "answer": "[ʌ]"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'oi' və 'oy' hərf birləşmələri ingilis dilində ___ kimi oxunur.",
-      "answer": "[ɔı]"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'teacher' və 'actor' sözlərinin sonundakı 'er' və 'or' birləşmələri neytral ___ səsi kimi oxunur.",
-      "answer": "[ə]"
-    },
-    {
-      "type": "true_false",
-      "question": "'bush', 'put' və 'push' sözlərindəki 'u' hərfi II tip oxu qaydasına tam tabe olaraq [ʌ] oxunur.",
-      "answer": false
-    },
-    {
-      "type": "true_false",
-      "question": "Ow birləşməsi ikihecalı sözlərin sonunda vurğusuz vəziyyətdə [ou] oxunur.",
-      "answer": true
-    }
-  ]
-},
-{
-  "id": "fonetika-8",
-  "title": "Letters - Lesson 8",
-  "lesson": "1. E e, I i, Y y, U u hərfləri III tip oxuya [ə:] oxunur:\n܀ her [hə:] onun, ona\n܀ firm [fə:m] firma, möhkəm, qəti\n܀ byrd [bə:d] Berd (soyad)\n܀ turn [tə:n] növbə, dönmək.\n2. Wa dan sonra əgər samit r hərfindən başqa, yada samit birləşmələri gələrsə wa [wɔ] oxunur:\n܀ want [wɔunt] istəmək\n܀ watch [wɔtʃ]müşahidə etmək, cib saatı\n܀ wash [wɔʃ] yumaq\n܀ wasp [wɔʃp] eşşək arısı\n3. Wh dan sonra O hərfindən başqa digər hərf gələrsə, wh [w] oxunur. H oxunmur:\n܀ white [waıt] ağ\n܀ what [wɔt] nə, hansı\n܀ when [wen] nə vaxt\n4. Wh dan sonra O hərfi gələrsə , Wh [h] oxunur. [w] oxunmur:\n܀ Who [hu:] kim,\n܀ whose [hu:z] kimin,\n܀ whole [houl] bütün.\n5. Ar hərfbirləşməsi w və wh hərfbirləşməsindən sonra [ɔ:] oxunur.\n܀ war [wɔ:] müharibə\n܀ warm [wɔ:m] isti\n܀ wharf [wɔ:f] liman, sahil\n܀ warship [wɔ:sip] hərfi, gəmi\n܀ warn [wɔ:n] xəbərdarlıq etmək\n܀ wordrobe [wɔ:drəub] paltar şkafı",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "'E, i, y, u' hərfləri III tip oxuda hansı səsi verir?",
-      "options": ["[ɔ:]", "[ə:]", "[w]", "[h]"],
-      "answer": "[ə:]"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "Wh birləşməsindən sonra hansı hərf gəldikdə 'w' oxunmur və birləşmə [h] səsini verir?",
-      "options": ["a hərfi", "e hərfi", "i hərfi", "o hərfi"],
-      "answer": "o hərfi"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'white', 'what' və 'when' sözlərində 'wh' birləşməsindən sonra 'o'-dan başqa hərf gəldiyi üçün ___ hərfi oxunmur.",
-      "answer": "h"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'war', 'warm' və 'warn' sözlərindəki 'ar' birləşməsi 'w' hərfindən sonra gəldiyi üçün ___ kimi oxunur.",
-      "answer": "[ɔ:]"
-    },
-    {
-      "type": "true_false",
-      "question": "'her', 'firm' və 'turn' sözlərindəki saitlər III tip oxuya aid olaraq [ə:] oxunur.",
-      "answer": true
-    },
-    {
-      "type": "true_false",
-      "question": "'watch' və 'wash' sözlərindəki 'wa' birləşməsi [ə:] kimi tələffüz olunur.",
-      "answer": false
-    }
-  ]
-},
-        {
-  "id": "fonetika-9",
-  "title": "Letters - Lesson 9",
-  "lesson": "1. IV tip oxunur əlaməti sait+r+saitdir.\na) A hərfi IV tip oxuda [ɛə] oxunur:\n܀ Mary [mɛəri] Meri\n܀ parents [pɛərənts] valideynlər\n܀ care [kɛə] qayğı, diqqət\nb) E hərfi IV tip oxuda [iə] oxunur:\n܀ here [hiə] bura, burada\n⮚ Ancaq qaydaya tabe olmayanlar da var:\n܀ there [əɛə] ora, orada\n܀ where [wɛə] hara harada, ( tabe deyil)\nc) İ və y hərfləri IV tip oxuda [aıə] oxunur:\n܀ fire [faıə] alov, ocaq\n܀ tyre [taıə] şin, təkər, qurşağı\nd) O hərfi IV tip oxuda [ɔ:] oxunur:\n܀ more [mɔ:] daha çox\n܀ sore [sɔ:] ağrı, yara\ne) U hərfi IV tip oxuda [juə]oxunur:\n܀ Cure [kjuə] müalicə etmək\n܀ pure [pjuə] təmiz, xalis\n2) eer hərfbirləşməsi [ıə] oxunur:\n܀ engineer [endʒınıə] mühəndis\n܀ deer [dıə] maral\n3) airhərfbirləşməsi [ɛə] oxunur:\n܀ air [hɛə] hava\nAncaq aşağıdakı sözlərdə diqqətli olmaq lazımdır:\n܀ ear [ıə] qulaq\n܀ heard [hə:d] eşitdi\n܀ bear [bıə] ayı\n܀ player [pleıə] oyunçu\n4) our hərfbirləşməsi[auə] oxunur:\n܀ our [auə] bizim,\n܀ sour [sauə] turş.\n5) wor hərfbirləşməsi samitdən əvvəl [wə:] oxunur:\n܀ work [wə:k] iş (ləmək),\n܀ world [wə:ld] dünya,\n܀ word [wə:d] söz,\n܀ worst [wə:st] daha pis.",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Hansı söz IV tip oxu qaydasına tabe olmayaraq 'E' hərfi ilə [wɛə] səsini verir?",
-      "options": ["here", "where", "fire", "pure"],
-      "answer": "where"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "'wor' hərfbirləşməsi samitdən əvvəl (məsələn: 'work', 'world') necə tələffüz olunur?",
-      "options": ["[ɔ:]", "[auə]", "[wə:]", "[ɛə]"],
-      "answer": "[wə:]"
-    },
-    {
-      "type": "fill_blank",
-      "question": "İ və y hərfləri IV tip oxuda (məsələn: 'fire', 'tyre') ___ səsini ifadə edir.",
-      "answer": "[aıə]"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'our' və 'sour' sözlərindəki 'our' hərfbirləşməsi ___ oxunur.",
-      "answer": "[auə]"
-    },
-    {
-      "type": "true_false",
-      "question": "'engineer' və 'deer' sözlərindəki 'eer' hərfbirləşməsi [ıə] oxunur.",
-      "answer": true
-    },
-    {
-      "type": "true_false",
-      "question": "'O' hərfi IV tip oxuda (məsələn: 'more', 'sore') [juə] səsini verir.",
-      "answer": false
-    }
-  ]
-},
-       {
-  "id": "fonetika-10",
-  "title": "Letters - Lesson 10",
-  "lesson": "1. Q q [kju:] hərfi quhərfbirləşməsi kimi vurğulu saitdən əvvəl [kw] oxunur:\n܀ Quick [kwaı] tamamilə\nQu hərfbirləşməsi sözün sonunda [k] kimi oxunur:\n܀ Mosque [mosk] məscid\n܀ cheque [tʃek] çek\n2. Al hərfbirləşməsi K hərfindən qabaq [ɔ:] oxunur:\n܀ chalk [tʃɔ:k] təbaşir\n܀ talk [tɔ:k] söhbət etmək\nqalan samitlərdən əvvəl və vurğulu hecada [ɔ:l] oxunur:\n܀ small [smɔ:l] balaca\n܀ all [ɔ:l] hamı\n܀ also [ɔ:lsou] həmçinin\n3. Ew hərfbirləşməsiəksər sözlərdə [ju:]kimi oxunur:\n܀ New [nju:] təzə, yeni\n܀ few [fju:] bir az, az\n4. W hərfi r hərfindən əvvəl oxunmur:\n܀ write [raıt] yazmaq\n5. İgh hərfbirləşməsində gh oxunmur:\n܀ light [laıt] işıq (lı)\n܀ fight [faıt] vuruşmaq\n܀ bright [braıt] parlaq\n6. Gh hərfbirləşməsi bəzi sözlərdə [f] oxunur:\n܀ cough [kɔf] öskürək\n܀ enough [inaf] kifayyət qədər\n܀ laugh [la:f] gülüş\n7. Ph hərfbirləşməsi həmişə [f] oxunur:\n܀ phone [foun] telefon\n܀ hotograph [foutogra:f] fotoşəkil\n܀ physic [fiziks] fizika\n8. Ng hərfbirləşməsi [l, r, w] səslərindən əvvəl [Ƞg] oxunur:\n܀ english [ıƞglis] ingilis dili\n܀ angry [æƞgri] hirsli, acıqlı\n܀ language [læƞgwidʒ] dil\n܀ angrey [æƞgwidʒ] dil\n܀ anger [æƞgə] qəzəb, hiddət",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Qu hərfbirləşməsi sözün sonunda (məsələn: 'Mosque', 'cheque') necə oxunur?",
-      "options": ["[kw]", "[k]", "[f]", "[ju:]"],
+      "question": "'ch' hərf birləşməsi 'school' və 'chemistry' kimi yunan/latın mənşəli sözlərdə hansı səsi verir?",
+      "options": ["[tʃ]", "[ʃ]", "[k]", "[h]"],
       "answer": "[k]"
     },
     {
       "type": "multiple_choice",
-      "question": "'Al' hərfbirləşməsi 'K' hərfindən qabaq gəldikdə hansı səsi verir?",
-      "options": ["[ɔ:l]", "[ɔ:]", "[al]", "[ju:]"],
-      "answer": "[ɔ:]"
+      "question": "Aşağıdakı sözlərin hansında 'gh' birləşməsi sözün sonunda [f] kimi tələffüz olunur?",
+      "options": ["right", "fight", "cough", "through"],
+      "answer": "cough"
     },
     {
       "type": "fill_blank",
-      "question": "'light', 'fight' və 'bright' sözlərindəki 'igh' hərfbirləşməsində ___ hərfləri oxunmur.",
-      "answer": "gh"
+      "question": "'knee' və 'know' sözlərində 'kn' birləşməsi gəldiyi üçün ___ hərfi tələffüz olunmur.",
+      "answer": "k"
     },
     {
       "type": "fill_blank",
-      "question": "'Ph' hərfbirləşməsi ingilis dilində həmişə ___ səsini verir.",
-      "answer": "[f]"
+      "question": "'wh' birləşməsindən sonra 'o' hərfi gəldikdə (məsələn: 'who', 'whom') bu birləşmə ___ kimi oxunur.",
+      "answer": "[h]"
     },
     {
       "type": "true_false",
-      "question": "'New' və 'few' sözlərindəki 'ew' hərfbirləşməsi [ju:] kimi oxunur.",
-      "answer": true
-    },
-    {
-      "type": "true_false",
-      "question": "'english' və 'language' sözlərindəki 'ng' hərfbirləşməsi yalnız [f] səsini ifadə edir.",
-      "answer": false
-    }
-  ]
-},
-        {
-  "id": "fonetika-11",
-  "title": "Stress",
-  "lesson": "İki və daha çox hecalı sözlərdə vurğu [’] işarəsi qoyulur. Vurğu hansı heca üzərində qoyularsa həmin hecalar qüvvətli\ntələffüz olunmalıdır. İki cür vurğu var:\n1. Əsas vurğu\n2. İkinci dərəcəli vurğu\nƏsas vurğu həmişə hecanın yuxarısında [’] qoyulur:\n܀ examination [ıgzæmineıʃən] imtahan\n܀ engineer [endʒınə]mühəndis\n2 ci dərəcəli vurğu aşağıdan qoyulur. Elə sözlər var ki, onlar həm isim kimi həm də feil kimi işlədilir. Əgər vurğu I heca\nüzərində düşərsə, söz isim olur, II heca üzərində düşərsə, söz feil olur:\n܀ İncrease [’ınkri:z] artım\n܀ to increase [’inkri:z] artırmaq\n܀ export [ekspə:t’] ekport\n܀ to export[ıks’pə:t] ixrac etmək\n܀ present [’prezent] hədiyyə\n܀ to present [prı’zent] hədiyyə etmək\nVurğulu heca vurğusuz hecadan daha qüvvətli tələffüz olunur. Vurğu ilə tələffüz olunan sözlər isimlər, sifətlər, əsas feillər,\nsaylar, zərflər, sual və işarə əvəzlikləri daxildir.\nVurğusuz tələffüz olunan sözlərə artikillar, bağlayıcılar, sözönləri, köməkçi feillər və həmçinin şəxs və yiyilik əvəzlikləri\ndaxldir.\nVurğulu heva bəzən qalxan tonla, bəzən düşən tonla tələffüz olunur:\nMeet Ted - Tedi qarşıla\nA map, a pen, and a plan",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Həm isim, həm də feil kimi işlənən eyni yazılışlı sözlərdə vurğu birinci hecaya düşərsə, söz nitq hissəsi bəımindən nə olur?",
-      "options": ["Feil", "İsim", "Sifət", "Zərf"],
-      "answer": "İsim"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "Aşağıdakı nitq hissələrindən hansı adətən cümlədə vurğusuz tələffüz olunur?",
-      "options": ["Əsas feillər", "İsimlər", "Bağlayıcılar", "Sifətlər"],
-      "answer": "Bağlayıcılar"
-    },
-    {
-      "type": "fill_blank",
-      "question": "İngilis dilində əsas vurğu həmişə hecanın ___ tərəfindən [’] işarəsi ilə qoyulur.",
-      "answer": "yuxarısında"
-    },
-    {
-      "type": "fill_blank",
-      "question": "'to present' sözündə vurğu ikinci hecaya düşdüyü üçün bu söz ___ funksiyasını daşıyır.",
-      "answer": "feil"
-    },
-    {
-      "type": "true_false",
-      "question": "Şəxs və yiyilik əvəzlikləri adətən vurğulu tələffüz olunan sözlər qrupuna daxildir.",
+      "question": "'write' və 'wrong' sözlərindəki 'wr' birləşməsində 'w' hərfi tələffüz olunur.",
       "answer": false
     },
     {
       "type": "true_false",
-      "question": "İngilis dilində əsas vurğudan başqa həm də ikinci dərəcəli vurğu mövcuddur.",
+      "question": "'th' birləşməsi 'this' sözündə [ð], 'thin' sözündə isə [θ] səsini ifadə edir.",
       "answer": true
     }
   ]
 },
-        {
-  "id": "fonetika-12",
-  "title": "Parts Of Speech",
-  "lesson": "Nitq hissələri 2 əsas qismə bölünür:\n1) Əsas nitq hssələri - The International Part of Speech\n2) Köməkçi nitq hissələri - The Structural Part of Speech\nI. Əsas nitq hissələri aşağıdakılardır:\n1) İsim - the Noun\n2) Sifət- The Adjective\n3) Say - The Numeral\n4) Əvəzlik - The Pronoun\n5) Feil - The Verb\n6) Zərf - The Adverb\n7) Modal sözlər - The Modal Verbs\n8) Nida- The Interjection\nII. Köməkçi nitq hisslərinə isə bunlar daxildir:\nÖnlük - The Preposition\n1. Bağlayıcı - the Conjunction\n2. Ədat - The Particle\n3. Artikl - the Article\nƏsas nitq hissələri cümlədə mübtəda, xəbər, təyin, tamamlıq, zərflik vəzifəsində çıxış edir. Köməkçi nitq hissələri isə\ncümlədə müstəqil məna daşımır. Onlar ya sözlərin arasında olan münasibəti, ya da cümlədə sözlərin mənasını daha da\naydın ifadə etmək üçün işlənir.",
-  "questions": [
-    {
-      "type": "multiple_choice",
-      "question": "Cümlədə mübtəda, xəbər, təyin və tamamlıq vəzifəsində hansı nitq hissələri çıxış edir?",
-      "options": ["Köməkçi nitq hissələri", "Əsas nitq hissələri", "Yalnız bağlayıcılar", "Yalnız artikllar"],
-      "answer": "Əsas nitq hissələri"
-    },
-    {
-      "type": "multiple_choice",
-      "question": "Aşağıdakılardan hansı köməkçi (The Structural) nitq hissələrinə aid deyil?",
-      "options": ["The Preposition", "The Conjunction", "The Adverb", "The Article"],
-      "answer": "The Adverb"
-    },
-    {
-      "type": "fill_blank",
-      "question": "Köməkçi nitq hissələri cümlədə müstəqil ___ daşımır.",
-      "answer": "məna"
-    },
-    {
-      "type": "fill_blank",
-      "question": "İngilis dilində 'The Pronoun' əsas nitq hissələrindən ___ deməkdir.",
-      "answer": "Əvəzlik"
-    },
-    {
-      "type": "true_false",
-      "question": "Modal feillər (The Modal Verbs) və nidalar (The Interjection) əsas nitq hissələri qrupuna daxildir.",
-      "answer": true
-    },
-    {
-      "type": "true_false",
-      "question": "Köməkçi nitq hissələri sözlərin arasında olan münasibəti və ya sözlərin mənasını daha aydın ifadə etmək üçün işlənir.",
-      "answer": true
-    }
-  ]
-}
-      ]
-    },
     {
       "id": "isim",
       "title": "The Noun - İsim",
