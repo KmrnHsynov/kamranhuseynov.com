@@ -407,13 +407,37 @@ body {
 .avatar-option.selected { border-color: var(--blue); background: var(--blue-light); transform: scale(1.06); }
 .avatar-option.selected .avatar-label { color: var(--blue); }
 
-.profile-input-row {
+.auth-tabs {
   display: flex;
-  gap: 8px;
-  width: 100%;
+  gap: 0;
+  background: var(--gray-light);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
 }
-.profile-input {
+.auth-tab {
   flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  background: none;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.auth-tab.active { background: var(--white); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+#formSignup, #formSignin {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-input {
+  width: 100%;
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
@@ -421,8 +445,21 @@ body {
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 .profile-input:focus { border-color: var(--blue); }
+
+.auth-btn { width: 100%; margin-top: 4px; }
+
+.auth-error {
+  background: #fce8e6;
+  color: var(--danger);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: left;
+}
 
 /* ── Hint ── */
 .hint-btn {
@@ -451,6 +488,19 @@ body {
   color: #5f4c00;
   margin-top: 10px;
   line-height: 1.5;
+}
+
+/* ── Lesson Audio ── */
+.lesson-audio {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.lesson-text {
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
 /* ── Feedback Toast ── */

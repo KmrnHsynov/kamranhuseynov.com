@@ -1,47 +1,103 @@
-const DEFAULT_STATE = {
-  completedNodes: [],
-  lives: 5,
-  currentQuizNode: null
-};
+// ── Supabase ─────────────────────────────────────────────
+const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-let currentMode = 'normal'; // 'normal' | 'sat'
+// ── App state ─────────────────────────────────────────────
+const DEFAULT_STATE = { completedNodes: [], lives: 5 };
+let currentMode    = 'normal';
 let currentProfile = null;
+let currentAvatar  = '👦';
+let currentUserId  = null;
 
-// ── Profile management ─────────────────────────────────
-
-function getProfiles() {
-  try { return JSON.parse(localStorage.getItem('ingilisce_profiles') || '[]'); } catch { return []; }
-}
-
-function getAvatar(name) {
-  return localStorage.getItem('ingilisce_avatar_' + name) || '👤';
-}
-
-function saveProfileName(name, avatar) {
-  const profiles = getProfiles();
-  if (!profiles.includes(name)) { profiles.push(name); localStorage.setItem('ingilisce_profiles', JSON.stringify(profiles)); }
-  if (avatar) localStorage.setItem('ingilisce_avatar_' + name, avatar);
-  localStorage.setItem('ingilisce_current_profile', name);
-  currentProfile = name;
-  document.getElementById('profileName').textContent = getAvatar(name) + ' ' + name;
-}
-
+// ── Storage ───────────────────────────────────────────────
 function storageKey() {
-  const base = currentMode === 'sat' ? 'ingilisce_sat_progress' : 'ingilisce_progress';
-  return currentProfile ? `${base}_${currentProfile}` : base;
+  return `igp_${currentMode}_${currentProfile}`;
 }
 
 function loadState() {
   try {
     const saved = localStorage.getItem(storageKey());
     return saved ? { ...DEFAULT_STATE, ...JSON.parse(saved) } : { ...DEFAULT_STATE };
-  } catch {
-    return { ...DEFAULT_STATE };
-  }
+  } catch { return { ...DEFAULT_STATE }; }
 }
 
 function saveState(state) {
   localStorage.setItem(storageKey(), JSON.stringify(state));
+  syncProgress();
+}
+
+async function syncProgress() {
+  if (!currentUserId) return;
+  const col = currentMode === 'sat' ? 'sat_progress' : 'normal_progress';
+  const state = loadState();
+  await db.from('profiles').update({ [col]: state.completedNodes }).eq('id', currentUserId);
+}
+
+// ── Auth helpers ──────────────────────────────────────────
+async function nameToEmail(name) {
+  const data = new TextEncoder().encode(name.toLowerCase());
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const hex  = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+  return hex + '@ingilisce.local';
+}
+
+function validatePassword(pwd) {
+  if (pwd.length < 8)               return 'Şifrə ən az 8 simvol olmalıdır.';
+  if (!/[A-Z]/.test(pwd))           return 'Ən az bir böyük hərf olmalıdır.';
+  if (!/[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]/.test(pwd))
+                                     return 'Ən az bir xüsusi simvol olmalıdır (!@#$ və s.).';
+  return null;
+}
+
+function setActiveProfile(userId, profile) {
+  currentUserId  = userId;
+  currentProfile = profile.display_name;
+  currentAvatar  = profile.avatar;
+
+  // Cache Supabase progress locally
+  const nKey = `igp_normal_${profile.display_name}`;
+  const sKey = `igp_sat_${profile.display_name}`;
+  localStorage.setItem(nKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.normal_progress || [] }));
+  localStorage.setItem(sKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.sat_progress  || [] }));
+
+  document.getElementById('profileName').textContent = profile.avatar + ' ' + profile.display_name;
+}
+
+async function doSignUp(name, avatar, password, confirm) {
+  if (!name.trim())              throw new Error('Ad daxil edin.');
+  const pwdErr = validatePassword(password);
+  if (pwdErr)                    throw new Error(pwdErr);
+  if (password !== confirm)      throw new Error('Şifrələr uyğun gəlmir.');
+
+  const { data: available } = await db.rpc('is_username_available', { uname: name });
+  if (!available)                throw new Error('Bu ad artıq istifadə olunur. Başqa ad seçin.');
+
+  const email = await nameToEmail(name);
+  const { data, error } = await db.auth.signUp({ email, password });
+  if (error)                     throw new Error(error.message);
+
+  const { error: profErr } = await db.from('profiles').insert({
+    id: data.user.id, display_name: name, avatar,
+    normal_progress: [], sat_progress: []
+  });
+  if (profErr)                   throw new Error(profErr.message);
+
+  return { user: data.user, profile: { display_name: name, avatar, normal_progress: [], sat_progress: [] } };
+}
+
+async function doSignIn(name, password) {
+  if (!name.trim())  throw new Error('Ad daxil edin.');
+  if (!password)     throw new Error('Şifrə daxil edin.');
+
+  const email = await nameToEmail(name);
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+  if (error)         throw new Error('Ad və ya şifrə yanlışdır.');
+
+  const { data: profile, error: profErr } = await db.from('profiles').select('*').eq('id', data.user.id).single();
+  if (profErr || !profile) throw new Error('Profil tapılmadı.');
+
+  return { user: data.user, profile };
 }
 
 // ── Curriculum helpers ─────────────────────────────────
@@ -135,7 +191,19 @@ function openLesson(nodeId, curriculum, isReview) {
   const state = loadState();
 
   document.getElementById('lessonTitle').textContent = node.title;
-  document.getElementById('lessonBody').textContent = node.lesson;
+  const lessonBody = document.getElementById('lessonBody');
+  lessonBody.innerHTML = '';
+  if (node.audio) {
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.className = 'lesson-audio';
+    audio.src = node.audio;
+    lessonBody.appendChild(audio);
+  }
+  const lessonText = document.createElement('p');
+  lessonText.className = 'lesson-text';
+  lessonText.textContent = node.lesson;
+  lessonBody.appendChild(lessonText);
   renderLives('lessonLives', state.lives);
 
   const footer = document.getElementById('lessonFooter');
@@ -409,28 +477,17 @@ function completeNode(nodeId, curriculum) {
   renderPath(curriculum);
 }
 
-// ── Profile modal ──────────────────────────────────────
+// ── Auth modal ────────────────────────────────────────────
 
-function showProfileModal() {
-  const profiles = getProfiles();
-  const listEl = document.getElementById('profileList');
-  listEl.innerHTML = '';
-  profiles.forEach(name => {
-    const chip = document.createElement('button');
-    chip.className = 'profile-chip';
-    chip.textContent = getAvatar(name) + ' ' + name;
-    chip.addEventListener('click', () => {
-      saveProfileName(name);
-      document.getElementById('profileOverlay').classList.add('hidden');
-      renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
-    });
-    listEl.appendChild(chip);
+function showAuthModal() {
+  // Reset forms
+  ['signupName','signupPassword','signupConfirm','signinName','signinPassword'].forEach(id => {
+    document.getElementById(id).value = '';
   });
+  showAuthError('signup', '');
+  showAuthError('signin', '');
 
-  const input = document.getElementById('profileNameInput');
-  const startBtn = document.getElementById('profileStart');
-  input.value = '';
-
+  // Avatar picker
   const avatarBtns = document.querySelectorAll('.avatar-option');
   let selectedAvatar = '👦';
   avatarBtns.forEach(btn => {
@@ -441,22 +498,69 @@ function showProfileModal() {
     };
   });
 
-  function doStart() {
-    const name = input.value.trim();
-    if (!name) return;
-    saveProfileName(name, selectedAvatar);
-    document.getElementById('profileOverlay').classList.add('hidden');
-    renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
-  }
+  // Tab switching
+  document.getElementById('tabSignup').onclick = () => switchTab('signup');
+  document.getElementById('tabSignin').onclick = () => switchTab('signin');
 
-  input.onkeydown = e => { if (e.key === 'Enter') doStart(); };
-  startBtn.onclick = doStart;
+  // Sign up
+  document.getElementById('btnSignup').onclick = async () => {
+    const name    = document.getElementById('signupName').value.trim();
+    const pwd     = document.getElementById('signupPassword').value;
+    const confirm = document.getElementById('signupConfirm').value;
+    setAuthLoading('btnSignup', true);
+    try {
+      const { user, profile } = await doSignUp(name, selectedAvatar, pwd, confirm);
+      setActiveProfile(user.id, profile);
+      document.getElementById('profileOverlay').classList.add('hidden');
+      renderPath(window._normalCurriculum);
+    } catch (e) {
+      showAuthError('signup', e.message);
+    } finally { setAuthLoading('btnSignup', false); }
+  };
+
+  // Sign in
+  document.getElementById('btnSignin').onclick = async () => {
+    const name = document.getElementById('signinName').value.trim();
+    const pwd  = document.getElementById('signinPassword').value;
+    setAuthLoading('btnSignin', true);
+    try {
+      const { user, profile } = await doSignIn(name, pwd);
+      setActiveProfile(user.id, profile);
+      document.getElementById('profileOverlay').classList.add('hidden');
+      renderPath(currentMode === 'sat' ? window._satCurriculum : window._normalCurriculum);
+    } catch (e) {
+      showAuthError('signin', e.message);
+    } finally { setAuthLoading('btnSignin', false); }
+  };
+
+  // Enter key on sign-in password
+  document.getElementById('signinPassword').onkeydown = e => {
+    if (e.key === 'Enter') document.getElementById('btnSignin').click();
+  };
 
   document.getElementById('profileOverlay').classList.remove('hidden');
-  setTimeout(() => input.focus(), 100);
 }
 
-// ── Init ───────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tabSignin').classList.toggle('active', tab === 'signin');
+  document.getElementById('formSignup').classList.toggle('hidden', tab !== 'signup');
+  document.getElementById('formSignin').classList.toggle('hidden', tab !== 'signin');
+}
+
+function showAuthError(form, msg) {
+  const el = document.getElementById(form + 'Error');
+  el.textContent = msg;
+  el.classList.toggle('hidden', !msg);
+}
+
+function setAuthLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.textContent = loading ? 'Gözləyin...' : (btnId === 'btnSignup' ? 'Hesab yarat' : 'Daxil ol');
+}
+
+// ── Init ──────────────────────────────────────────────────
 
 async function init() {
   const [normalRes, satRes] = await Promise.all([
@@ -464,18 +568,33 @@ async function init() {
     fetch('sat_curriculum.json')
   ]);
   window._normalCurriculum = await normalRes.json();
-  window._satCurriculum   = await satRes.json();
+  window._satCurriculum    = await satRes.json();
 
-  const saved = localStorage.getItem('ingilisce_current_profile');
-  if (saved) {
-    saveProfileName(saved);
-    renderPath(window._normalCurriculum);
+  // Check existing Supabase session
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    const { data: profile } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+    if (profile) {
+      setActiveProfile(session.user.id, profile);
+      renderPath(window._normalCurriculum);
+    } else {
+      showAuthModal();
+    }
   } else {
-    showProfileModal();
+    showAuthModal();
   }
 
-  document.getElementById('profileBtn').addEventListener('click', showProfileModal);
+  // Profile button → sign out
+  document.getElementById('profileBtn').addEventListener('click', async () => {
+    if (!currentProfile) return;
+    if (!confirm(`${currentProfile} hesabından çıxmaq istəyirsiniz?`)) return;
+    await db.auth.signOut();
+    currentUserId = null; currentProfile = null; currentAvatar = '👦';
+    document.getElementById('profileName').textContent = '';
+    showAuthModal();
+  });
 
+  // Mode toggle
   const toggleBtn = document.getElementById('modeToggle');
   toggleBtn.addEventListener('click', () => {
     if (currentMode === 'normal') {
