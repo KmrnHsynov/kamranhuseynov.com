@@ -705,18 +705,350 @@
     }
   ]
 },
-        { "id": "sifet-2", "title": "Classification Of Adjectives According To Their Meaning","lesson": "", "questions": [] },
-        { "id": "sifet-3", "title": "The Category Of Degree Of Comparison Of Adjectives",     "lesson": "", "questions": [] },
-        { "id": "sifet-4", "title": "Sifətin Dərəcələrinin İşlənməsi",                       "lesson": "", "questions": [] },
-        { "id": "sifet-5", "title": "Double Comparison",                                      "lesson": "", "questions": [] },
-        { "id": "sifet-6", "title": "Substantivized Adjectives",                              "lesson": "", "questions": [] }
+  {
+  "id": "sifet-1.5",
+  "title": "Role of Adjective in a Sentence",
+  "lesson": "Sifətlər cümlədə təyin və mürəkkəb ismi xəbərin ad hissəsi kimi çıxış edir:\n视觉 The red pencil is on the table. – Qırmızı karandaş stolun üstündədir.\n视觉 The pencil is red. (ismi xəbərin ad hissəsi kimi) – karandaş qırmızıdır.\n\nİngilis dilində elə feillər var ki, onlar özlərindən sonra sifətlə işlənir:\n1) To look: görsənmək mənasında: You look sad. – Sən qəmgin görünürsən.\n2) To feel: hiss eləmək: I feel lonely. – Mən yalqız hiss edirəm.\n3) To smell: iylənmək: The flowers smell nice. – Güllər gözəl iylənir.\n4) To taste: dadmaq: The meal tastes bad. – Yemək pis dadır.\n5) To sound: səslənmək: It sounds good. – Bu yaxşı səslənir.\n6) To be: olmaq: I am good. – Mən yaxşıyam.\n\nQeyd: Elə sifətlər var ki, onlar həm sifət, həm də zərf kimi işlənir. Bu sözlər yuxarıdakı feillərdən sonra işlənərsə sifət, hərəkət bildirən feillərdən sonra işlənərsə isə zərf olur.\nƏn çox işlənən sözlərə misal çəkək:\n视觉 well – yaxşı, sağlam\n视觉 fast – cəld\n视觉 late – gec\n视觉 early – tez\n视觉 hard – səylə, ciddi\n\n⮚ My job is hard (sifət) – Mənim işim ağırdır.\n⮚ I work so hard (zərf) – Mən çox işləyirəm.\n⮚ Ben is a fast runner (sifət) – Ben cəld qaçandır.\n⮚ Ben can run fast (zərf) – Ben cəld qaça bilir.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "'The pencil is red' cümləsində 'red' sifətinin cümlədəki funksiyası nədir?",
+      "options": [
+        "Təyin",
+        "Mürəkkəb ismi xəbərin ad hissəsi",
+        "Zərflik",
+        "Vasitəsiz tamamlıq"
+      ],
+      "answer": "Mürəkkəb ismi xəbərin ad hissəsi"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Hansı variantdakı cümlədə 'fast' sözü zərf (adverb) funksiyasında işlənmişdir?",
+      "options": [
+        "He is a fast driver.",
+        "This is a fast train.",
+        "She speaks too fast.",
+        "I like fast cars."
+      ],
+      "answer": "She speaks too fast."
+    },
+    {
+      "type": "fill_blank",
+      "question": "'To look', 'to feel' və 'to taste' kimi hiss-həyacan və duyğu bildirən feillərdən sonra zərf deyil, ___ işlənir.",
+      "answer": "sifət"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'I work so hard' cümləsində 'hard' sözü hərəkət bildirən feildən sonra gəldiyi üçün quruluşca ___ funksiyasındadır.",
+      "answer": "zərf"
+    },
+    {
+      "type": "true_false",
+      "question": "'The flowers smell nice' cümləsində 'nice' sözü 'smell' feilinə aid olduğu üçün zərfdir.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "Həm sifət, həm də zərf kimi işlənə bilən 'early' və 'late' kimi sözlərin funksiyası onların aid olduqları feildən və ya isimdən asılı olaraq müəyyən edilir.",
+      "answer": true
+    }
+  ]
+},
+{
+  "id": "sifet-2",
+  "title": "Classification Of Adjectives According To Their Meaning",
+  "lesson": "SİFƏTLƏRİN MƏNASINA GÖRƏ TƏSNİFİ\nDilimizdə olduğu kimi sifətlər məna baxımından 2 qrupa bölünür:\n\n1) Əsli sifətlər - Qualitative adjectives: narrow, deep, wide, thin\nƏsli sifətlər əsasən aşağıdakıları ifadə edir:\n视觉 Rəngini: a red car\n视觉 Formasını: a round table\n视觉 Əqlini: a clever boy\n视觉 Fiziki keyfiyyətini: a strong man\n\n2) Nisbi sifətlər - Relative adjectives:\nNisbi sifətlər əşyanın başqa bir əşyaya, məkana və ya materiala olan münasibətini bildirir və xüsusi suffikslərlə düzəlir:\n- En: golden (qızılı)\n- An: Italian (İtalyan)\n- Ist: chemist (kimyaçı)\n- Ic: syntactic (sintaktik)\n- Ical: analytical (analitik)",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Aşağıdakı variantlardan hansı əsli sifətlərə (Qualitative adjectives) nümunədir?",
+      "options": ["Italian", "golden", "clever", "analytical"],
+      "answer": "clever"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Nisbi sifətlər (Relative adjectives) haqqında verilən məlumatlardan hansı doğrudur?",
+      "options": [
+        "Əşyanın rəngini və formasını birbaşa ifadə edir",
+        "Əşyanın digər əşyaya, materiala və ya məkana olan münasibətini xüsusi şəkilçilərlə bildirir",
+        "Dərəcəyə görə dəyişə bilən əsli sifətlərdir",
+        "Heç bir şəkilçi qəbul etmədən yalnız sadə formada olurlar"
+      ],
+      "answer": "Əşyanın digər əşyaya, materiala və ya məkana olan münasibətini xüsusi şəkilçilərlə bildirir"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'A red car' ifadəsində 'red' əsli sifəti əşyanın ___ bildirir.",
+      "answer": "rəngini"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Golden' və 'Italian' kimi sifətlər məna qrupuna görə ___ sifətlər (Relative adjectives) adlanır.",
+      "answer": "nisbi"
+    },
+    {
+      "type": "true_false",
+      "question": "'Narrow' (dar) və 'deep' (dərin) sözləri nisbi sifətlərə nümunədir.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "'A round table' ifadəsində 'round' sifəti əşyanın formasını ifadə edən əsli sifətdir.",
+      "answer": true
+    }
+  ]
+},
+ {
+  "id": "sifet-3",
+  "title": "The Category Of Degree Of Comparison Of Adjectives",
+  "lesson": "SİFƏTLƏRİN DƏRƏCƏ KATEQORİYASI\n\nİngilis dilində sifətin 3 dərəcəsi var:\n1) Adi dərəcə – The Positive Degree\n2) Müqayisə dərəcəsi – The Comparative degree\n3) Üstünlük dərəcəsi – The Superlative Degree\n\n1) Adi dərəcədə sifətlər heç bir şəkilçi qəbul etmirlər, olduğu kimi işlənirlər, yəni adi dərəcədə olan sifət müqayisə edilmir:\n❖ long\n❖ short\n❖ wide\n\n2) Birhecalı və ya -y hərfi ilə bitən 2 hecalı sifətlər müqayisə dərəcəsində -er şəkilçisini və üstünlük dərəcəsində isə -est şəkilçisini qəbul etməklə əmələ gəlir.\n\n3) Bəzi ikihecalı sifətlər (quiet, clever, narrow, shallow, simple) həm şəkilçi ilə, həm də more və most ilə düzələ bilərlər.\n\n| Positive | Comparative | Superlative |\n| :--- | :--- | :--- |\n| Quiet (sakit) | Quieter – more quiet (daha sakit) | The quietest – the most quiet (lap sakit) |\n| Shallow (dayaz) | Shallower – more shallow (daha dayaz) | the shallowest – the most shallow (lap dayaz) |\n\n4) İkihecalı sifətlərin əksəriyyəti və bütün çoxhecalı sifətlər müqayisə dərəcəsində - more; üstünlük dərəcəsində isə - most ilə düzəlir.\n\n| Positive | Comparative | Superlative |\n| :--- | :--- | :--- |\n| Famous | More famous | The most famous |\n| Modern | More modern | The most modern |\n| Interesting | More interesting | The most interesting |\n\nQeyd: Elə sifətlər var ki, onlar heç bir qaydaya tabe olmur, və özlərinin hər dərəcə üçün xüsusi forması var:\n\n| Positive | Comparative | Superlative |\n| :--- | :--- | :--- |\n| Good | Better | The best |\n| Bad | Worse | The worst |\n| Little | Less | The least |\n| Many | More | The most |\n| Much | More | The most |\n\n➢ Sifətlər üstünlük dərəcəsində the artiklı ilə işlənirlər. Sifətlərə -er və -est şəkilçilərini artırarkən aşağıdakı yazı qaydalarını bilməliyik:\n\n1) Əgər sifət -e hərfi ilə bitərsə, müqayisə dərəcəsində -r; üstünlük dərəcəsində isə -st artırılır:\n❖ large – larger – the largest\n\n2) Əgər sifət bir hecalıdırsa və axırıncı samitdən əvvəl qısa sait gələrsə, həmin saitin qısalığını saxlamaq üçün sonuncu samit müqayisə və üstünlük dərəcəsində qoşalaşır:\n❖ red – redder – the reddest\n❖ hot – hotter – the hottest\n\n3) Əgər sifət -y hərfi ilə bitərsə və -y dən əvvəl samit gələrsə, müqayisə və üstünlük dərəcəsində -y hərfi -i hərfinə çevrilir, lakin -y dən əvvəl sait gələrsə, onda -y hərfi dəyişmir, olduğu kimi qalır:\n❖ happy – happier – the happiest\n❖ dirty – dirtier – the dirtiest",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Qaydasız sifətlərdən hansının müqayisə və üstünlük dərəcəsi kökündən tamamilə dəyişərək 'worse' və 'the worst' formasına düşür?",
+      "options": [
+        "Good",
+        "Bad",
+        "Little",
+        "Much"
+      ],
+      "answer": "Bad"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Sifətlərə '-er' və '-est' şəkilçiləri artırılarkən hansı halda sonuncu samit hərf qoşalaşır?",
+      "options": [
+        "Sifət ikihecalı olub sonu '-y' ilə bitdikdə",
+        "Sifət birhecalı olub son samitdən əvvəl qısa sait gəldikdə",
+        "Sifətin sonu lal '-e' hərfi ilə bitdikdə",
+        "Sifət çoxhecalı olduqda"
+      ],
+      "answer": "Sifət birhecalı olub son samitdən əvvəl qısa sait gəldikdə"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Sifətlər üstünlük dərəcəsində (The Superlative Degree) işlənərkən adətən qarşısında ___ artiklı tələb olunur.",
+      "answer": "the"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Famous' və 'interesting' kimi çoxhecalı sifətlərin müqayisə dərəcəsini düzəltmək üçün qarşısına ___ sözü artırılır.",
+      "answer": "more"
+    },
+    {
+      "type": "true_false",
+      "question": "'Quiet' və 'shallow' kimi bəzi xüsusi ikihecalı sifətlər dərəcələrə görə həm şəkilçi ilə (-er, -est), həm də 'more'/'most' sözləri ilə düzələ bilər.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "Sonu '-y' ilə bitən sifətlərdən əvvəl sait gəldikdə (məsələn, 'happy' sözündə) '-y' hərfi dəyişmədən olduğu kimi qalır.",
+      "answer": false
+    }
+  ]
+},
+ {
+  "id": "sifet-4",
+  "title": "Sifətin Dərəcələrinin İşlənməsi",
+  "lesson": "SİFƏTİN DƏRƏCƏLƏRİNİN İŞLƏNMƏSİ\n\n1) Eyni keyfiyyətə və əlamətə malik olan şəxs və əşyaları müqayisə edərkən as...as (kimi) bağlayıcısından istifadə edilir:\n❖ I am as strong as you – Mən sənin kimi güclüyəm.\n\n2) Qeyri – bərabər əlamət və keyfiyyətə malik olan əşya və şəxsləri müqayisə edərkən not so...as, not as...as, rather, enough, too, so, such (kimi) bağlayıcısından istifadə olunur:\n❖ My room is not so large as his. – Mənim otağım onunku kimi böyük deyil.\n❖ He is not as diligent as you. – O, sənin kimi çalışqan deyil.\nQeyd: As...as; not so...as; not as...as bağlayıcılarının arasında sifətlər həmişə adi dərəcədə işlənir.\n\n3) Sifətin müqayisə dərəcəsində hər hansı bir şəxs və ya əşyanın başqa bir şəxs yaxud əşyadan keyfiyyətcə artıq olduğunu bildirdikdə than (-dan, -dən) bağlayıcısından istifadə edilir:\n❖ My room is larger than that one. – Mənim otağım o birisindən daha böyükdür.\n❖ This question is more difficult than that one. – Bu sual o birisindən daha çətindir.\n\n⮚ One - əvəzliyi cümlədə ismi 2-ci dəfə təkrar etməmək üçün ismin əvəzinə işlənir, isim təkdədirsə, o da təkdə, isim cəmdədirsə, o da cəmdə (ones) olur:\n❖ These pens are better than those ones. – Bu qələmlər o birilərindən daha yaxşıdır.\n\n⮚ Müqayisə dərəcəsində sifətlər isimlə də işlənə bilir və artikl olur:\n❖ Can you find me a more interesting book? – Siz mənə daha maraqlı kitab tapa bilərsinizmi?\n\n⮚ Much (çox), a bit (bir az), a lot (çox), far, a little (az), any, no, slightly (= a little), some sözləri də müqayisə dərəcəsi ilə işlənə bilər:\n❖ Canada is much bigger than France – Kanada Fransadan çox böyükdür.\n\n⮚ İngilis dilində müqayisə bildirən cümlələrdə sifətin müqayisə dərəcəsi the...the ilə də işlədilir və dilimizdə \"nə qədər... o qədər\" kimi tərcümə olunur:\n❖ The sooner you learn the language the better you will know it. – Dili nə qədər tez öyrənsəniz bir o qədər yaxşı bilərsiniz.\n❖ The more we speak the better we understand each other. – Biz nə qədər çox danışırıqsa, o qədər bir-birimizi daha yaxşı başa düşürük.\n\n4) Dilimizdə olduğu kimi ingilis dilində də üstünlük dərəcəsi əşya və ya şəxsin onun daxil olduğu sinifdə ən yüksək keyfiyyətə malik olduğunu bildirir. Bu dərəcədə adətən in the world, in our class, one of ... , I have ever seen, you have ever read və s. ilə işlənir. Əsas əlaməti the müəyyənlik artiklı ilə işlənməsidir:\n❖ What is the longest river in the world? – Dünyada ən uzun çay hansıdır?\n❖ What is the best film you have ever seen? – Gördüyün ən yaxşı film hansıdır?\n\n⮚ Üstünlük dərəcəsində olan sifətlər cümlədəki məna aydın olanda isimsiz də işlənə bilir:\n❖ Nick is a good player but he is not the best in the team – Nik yaxşı oyunçudur, ancaq komandada ən yaxşısı deyil.",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "'As...as' və 'not so...as' bağlayıcılarının arasında sifət hansı dərəcədə işlənməlidir?",
+      "options": [
+        "Adi dərəcədə (Positive)",
+        "Müqayisə dərəcəsində (Comparative)",
+        "Üstünlük dərəcəsində (Superlative)",
+        "İstənilən dərəcədə ola bilər"
+      ],
+      "answer": "Adi dərəcədə (Positive)"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Sifətin müqayisə dərəcəsini daha da qüvvətləndirmək və ya dərəcəsini bildirmək üçün hansı söz qrupundan istifadə oluna bilər?",
+      "options": [
+        "Very, too, so",
+        "Much, a bit, far, a lot",
+        "Most, least, more",
+        "As, such, enough"
+      ],
+      "answer": "Much, a bit, far, a lot"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Cümlədə əvvəl işlənmiş bir ismi ikinci dəfə təkrar etməmək üçün əgər həmin isim cəmdədirsə, onun yerinə ___ əvəzliyi işlənir.",
+      "answer": "ones"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'The more we speak the better we understand each other' cümləsindəki 'the...the' strukturu dilimizə '___...o qədər' kimi tərcümə olunur.",
+      "answer": "nə qədər"
+    },
+    {
+      "type": "true_false",
+      "question": "Sifətin müqayisə dərəcəsində iki əşya və ya şəxsi qarşılaşdırarkən '-dan, -dən' mənasını vermək üçün 'then' bağlayıcısından istifadə olunur.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "Sifətin üstünlük dərəcəsində mətndəki kontekst və məna tam aydın olduqda, sifətdən sonra gələn isim ixtisar edilə (isimsiz işlənə) bilər.",
+      "answer": true
+    }
+  ]
+},
+        {
+  "id": "sifet-5",
+  "title": "Double Comparison",
+  "lesson": "QOŞA MÜQAYİSƏ DƏRƏCƏSİ\n\nİngilis dilində bəzi sifətlər var ki, onların müqayisə və üstünlük dərəcəsində 2 forması olur:\n\n| Positive | Comparative | Superlative |\n| :--- | :--- | :--- |\n| Far (uzaq) | Farther (daha uzaq)<br>Further (daha uzaq) | The farthest (ən uzaq)<br>The furthest (ən uzaq) |\n| Late (gec, sonra) | Later (daha gec)<br>Latter (ikinci, sonrakı) | The latest (ən son)<br>The last (son) |\n| Old (qoca, köhnə) | Older (yaşca böyük)<br>Elder (yaşca böyük)(ailədə) | The oldest (ən yaşlı)<br>The eldest (ən böyük) |\n| Near (yaxın) | Nearer (daha yaxın) | The nearest (ən yaxın)<br>The next (növbəti) |\n\n1) Farther, further eləcə də the farthest, the furthest məsafə və zamanı göstərmək üçün istifadə edilir:\n❖ He lives in the farthest part of the village. – O, kəndin ən uzaq yerində yaşayır.\n\nFurther sözü “əlavə” və “sonrakı” mənasını da verir:\n❖ She possessed further information on this problem – Onun bu problem barədə əlavə məlumatı var idi.\n\n2) Nearest – məsafəni, next isə növbəni bildirib dilimizə “növbəti, ertəsi, o biri” ay, gün, il sözləri ilə işləndikdə isə “gələn” sözü kimi tərcümə olunur:\n❖ the nearest city – ən yaxın şəhər\n❖ the next day – ertəsi gün;\n❖ next month – gələn ay (artikl işlənmir)\n\n3) Late və later vaxt göstərir. Latest “son” mənasında, latter və last isə ardıcıllıq göstərərkən işlədilir. Latter sözü former sözü ilə birlikdə işlənə bilir və hər ikisi də artikl qəbul edir:\n❖ Two specialists were invited: Mr.Brown and Mr.Smith. The former is an engineer, the latter is an economist – 2 mütəxəssis dəvət olunmuşdur: Birincisi mühəndis, ikincisi isə iqtisadçıdır.\n\nLast “keçən, axırıncı”; latest isə “son” kimi tərcümə edilir. Yaşayan bir şəxsin son əsəri haqqında danışarkən latest sifəti işlənir:\n❖ The poet’s latest book was great success. – Şairin son kitabı böyük müvəffəqiyyət qazandı.\n\nVəfat etmiş bir şəxsin son əsəri haqqında isə danışarkən last sifətindən istifadə olunur:\n❖ Uzeyir Hajibeyov’s last composition is the opera “Firuza”. – Üzeyir Hacıbəyovun son əsəri “Firuza” operasıdır.\n\n4) Older və oldest sifətləri “qoca, qədim, yaşlı, köhnə” mənasını verir:\n❖ My father is older than you. – Mənim atam səndən yaşlıdır.\n\nElder və eldest sifətləri isə bir ailə üzvlərinin yaşca bir-birindən böyük olduğunu göstərmək üçün işlədilir:\n❖ My elder brother is a doctor. – Mənim böyük qardaşım həkimdir.\n❖ Jane is the eldest child of our family – Ceyn ailəmizin en böyük övladıdır.\n\nQeyd: Elder heç vaxt than ilə işlənmir. Older həmişə sifət olduğu halda, elder isim kimi də işlənir:\n❖ They are my elders – Onlar mənim böyüklərimdir (valideynlərimdir).",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Ailə daxilində yaşca böyüklüyü müqayisə edərkən hansı formadan istifadə olunur və bu forma haqqında hansı qayda doğrudur?",
+      "options": [
+        "Older forması işlənir və özündən sonra 'than' tələb etmir",
+        "Elder forması işlənir və bu forma heç vaxt 'than' bağlayıcısı ilə işlənmir",
+        "Eldest forması işlənir və yalnız cansızlarla müqayisədə istifadə olunur",
+        "Further forması işlənir və 'than' ilə uzlaşır"
+      ],
+      "answer": "Elder forması işlənir və bu forma heç vaxt 'than' bağlayıcısı ilə işlənmir"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Yaşayan bir müəllifin ən son nəşr olunmuş kitabı ilə vəfat etmiş bir bəstəkarın son əsərini təsvir edərkən müvafiq olaraq hansı sifətlər seçilməlidir?",
+      "options": [
+        "last / latest",
+        "latter / later",
+        "latest / last",
+        "next / nearest"
+      ],
+      "answer": "latest / last"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'Further' sözü məsafədən başqa kontekstə uyğun olaraq '___' və 'sonrakı' mənalarını da ifadə edə bilir.",
+      "answer": "əlavə"
+    },
+    {
+      "type": "fill_blank",
+      "question": "Ardıcıllıq bildirən və 'birincisi... ikincisi' mənasını verən ifadələrdə 'the former' qarşılığı olaraq 'the ___' işlədilir.",
+      "answer": "latter"
+    },
+    {
+      "type": "true_false",
+      "question": "'Next' sözü ay, gün, il sözləri ilə birlikdə 'gələn' mənasında işləndikdə qarşısında 'the' artiklı yazılmır.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'Elder' sözü cümlədə heç vaxt isim kimi çıxış edə bilməz və 'my elders' ifadəsi qrammatik cəhətdən tamamilə səhvdir.",
+      "answer": false
+    }
+  ]
+},
+        {
+  "id": "sifet-6",
+  "title": "Substantivized Adjectives",
+  "lesson": "İSİMLƏŞMİŞ SİFƏTLƏR\nMüasir ingilis dilində isimləşmiş sifətlər 2 qrupa bölünür:\n1) Tamam isimləşmiş sifətlər – Wholly Substantivized Adjectives\n2) Natamam isimləşmiş sifətlər – Partially Substantivized Adjectives\n\n1) İsmin bütün xüsusiyyətlərinə malik olan, yəni cəm və hal şəkilçisi qəbul edən, artikılla işlənən sifətlərə tamam isimləşmiş sifətlər deyilir:\n视觉 a native/the native (yerli adam) – natives (yerli adamlar) – a native’s flat ( yerli adamın mənzili)\n\n2) İsmin bütün xüsusiyətlərinə malik olmayan, onlardan ancaq bir qismini qəbul edən sifətlərə natamam isimləşmiş sifətlər deyilir. Bunlar müəyyənlik artiklı the ilə işlənərək bütöv bir sinfə aid olan ismi bildirir:\n视觉 the young – gənclər\n视觉 the poor – kasıblar\n视觉 the rich – varlılar\n视觉 the old – qocalar\n视觉 the dead – ölülər\n视觉 the homeless – evsizlər\n\n⮚ Milliyət bildirən sözlərdən isə bir neçəsinə nəzər salaq:\n1) –an; -ian sonluqları ilə bitən sifətlər isim kimi təkdə və cəmdə işlənir. Belə isimlər cəmdə -s şəkilçisi qəbul edir:\n视觉 A Norwegian – norveçli, 5 Norwegians – 5 norveçli\nCəmdə bütöv milliyyət göstərilir:\n视觉 The Russians – ruslar, the Americans – amerikalılar\n\n2) –se; -ss ilə bitən sifətlər isimləşdikdə həm tək, həm də cəm mənasında olur. Cəmdə -s qəbul etmir, bütöv bir milləti göstərərkən the artiklı olur:\n视觉 a Chinese – çinli, the Chinese – çinlilər, two Chinese – 2 çinli\n视觉 a Swiss – isveçli, the Swiss – isveçlilər, three Swiss – 3 isveçli\n\n3) Millət adı bildirən –sh və -ch sonluqları ilə bitən sifətlər (English, French) isimləşdikdə -s cəm şəkilçisi qəbul etmədən bütöv bir xalqı bildirir və the artiklı ilə işlənir:\n视觉 The English – ingilislər\nSöhbət bir xalq haqqında deyil, ayrı – ayrı fərd haqqında gedərsə, belə sifətlər –man (kişi); -men (kişilər); -woman (qadın); -women (qadınlar) sözləri ilə işlədilir:\n视觉 an English man – two English men\n视觉 an English woman – two English women\n\nQeyd: Ancaq bunlardan fərqli olaraq, Spanish sifəti belə deyil:\n视觉 Spaniard – İspan, Spaniards – İspanlar",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "Natamam isimləşmiş sifətlər (məsələn: 'the poor', 'the rich') haqqında verilən hansı qayda doğrudur?",
+      "options": [
+        "Sonlarına '-s' cəm şəkilçisi qəbul edirlər",
+        "Müəyyənlik artiklı 'the' ilə işlənərək bütöv bir sinfə aid insanları bildirirlər",
+        "Yalnız təkdə işlənirlər və xəbərləri həmişə təkdə olur",
+        "Yiyəlik hal şəkilçisi olan ''s' qəbul edirlər"
+      ],
+      "answer": "Müəyyənlik artiklı 'the' ilə işlənərək bütöv bir sinfə aid insanları bildirirlər"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Millət adı bildirən '-se' və '-ss' sonluqlu sifətlər (məsələn: 'Chinese', 'Swiss') isimləşərkən bütöv bir xalqı bildirdikdə necə formalaşır?",
+      "options": [
+        "Sonuna '-s' cəm şəkilçisi artırılır",
+        "Qarşısına 'the' artiklı artırılır və '-s' şəkilçisi qəbul etmir",
+        "Mütləq sonuna '-man' və ya '-woman' artırılmalıdır",
+        "Tamam isimləşmiş sifət kimi yiyəlik şəkilçisi qəbul edir"
+      ],
+      "answer": "Qarşısına 'the' artiklı artırılır və '-s' şəkilçisi qəbul etmir"
+    },
+    {
+      "type": "fill_blank",
+      "question": "'English' və 'French' kimi '-sh' və '-ch' ilə bitən millət adlarında fərdləri (ayrı-ayrı şəxsləri) bildirmək üçün '-man', '-men', '-woman' və ya ___ sözlərindən istifadə olunur.",
+      "answer": "-women"
+    },
+    {
+      "type": "fill_blank",
+      "question": "İsmin cəm, yiyəlik hal və artikl kimi bütün qrammatik xüsusiyyətlərinə malik olan 'native' kimi sifətlərə ___ isimləşmiş sifətlər deyilir.",
+      "answer": "tamam"
+    },
+    {
+      "type": "true_false",
+      "question": "'-an' və '-ian' sonluqları ilə bitən millət adları (məsələn: 'Russians', 'Americans') bütöv bir milləti göstərdikdə cəmdə '-s' şəkilçisi qəbul edir.",
+      "answer": true
+    },
+    {
+      "type": "true_false",
+      "question": "'Spanish' sifətinin isimləşməsi 'English' kimidir və bütöv xalqı bildirmək üçün 'the Spanish' əvəzinə heç bir istisna olmadan 'Spaniards' forması tam eyni qayda ilə işlənir.",
+      "answer": false
+    }
+  ]
+}
       ]
     },
     {
       "id": "say",
       "title": "The Numeral - Say",
       "nodes": [
-        { "id": "say-1", "title": "Cardinal Numerals",                              "lesson": "", "questions": [] },
+        {
+  "id": "say-1",
+  "title": "Cardinal Numerals",
+  "lesson": "SAY\nSay şəxs və əşyanın miqdarını və sırasını bildirən sözlərə deyilir. Saylar 3 qrupa bölünür:\n❖ Miqdar sayları - Cardinal Numerals\n❖ Sıra sayları - Ordinal Numerals\n❖ Kəsr sayları - Fractional Numerals\n\nCARDINAL NUMERALS (MİQDAR SAYLARI)\nMiqdar sayları bir qayda olaraq şəxs və əşyaları sayarkən işlənir və How many? How much? (Neçə? Nə qədər?) suallarına cavab verir. Məsələn:\n❖ How many english books have you? - Sənin neçə ingilis dili kitabın var?\n❖ I have 2 english books – Mənim 2 ingilis dili kitabım var.\n\nMiqdar sayları morfoloji quruluşuna görə 3 qrupa bölünür:\n\n1. Sadə saylar: 1 kökdən ibarət olur və heç bir şəkilçi qəbul etmirlər.\n⮚ 1-12-yə kimi saylar bu qrupa aiddir:\n❖ one - 1, two - 2, seven - 7, nine - 9, eleven - 11, twelve - 12\n* Qeyd: 0 rəqəmi \"Zero\" adlanır.\n\n2. Düzəltmə saylar: Kök və sözdüzəldici şəkilçidən istifadə etməklə yaranır. Düzəltmə saylar aşağıdakı şəkilçilər vasitəsilə düzələ bilər:\n⮚ 13-dən - 19-a qədər olan saylar -teen şəkilçisi qəbul etməklə düzəlir. Teen suffiksi ilə bitən miqdar saylarında vurğu həm birinci, həm də ikinci hecaya düşə bilir. Bununla yanaşı, Azərbaycan dilində bu sayların yazılışı ilə ingilis dilində miqdar saylarının yazılışında müəyyən yerdəyişmələr var. Məsələn:\n❖ fourteen - 14 - on dörd\n❖ sixteen - 16 - on altı\n❖ nineteen - 19 - on doqquz\n⮚ Onluq bildirən isə -ty şəkilçisi ilə düzəlir və onluq bildirən saylarda vurğu birinci hecanın üzərinə düşür:\n❖ twenty - 20, fifty - 50, eighty - 80\n\n3. Mürəkkəb saylar: İki kökdən ibarət olan saylara mürəkkəb saylar daxildir:\n❖ thirty-four - 34, sixty-five - 65, eighty-seven - 87\n\nMİQDAR SAYLARININ YAZILIŞ VƏ İŞLƏNMƏ QAYDALARI:\n⮚ Onluq və təkliklərdən ibarət olan saylarda onluqlarla tək rəqəm arasında defis (-) qoyulur:\n❖ twenty-one - 21, forty-six - 46, ninety-two - 92\n\n⮚ Yüzlüklərlə onluqlar arasında yaxud onluq yoxdursa, yüzlüklərlə tək rəqəmlər arasında and bağlayıcısı işlənir:\n❖ three hundred and fifty – 350\n❖ five hundred and thirty – 530\n❖ six hundred and eighty – 680\n\n⮚ Hundred - 100; thousand - 1000; million - 1.000.000 sözləri artikl a, ya da one sözü ilə işlənə bilər:\n❖ one (a) hundred, one (a) million, one (a) thousand\n\nQeyd: Bu sayların qarşısında one sayından başqa say gələrsə, onlar cəm şəkilçisi qəbul etmir:\n❖ two hundred, four thousand, nine million\n\nQeyd: Bu saylar ancaq isimləşdikdə -s cəm şəkilçisi qəbul edirlər və özlərindən sonra of sözönü qəbul edir və dilimizdə yüzlərlə, minlərlə, milyonlarla mənasında işlədilirsə cəm sonluğu qəbul edirlər:\n❖ hundreds of pupils – yüzlərlə şagirdlər\n❖ thousands of workers – minlərlə işçilər\n❖ millions of students – milyonlarla tələbələr\n\n⮚ Dilimizdən fərqli olaraq ingilis dilində iri saylı rəqəmlər vergüllə yazılır. Miqdar sayları rəqəmlə göstərilərsə, sağdan sola hər üç rəqəmdən əvvəl vergül yazılır:\n❖ 7,220 - seven thousand two hundred and twenty\n❖ 1,380,450 - one (a) million three hundred and eighty thousand four hundred and fifty",
+  "questions": [
+    {
+      "type": "multiple_choice",
+      "question": "İngilis dilində mürəkkəb miqdar saylarında onluqlar və təkliklər (məsələn: 21, 46) yazı zamanı bir-birindən necə ayrılır?",
+      "options": [
+        "Vergül vasitəsilə",
+        "Defis (-) işarəsi vasitəsilə",
+        "Həmişə 'and' bağlayıcısı vasitəsilə",
+        "Tamamilə bitişik yazılır"
+      ],
+      "answer": "Defis (-) işarəsi vasitəsilə"
+    },
+    {
+      "type": "multiple_choice",
+      "question": "Mətndə verilən qaydaya əsasən, 'hundred', 'thousand' və 'million' sözləri hansı halda '-s' cəm şəkilçisi və 'of' sözönü tələb edir?",
+      "options": [
+        "Qarşısında birdən böyük konkret miqdar sayı gəldikdə",
+        "Yalnız mürəkkəb sayların tərkibində işləndikdə",
+        "İsimləşərək qeyri-müəyyən çoxluq (yüzlərlə, minlərlə...) bildirdikdə",
+        "Qarşısında 'one' və ya 'a' artiklı işləndikdə"
+      ],
+      "answer": "İsimləşərək qeyri-müəyyən çoxluq (yüzlərlə, minlərlə...) bildirdikdə"
+    },
+    {
+      "type": "fill_blank",
+      "question": "13-dən 19-a qədər olan düzəltmə miqdar sayları kökə ___ şəkilçisi artırmaqla düzəlir.",
+      "answer": "-teen"
+    },
+    {
+      "type": "fill_blank",
+      "question": "İngilis dilində yazı qaydalarına görə rəqəmlə yazılmış böyük saylarda sağdan sola doğru hər üç rəqəmdən bir ___ işarəsi qoyulur.",
+      "answer": "vergül"
+    },
+    {
+      "type": "true_false",
+      "question": "Onluq bildirmək üçün istifadə olunan '-ty' şəkilçili saylarda (məsələn: 'twenty', 'fifty') vurğu əsasən sonuncu hecanın üzərinə düşür.",
+      "answer": false
+    },
+    {
+      "type": "true_false",
+      "question": "Qarşısında konkret say gələn 'two hundred' və ya 'four thousand' kimi ifadələrdə 'hundred' və 'thousand' sözləri qətiyyən cəm şəkilçisi (-s) qəbul etmir.",
+      "answer": true
+    }
+  ]
+},
         { "id": "say-2", "title": "Ordinal Numerals",                               "lesson": "", "questions": [] },
         { "id": "say-3", "title": "Miqdar Və Sıra Saylarının Cümlədə Funksiyası",  "lesson": "", "questions": [] },
         { "id": "say-4", "title": "Fractional Numbers",                             "lesson": "", "questions": [] },

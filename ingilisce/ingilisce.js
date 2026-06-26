@@ -321,8 +321,8 @@ function openLesson(nodeId, curriculum, isReview) {
     const timeEl   = player.querySelector('#capTime');
 
     playBtn.addEventListener('click', () => {
-      if (audio.paused) { audio.play(); playBtn.innerHTML = '&#10074;&#10074;'; }
-      else              { audio.pause(); playBtn.innerHTML = '&#9654;'; }
+      if (audio.paused) { audio.play(); playBtn.innerHTML = '&#10074;&#10074;'; playBtn.style.paddingLeft = '0'; }
+      else              { audio.pause(); playBtn.innerHTML = '&#9654;'; playBtn.style.paddingLeft = '3px'; }
     });
     audio.addEventListener('timeupdate', () => {
       const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
@@ -331,7 +331,7 @@ function openLesson(nodeId, curriculum, isReview) {
       const s = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
       timeEl.textContent = `${m}:${s}`;
     });
-    audio.addEventListener('ended', () => { playBtn.innerHTML = '&#9654;'; });
+    audio.addEventListener('ended', () => { playBtn.innerHTML = '&#9654;'; playBtn.style.paddingLeft = '3px'; });
     player.querySelector('.cap-bar').addEventListener('click', (e) => {
       const rect = e.currentTarget.getBoundingClientRect();
       audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
