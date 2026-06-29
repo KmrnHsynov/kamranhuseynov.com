@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SÖZLƏ – Məxfilik Siyasəti / Privacy Policy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Rubik', system-ui, sans-serif;
+      background: #121213;
+      color: #d7dadc;
+      line-height: 1.7;
+      padding: 40px 20px 80px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 4px;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: #818384;
+      margin-top: 6px;
+    }
+
+    .lang-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+
+    .lang-btn {
+      background: #272729;
+      color: #d7dadc;
+      border: 1.5px solid #3a3a3c;
+      border-radius: 8px;
+      padding: 6px 18px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .lang-btn.active {
+      background: #538d4e;
+      border-color: #538d4e;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    section {
+      background: #1a1a1b;
+      border: 1px solid #3a3a3c;
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #538d4e;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    p { margin-bottom: 10px; color: #d7dadc; font-size: 0.95rem; }
+    p:last-child { margin-bottom: 0; }
+
+    ul {
+      padding-left: 20px;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    ul li { margin-bottom: 6px; }
+
+    .badge {
+      display: inline-block;
+      background: #538d4e;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+
+    .contact-link {
+      color: #538d4e;
+      text-decoration: none;
+    }
+    .contact-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 0.8rem;
+      color: #818384;
+    }
+
+    .lang-section { display: none; }
+    .lang-section.active { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>SÖZLƏ</h1>
+    <p>Məxfilik Siyasəti / Privacy Policy</p>
+  </header>
+
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('az')">Azərbaycanca</button>
+    <button class="lang-btn"       onclick="setLang('en')">English</button>
+  </div>
+
+  <!-- ── AZERBAIJANI ── -->
+  <div class="lang-section active" id="lang-az">
+
+    <section>
+      <span class="badge">ÜMUMİ</span>
+      <h2>Giriş</h2>
+      <p>Bu məxfilik siyasəti <strong>SÖZLƏ</strong> oyununa aiddir. SÖZLƏ, Azərbaycan dilində sözləri tapmaq üzərə qurulmuş bir söz oyunudur.</p>
+      <p>Son yenilənmə: 29 İyun 2026</p>
+    </section>
+
+    <section>
+      <span class="badge">MƏLUMAT</span>
+      <h2>Hansı məlumatlar toplanır?</h2>
+      <p>SÖZLƏ isteğe bağlı hesab sisteminə malikdir. Hesab yaratmadan da oynaya bilərsiniz. Əgər hesab yaratsanız, aşağıdakı məlumatlar toplanır:</p>
+      <ul>
+        <li><strong>İstifadəçi adı</strong> — siz özünüz seçirsiniz (real ad tələb olunmur)</li>
+        <li><strong>Şifrə</strong> — şifrələnmiş formada saxlanılır, heç vaxt açıq mətnlə görünmür</li>
+        <li><strong>Avatar seçimi</strong> — oğlan və ya qız ikonu</li>
+        <li><strong>Oyun statistikası</strong> — oynanan oyunların sayı, qazanma faizi, ardıcıl günlər (streak)</li>
+      </ul>
+      <p>Biz heç vaxt sizin <strong>real adınızı, e-poçtunuzu, telefon nömrənizi, yerləşmənizi</strong> və ya digər şəxsi məlumatlarınızı toplamırıq.</p>
+      <p>Üçüncü tərəf analitika və ya reklam xidmətlərindən istifadə edilmir.</p>
+    </section>
+
+    <section>
+      <span class="badge">SAXLAMA</span>
+      <h2>Məlumatlar harada saxlanılır?</h2>
+      <p>Hesab məlumatları <strong>Supabase</strong> (ABŞ əsaslı, SOC 2 sertifikatlı) buludunda saxlanılır. Supabase, məlumatları şifrələyərək qoruyur.</p>
+      <p>Oyun vəziyyəti (cari gün cəhdləriniz) cihazınızın lokal yaddaşında (localStorage) saxlanılır və heç vaxt xarici serverə göndərilmir.</p>
+      <p>Hesabınızı silmək istəsəniz, bizimlə əlaqə saxlayın — məlumatlarınızı tamamilə silirik.</p>
+    </section>
+
+    <section>
+      <span class="badge">TƏHLÜKƏSİZLİK</span>
+      <h2>Məlumatların təhlükəsizliyi</h2>
+      <ul>
+        <li>Şifrələr bcrypt alqoritmi ilə şifrələnir</li>
+        <li>Bütün məlumat ötürülməsi HTTPS üzərindən həyata keçirilir</li>
+        <li>E-poçt adresi toplanmır — istifadəçi adınız əsasında anonim giriş yaradılır</li>
+      </ul>
+    </section>
+
+    <section>
+      <span class="badge">UŞAQLAR</span>
+      <h2>Uşaqların məxfiliyi</h2>
+      <p>SÖZLƏ hər yaşdan istifadəçilər üçün uyğundur. Uşaqlar hesab yaratmadan da tam oynaya bilər. Hesab yaradıldıqda real ad tələb olunmur.</p>
+    </section>
+
+    <section>
+      <span class="badge">DEĞİŞİKLİKLƏR</span>
+      <h2>Siyasətdə dəyişikliklər</h2>
+      <p>Bu məxfilik siyasəti zaman-zaman yenilənə bilər. Hər hansı əhəmiyyətli dəyişiklik olduqda bu səhifə yenilənəcək.</p>
+    </section>
+
+    <section>
+      <span class="badge">ƏLAQƏ</span>
+      <h2>Bizimlə əlaqə</h2>
+      <p>Suallarınız üçün: <a class="contact-link" href="mailto:kmrnhsynov@gmail.com">kmrnhsynov@gmail.com</a></p>
+    </section>
+
+  </div>
+
+  <!-- ── ENGLISH ── -->
+  <div class="lang-section" id="lang-en">
+
+    <section>
+      <span class="badge">GENERAL</span>
+      <h2>Introduction</h2>
+      <p>This privacy policy applies to the <strong>SÖZLƏ</strong> game — an Azerbaijani word-guessing game.</p>
+      <p>Last updated: June 29, 2026</p>
+    </section>
+
+    <section>
+      <span class="badge">DATA</span>
+      <h2>What data do we collect?</h2>
+      <p>SÖZLƏ has an optional account system. You can play without creating an account. If you choose to create an account, the following data is collected:</p>
+      <ul>
+        <li><strong>Username</strong> — chosen by you (no real name required)</li>
+        <li><strong>Password</strong> — stored in encrypted form, never in plain text</li>
+        <li><strong>Avatar choice</strong> — a boy or girl icon you select</li>
+        <li><strong>Game statistics</strong> — games played, win percentage, and daily streak count</li>
+      </ul>
+      <p>We never collect your <strong>real name, email address, phone number, location</strong>, or any other personal information.</p>
+      <p>We do not use third-party analytics or advertising services.</p>
+    </section>
+
+    <section>
+      <span class="badge">STORAGE</span>
+      <h2>Where is data stored?</h2>
+      <p>Account data is stored on <strong>Supabase</strong> (a US-based, SOC 2 certified cloud provider). All data is encrypted at rest and in transit.</p>
+      <p>Your current game state (today's guesses) is stored locally on your device using browser/app storage and is never sent to any server.</p>
+      <p>To delete your account and all associated data, contact us at the email below.</p>
+    </section>
+
+    <section>
+      <span class="badge">SECURITY</span>
+      <h2>Data security</h2>
+      <ul>
+        <li>Passwords are hashed using bcrypt — never stored in plain text</li>
+        <li>All data transmission uses HTTPS encryption</li>
+        <li>No email address is collected — login uses an anonymized identifier derived from your username</li>
+      </ul>
+    </section>
+
+    <section>
+      <span class="badge">CHILDREN</span>
+      <h2>Children's privacy</h2>
+      <p>SÖZLƏ is suitable for all ages. Children can play the full game without creating an account. If an account is created, no real name or contact information is required.</p>
+    </section>
+
+    <section>
+      <span class="badge">CHANGES</span>
+      <h2>Changes to this policy</h2>
+      <p>This privacy policy may be updated from time to time. Any significant changes will be reflected on this page with an updated date.</p>
+    </section>
+
+    <section>
+      <span class="badge">CONTACT</span>
+      <h2>Contact us</h2>
+      <p>For any questions: <a class="contact-link" href="mailto:kmrnhsynov@gmail.com">kmrnhsynov@gmail.com</a></p>
+    </section>
+
+  </div>
+
+  <footer>
+    <p>© 2026 SÖZLƏ · kamranhuseynov.com</p>
+  </footer>
+
+</div>
+
+<script>
+  function setLang(lang) {
+    document.querySelectorAll('.lang-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('lang-' + lang).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+</script>
+</body>
+</html>

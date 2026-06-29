@@ -118,10 +118,10 @@ function submitRow() {
     renderKeyboard();
     if (result.every(r => r === 'correct')) {
       gameOver = true;
-      setTimeout(() => { showToast(WIN_MSG[Math.floor(Math.random() * WIN_MSG.length)], 3000); unlockReveal(); }, 400);
+      setTimeout(() => { showToast(WIN_MSG[Math.floor(Math.random() * WIN_MSG.length)], 3000); unlockReveal(true); }, 400);
     } else if (currentRow === 5) {
       gameOver = true;
-      setTimeout(() => { showToast(LOSE_MSG[Math.floor(Math.random() * LOSE_MSG.length)] + target, 4000); unlockReveal(); }, 400);
+      setTimeout(() => { showToast(LOSE_MSG[Math.floor(Math.random() * LOSE_MSG.length)] + target, 4000); unlockReveal(false); }, 400);
     }
     currentRow++; currentCol = 0;
   });
@@ -188,11 +188,12 @@ function initReveal() {
   document.getElementById('reveal-panel').style.display = 'none';
 }
 
-function unlockReveal() {
+function unlockReveal(won = false) {
   if (mode === 'daily') {
     dailyCompleted = true;
     dailyWord = target;
     updateRevealBtn();
+    recordSozleGame(won);
   }
 }
 
@@ -243,3 +244,202 @@ document.addEventListener('keydown', e => {
 
 initGame();
 initReveal();
+
+// ── Supabase Auth + Streak ─────────────────────────────
+const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let sozleUser = null, sozleProfile = null, selectedAvatar = '👦';
+
+async function nameToEmail(name) {
+  const data = new TextEncoder().encode(name.toLowerCase());
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const hex  = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2,'0')).join('').slice(0,32);
+  return hex + '@ingilisce.app';
+}
+
+function validatePassword(pwd) {
+  if (pwd.length < 8)             return 'Şifrə ən az 8 simvol olmalıdır.';
+  if (!/[A-Z]/.test(pwd))         return 'Ən az bir böyük hərf olmalıdır.';
+  if (!/[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]/.test(pwd)) return 'Ən az bir xüsusi simvol lazımdır.';
+  return null;
+}
+
+async function doSignUp(name, avatar, pwd, confirm) {
+  if (!name.trim())         throw new Error('Ad daxil edin.');
+  const pwdErr = validatePassword(pwd);
+  if (pwdErr)               throw new Error(pwdErr);
+  if (pwd !== confirm)      throw new Error('Şifrələr uyğun gəlmir.');
+
+  const { data: avail } = await db.rpc('is_sozle_username_available', { uname: name.toLowerCase() });
+  if (!avail)               throw new Error('Bu ad artıq istifadə olunur.');
+
+  const email = await nameToEmail(name);
+  const { data, error } = await db.auth.signUp({ email, password: pwd });
+  if (error)                throw new Error(error.message);
+
+  const { error: profErr } = await db.from('sozle_profiles').insert({
+    id: data.user.id, display_name: name, avatar,
+    sozle_streak: 0, sozle_last_played: null,
+    sozle_games_played: 0, sozle_games_won: 0
+  });
+  if (profErr)              throw new Error(profErr.message);
+  return { user: data.user, profile: { display_name: name, avatar, sozle_streak: 0, sozle_games_played: 0, sozle_games_won: 0, sozle_last_played: null } };
+}
+
+async function doSignIn(name, pwd) {
+  if (!name.trim()) throw new Error('Ad daxil edin.');
+  if (!pwd)         throw new Error('Şifrə daxil edin.');
+  const email = await nameToEmail(name);
+  const { data, error } = await db.auth.signInWithPassword({ email, password: pwd });
+  if (error)        throw new Error(error.message);
+  const { data: profile, error: profErr } = await db.from('sozle_profiles').select('*').eq('id', data.user.id).single();
+  if (profErr || !profile) throw new Error('Profil tapılmadı.');
+  return { user: data.user, profile };
+}
+
+function setActiveProfile(userId, profile) {
+  sozleUser    = { id: userId };
+  sozleProfile = profile;
+  document.getElementById('sozleProfileBtn').textContent = profile.avatar + ' ' + profile.display_name;
+  document.getElementById('sozleDropAvatar').textContent = profile.avatar;
+  document.getElementById('sozleDropName').textContent   = profile.display_name;
+  updateProfileStats();
+}
+
+function updateProfileStats() {
+  if (!sozleProfile) return;
+  const p       = sozleProfile;
+  const played  = p.sozle_games_played || 0;
+  const won     = p.sozle_games_won    || 0;
+  const streak  = p.sozle_streak       || 0;
+  const winPct  = played > 0 ? Math.round((won / played) * 100) : 0;
+  document.getElementById('sozleStatPlayed').textContent = played;
+  document.getElementById('sozleStatWin').textContent    = winPct + '%';
+  document.getElementById('sozleStatStreak').textContent = '🔥 ' + streak;
+}
+
+async function recordSozleGame(won) {
+  if (!sozleUser || !sozleProfile) return;
+  const today     = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 864e5).toDateString();
+  const p         = sozleProfile;
+  if (p.sozle_last_played === today) return;
+
+  const newStreak = won
+    ? (p.sozle_last_played === yesterday ? (p.sozle_streak || 0) + 1 : 1)
+    : 0;
+
+  const updates = {
+    sozle_games_played: (p.sozle_games_played || 0) + 1,
+    sozle_games_won:    (p.sozle_games_won    || 0) + (won ? 1 : 0),
+    sozle_streak:       newStreak,
+    sozle_last_played:  today
+  };
+
+  await db.from('sozle_profiles').update(updates).eq('id', sozleUser.id);
+  Object.assign(sozleProfile, updates);
+  updateProfileStats();
+}
+
+function showSozleError(form, msg) {
+  const el = document.getElementById(form === 'signup' ? 'sozleSignupErr' : 'sozleSigninErr');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function setSozleLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled  = loading;
+  btn.textContent = loading ? '...' : (btnId === 'sozleBtnSignup' ? 'Hesab yarat' : 'Daxil ol');
+}
+
+function showAuthModal() {
+  document.getElementById('sozleAuthOverlay').classList.remove('hidden');
+
+  document.querySelectorAll('.sozle-avatar-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sozle-avatar-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedAvatar = btn.dataset.avatar;
+    });
+  });
+
+  document.getElementById('sozleTabSignup').onclick = () => {
+    document.getElementById('sozleFormSignup').classList.remove('hidden');
+    document.getElementById('sozleFormSignin').classList.add('hidden');
+    document.getElementById('sozleTabSignup').classList.add('active');
+    document.getElementById('sozleTabSignin').classList.remove('active');
+  };
+  document.getElementById('sozleTabSignin').onclick = () => {
+    document.getElementById('sozleFormSignin').classList.remove('hidden');
+    document.getElementById('sozleFormSignup').classList.add('hidden');
+    document.getElementById('sozleTabSignin').classList.add('active');
+    document.getElementById('sozleTabSignup').classList.remove('active');
+  };
+
+  const skip = () => document.getElementById('sozleAuthOverlay').classList.add('hidden');
+  document.getElementById('sozleBtnSkip').onclick  = skip;
+  document.getElementById('sozleBtnSkip2').onclick = skip;
+
+  document.getElementById('sozleBtnSignup').onclick = async () => {
+    const name    = document.getElementById('sozleSignupName').value.trim();
+    const pwd     = document.getElementById('sozleSignupPwd').value;
+    const confirm = document.getElementById('sozleSignupCfm').value;
+    setSozleLoading('sozleBtnSignup', true);
+    try {
+      const { user, profile } = await doSignUp(name, selectedAvatar, pwd, confirm);
+      setActiveProfile(user.id, profile);
+      document.getElementById('sozleAuthOverlay').classList.add('hidden');
+    } catch (e) { showSozleError('signup', e.message); }
+    finally { setSozleLoading('sozleBtnSignup', false); }
+  };
+
+  document.getElementById('sozleBtnSignin').onclick = async () => {
+    const name = document.getElementById('sozleSigninName').value.trim();
+    const pwd  = document.getElementById('sozleSigninPwd').value;
+    setSozleLoading('sozleBtnSignin', true);
+    try {
+      const { user, profile } = await doSignIn(name, pwd);
+      setActiveProfile(user.id, profile);
+      document.getElementById('sozleAuthOverlay').classList.add('hidden');
+    } catch (e) { showSozleError('signin', e.message); }
+    finally { setSozleLoading('sozleBtnSignin', false); }
+  };
+
+  document.getElementById('sozleSigninPwd').onkeydown = e => {
+    if (e.key === 'Enter') document.getElementById('sozleBtnSignin').click();
+  };
+}
+
+// Profile dropdown toggle
+document.getElementById('sozleProfileBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (!sozleUser) { showAuthModal(); return; }
+  document.getElementById('sozleDropdown').classList.toggle('hidden');
+  updateProfileStats();
+});
+
+document.addEventListener('click', () => {
+  document.getElementById('sozleDropdown').classList.add('hidden');
+});
+document.getElementById('sozleDropdown').addEventListener('click', e => e.stopPropagation());
+
+document.getElementById('sozleSignOut').addEventListener('click', async () => {
+  document.getElementById('sozleDropdown').classList.add('hidden');
+  await db.auth.signOut();
+  sozleUser = null; sozleProfile = null;
+  document.getElementById('sozleProfileBtn').textContent = '👤';
+});
+
+// Auto-login on page load
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    const { data: profile } = await db.from('sozle_profiles').select('*').eq('id', session.user.id).single();
+    if (profile) setActiveProfile(session.user.id, profile);
+  } else {
+    showAuthModal();
+  }
+})();

@@ -20,8 +20,52 @@
     </div>
     <button class="icon-btn" onclick="toggleTheme()">🌓</button>
     <button class="icon-btn" onclick="showHelp()">❓</button>
+    <div class="sozle-profile-wrap">
+      <button class="sozle-profile-btn" id="sozleProfileBtn">👤</button>
+      <div class="sozle-dropdown hidden" id="sozleDropdown">
+        <div class="sozle-dropdown-avatar" id="sozleDropAvatar"></div>
+        <div class="sozle-dropdown-name"   id="sozleDropName"></div>
+        <div class="sozle-stats-grid">
+          <div class="sozle-stat"><span id="sozleStatPlayed">0</span><span>oyun</span></div>
+          <div class="sozle-stat"><span id="sozleStatWin">0%</span><span>qalib</span></div>
+          <div class="sozle-stat"><span id="sozleStatStreak">🔥 0</span><span>ardıcıl</span></div>
+        </div>
+        <hr class="sozle-divider">
+        <button class="sozle-signout-btn" id="sozleSignOut">Çıxış et</button>
+      </div>
+    </div>
   </div>
 </header>
+
+<!-- Auth Modal -->
+<div class="sozle-auth-overlay hidden" id="sozleAuthOverlay">
+  <div class="sozle-auth-modal">
+    <h2>SÖZLƏ</h2>
+    <div class="sozle-auth-tabs">
+      <button class="sozle-tab active" id="sozleTabSignup">Yeni hesab</button>
+      <button class="sozle-tab"        id="sozleTabSignin">Daxil ol</button>
+    </div>
+    <div id="sozleFormSignup">
+      <div class="sozle-avatar-picker">
+        <button class="sozle-avatar-opt selected" data-avatar="👦">👦<span>Oğlan</span></button>
+        <button class="sozle-avatar-opt"           data-avatar="👧">👧<span>Qız</span></button>
+      </div>
+      <input type="text"     id="sozleSignupName" class="sozle-input" placeholder="Adınız..." maxlength="24" />
+      <input type="password" id="sozleSignupPwd"  class="sozle-input" placeholder="Şifrə (8+, böyük hərf, simvol)" />
+      <input type="password" id="sozleSignupCfm"  class="sozle-input" placeholder="Şifrəni təsdiqləyin" />
+      <div class="sozle-auth-error hidden" id="sozleSignupErr"></div>
+      <button class="sozle-auth-btn" id="sozleBtnSignup">Hesab yarat</button>
+      <button class="sozle-skip-btn" id="sozleBtnSkip">İndi deyil</button>
+    </div>
+    <div id="sozleFormSignin" class="hidden">
+      <input type="text"     id="sozleSigninName" class="sozle-input" placeholder="Adınız..." />
+      <input type="password" id="sozleSigninPwd"  class="sozle-input" placeholder="Şifrəniz..." />
+      <div class="sozle-auth-error hidden" id="sozleSigninErr"></div>
+      <button class="sozle-auth-btn" id="sozleBtnSignin">Daxil ol</button>
+      <button class="sozle-skip-btn" id="sozleBtnSkip2">İndi deyil</button>
+    </div>
+  </div>
+</div>
 
 <div id="game"><div id="grid"></div></div>
 <div id="keyboard"></div>
@@ -74,6 +118,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="sozle.js"></script>
 </body>
 </html>
