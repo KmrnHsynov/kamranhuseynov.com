@@ -1,4 +1,3 @@
-﻿
 'use strict';
 // ══════════════════════════════════════════════════════
 //  CONSTANTS & STATE
@@ -154,45 +153,77 @@ function parsePdfText(text){
   // Split on lines that start with a question number (e.g. "1." or "1)")
   const qRegex = /(?:^|\n)[ \t]*(\d+)[.)]\s+(.+?)(?=\n[ \t]*\d+[.)]\s|\s*$)/gs;
 
+  // Option / answer line patterns
+  const reLetterOpt = /^([A-Ea-e])[.)]\s+(.+)/;                 // "A) text"  or  "A. text"  (A–E)
+  const reCorrect   = /^[\u221A\u2713]\s*(.+)/;                 // √ or ✓  = correct option
+  const reBullet    = /^[\u2022\u25CF\u25E6\u2023\u25AA\u00B7]\s*(.+)/; // • ● ◦ ‣ ▪ · = distractor
+  const reAnsLine   = /^(?:d[\u00FCu]zg[\u00FCu]n\s*)?(?:cavab|answer)\s*[:\-]?\s*([A-Ea-e])\b/i; // "Cavab: B"
+
   let m;
   while((m=qRegex.exec(text))!==null){
     const block = m[2].trim();
     const lines = block.split('\n').map(l=>l.trim()).filter(l=>l);
     if(!lines.length) continue;
 
-    const questionText = lines[0];
     const opts=[];
-    let correctLetter=null;
+    let correctIdx=-1;       // index of correct option (√ format)
+    let correctLetter=null;  // A/B/C/D/E (Cavab format)
+    let lastOptIdx=-1;
+    let seenOption=false;
+    const qTextParts=[];
 
     for(const line of lines){
-      // Match option lines: A) text  or  A. text
-      const optMatch = line.match(/^([A-Da-d])[.)]\s+(.+)/);
-      if(optMatch){
-        opts.push(optMatch[2].trim());
-        continue;
-      }
-      // Match answer line
-      const ansMatch = line.match(/(?:cavab|answer|düzgün)[:\s]+([A-Da-d])/i);
-      if(ansMatch && !correctLetter){
-        correctLetter = ansMatch[1].toUpperCase();
+      // "A) ..." lettered option
+      let mm = line.match(reLetterOpt);
+      if(mm){ opts.push(mm[2].trim()); lastOptIdx=opts.length-1; seenOption=true; continue; }
+
+      // √ correct option
+      mm = line.match(reCorrect);
+      if(mm){ correctIdx=opts.length; opts.push(mm[1].trim()); lastOptIdx=opts.length-1; seenOption=true; continue; }
+
+      // • distractor option
+      mm = line.match(reBullet);
+      if(mm){ opts.push(mm[1].trim()); lastOptIdx=opts.length-1; seenOption=true; continue; }
+
+      // "Cavab: B" explicit answer line
+      mm = line.match(reAnsLine);
+      if(mm){ if(!correctLetter) correctLetter=mm[1].toUpperCase(); continue; }
+
+      // Continuation line: extend the question (before options) or the last option (after)
+      if(!seenOption) qTextParts.push(line);
+      else if(lastOptIdx>=0) opts[lastOptIdx]+=' '+line;
+    }
+
+    const questionText=(qTextParts.join(' ')||lines[0]).trim();
+
+    // Resolve the correct index from whichever marker was found
+    if(correctIdx<0 && correctLetter) correctIdx='ABCDE'.indexOf(correctLetter);
+    if(correctIdx<0) correctIdx=0;
+
+    // Trim to 5 options, always keeping the correct one
+    if(opts.length>5){
+      if(correctIdx>=5){
+        const c=opts[correctIdx];
+        const rest=opts.filter((_,i)=>i!==correctIdx).slice(0,4);
+        opts.length=0; opts.push(c,...rest); correctIdx=0;
+      } else {
+        opts.splice(5);
       }
     }
 
-    const correctIdx = correctLetter ? 'ABCD'.indexOf(correctLetter) : 0;
-
     let q;
     if(opts.length>=2){
-      while(opts.length<4) opts.push('');
-      q={ type:'mc', text:questionText, options:opts.slice(0,4), correctOption:correctIdx>=0?correctIdx:0, tfAnswer:true, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
+      while(opts.length<5) opts.push('');
+      q={ type:'mc', text:questionText, options:opts.slice(0,5), correctOption:correctIdx>=0?correctIdx:0, tfAnswer:true, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
     } else if(/\b(doğru|yanlış|true|false|T\/F)\b/i.test(block)){
       const ans=/\b(doğru|true)\b/i.test(block);
-      q={ type:'tf', text:questionText, options:['','','',''], correctOption:0, tfAnswer:ans, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
+      q={ type:'tf', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:ans, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
     } else if(/\[blank\]/i.test(block)){
       const ans=(block.match(/cavab[:\s]+(.+)/i)||[])[1]||'';
-      q={ type:'fill', text:questionText, options:['','','',''], correctOption:0, tfAnswer:true, shortAnswer:'', fillText:questionText, fillAnswers:[ans], points:1 };
+      q={ type:'fill', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:true, shortAnswer:'', fillText:questionText, fillAnswers:[ans], points:1 };
     } else {
       const ans=(block.match(/(?:cavab|answer)[:\s]+(.+)/i)||[])[1]||'';
-      q={ type:'short', text:questionText, options:['','','',''], correctOption:0, tfAnswer:true, shortAnswer:ans, fillText:'', fillAnswers:[], points:1 };
+      q={ type:'short', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:true, shortAnswer:ans, fillText:'', fillAnswers:[], points:1 };
     }
     results.push(q);
   }
@@ -231,7 +262,7 @@ function switchTab(name){
 
 function addQuestion(type='mc'){
   const id=++qId;
-  const q={id,type,text:'',options:['','','',''],correctOption:0,tfAnswer:true,shortAnswer:'',fillText:'',fillAnswers:[],points:1,topic:'',_fromPdf:false};
+  const q={id,type,text:'',options:['','','','',''],correctOption:0,tfAnswer:true,shortAnswer:'',fillText:'',fillAnswers:[],points:1,topic:'',_fromPdf:false};
   questions.push(q);
   saveQs();
   renderSidebar();renderEditor();setActiveQ(id);
@@ -585,7 +616,7 @@ function buildQCard(q,i){
 }
 
 function buildMC(q){
-  const L=['A','B','C','D'];
+  const L=['A','B','C','D','E'];
   return`<div class="field-lbl">Cavab Variantları <span style="font-size:9px;color:var(--muted)">(● = düzgün)</span></div>
   <div class="mc-options">${q.options.map((o,i)=>`
     <div class="mc-opt">
@@ -675,7 +706,7 @@ function renderQuizQ(){
 function buildQuizCard(q){
   let body='';
   if(q.type==='mc'){
-    const L=['A','B','C','D'];
+    const L=['A','B','C','D','E'];
     body=`<div class="quiz-mc-opts">${q.options.filter(o=>o).map((o,i)=>`
       <div class="quiz-mc-opt" id="mc${i}" onclick="pickMC(${q.id},${i},${q.correctOption})">
         <div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div>
@@ -710,7 +741,7 @@ function pickMC(qid,idx,correct){
     if(i===idx)el.classList.add(idx===correct?'ok':'bad');
     if(quizCfg.showAnswers&&i===correct&&i!==idx)el.classList.add('reveal');
   });
-  showFb(idx===correct,quizCfg.showAnswers?(idx===correct?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+['A','B','C','D'][correct]):(idx===correct?'✓ Düzdür!':'✗ Yanlış'));
+  showFb(idx===correct,quizCfg.showAnswers?(idx===correct?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+['A','B','C','D','E'][correct]):(idx===correct?'✓ Düzdür!':'✗ Yanlış'));
 }
 
 function pickTF(qid,val,correct){
@@ -792,7 +823,7 @@ function restoreAns(q,saved){
 
 function showFbFromSaved(q,saved){
   let ok=false,msg='';
-  if(q.type==='mc'){ok=saved===q.correctOption;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+['A','B','C','D'][q.correctOption];}
+  if(q.type==='mc'){ok=saved===q.correctOption;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+['A','B','C','D','E'][q.correctOption];}
   else if(q.type==='tf'){ok=saved===q.tfAnswer;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+(q.tfAnswer?'Doğru':'Yanlış');}
   else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((saved||'').toLowerCase());msg=ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer;}
   else if(q.type==='fill'){const vals=Array.isArray(saved)?saved:[];ok=vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});msg=ok?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır';}
@@ -849,7 +880,7 @@ function finishQuiz(){
 
 function buildReview(q){
   const ans=quizAns[q.id];
-  const L=['A','B','C','D'];
+  const L=['A','B','C','D','E'];
   let ok=false,yourA='(cavab yoxdur)',corA='';
   if(q.type==='mc'){ok=ans===q.correctOption;yourA=ans!=null?`${L[ans]}: ${q.options[ans]}`:'(cavab yoxdur)';corA=`${L[q.correctOption]}: ${q.options[q.correctOption]}`;}
   else if(q.type==='tf'){ok=ans===q.tfAnswer;yourA=ans==null?'(cavab yoxdur)':(ans?'Doğru':'Yanlış');corA=q.tfAnswer?'Doğru':'Yanlış';}
