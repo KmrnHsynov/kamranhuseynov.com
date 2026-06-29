@@ -19,6 +19,8 @@
       <button class="mode-btn"        id="btn-random" onclick="setMode('random')">Təsadüfi</button>
     </div>
     <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+    <button class="icon-btn" onclick="showLeaderboard()">🏆</button>
+    <button class="icon-btn" onclick="showHistory()">📅</button>
     <button class="icon-btn" onclick="showHelp()">❓</button>
     <div class="sozle-profile-wrap">
       <button class="sozle-profile-btn" id="sozleProfileBtn">👤</button>
@@ -115,6 +117,45 @@
     <hr class="divider">
     <p style="font-size:0.8rem;opacity:.7">Günlük rejimdə hər gün yeni söz. Təsadüfi rejimdə istənilən vaxt yeni oyun başlat.</p>
     <button class="play-btn" onclick="closeModal()">OYNA!</button>
+  </div>
+</div>
+
+<!-- Word History Modal -->
+<div class="sozle-auth-overlay hidden" id="sozleHistory">
+  <div class="sozle-auth-modal" style="gap:0; padding:0; overflow:hidden;">
+    <div class="lb-header">
+      <span>📅 Keçmiş Sözlər</span>
+      <button class="lb-close" id="histClose">✕</button>
+    </div>
+    <div class="lb-body" id="histBody"></div>
+  </div>
+</div>
+
+<!-- Leaderboard Modal -->
+<div class="sozle-auth-overlay hidden" id="sozleLeaderboard">
+  <div class="sozle-auth-modal" style="gap:0; padding:0; overflow:hidden;">
+    <div class="lb-header">
+      <span>🏆 Liderler Cədvəli</span>
+      <button class="lb-close" id="lbClose">✕</button>
+    </div>
+    <div class="lb-tabs">
+      <button class="lb-tab active" id="lbTabStreak" onclick="switchLbTab('streak')">🔥 Ardıcıl</button>
+      <button class="lb-tab" id="lbTabWins"   onclick="switchLbTab('wins')">⭐ Qalibiyyət</button>
+    </div>
+    <div class="lb-body" id="lbBody">
+      <div class="lb-loading">Yüklənir...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Progress Prompt -->
+<div class="sozle-auth-overlay hidden" id="sozleSavePrompt">
+  <div class="sozle-auth-modal" style="text-align:center; gap:14px;">
+    <div style="font-size:2.5rem">🏆</div>
+    <h2>Nailiyyəti saxla!</h2>
+    <p style="opacity:0.75; font-size:0.9rem; line-height:1.6">Hesab yaradaraq irəliləyişini bütün cihazlarda saxla və liderler cədvəlində yer al.</p>
+    <button class="sozle-auth-btn" id="sozleSaveYes">Hesab yarat</button>
+    <button class="sozle-skip-btn" id="sozleSaveNo">İndi deyil</button>
   </div>
 </div>
 

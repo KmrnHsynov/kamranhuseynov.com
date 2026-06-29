@@ -194,7 +194,19 @@ function unlockReveal(won = false) {
     dailyWord = target;
     updateRevealBtn();
     recordSozleGame(won);
+    if (!sozleUser) setTimeout(showSavePrompt, 2000);
   }
+}
+
+function showSavePrompt() {
+  document.getElementById('sozleSavePrompt').classList.remove('hidden');
+  document.getElementById('sozleSaveYes').onclick = () => {
+    document.getElementById('sozleSavePrompt').classList.add('hidden');
+    showAuthModal();
+  };
+  document.getElementById('sozleSaveNo').onclick = () => {
+    document.getElementById('sozleSavePrompt').classList.add('hidden');
+  };
 }
 
 function updateRevealBtn() {
@@ -232,7 +244,14 @@ function toggleTheme() {
 }
 
 function showHelp()  { document.getElementById('modal').style.display = 'flex'; }
-function closeModal(){ document.getElementById('modal').style.display = 'none'; }
+function closeModal(){
+  document.getElementById('modal').style.display = 'none';
+  localStorage.setItem('sozle_seen_help', '1');
+}
+
+function maybeShowHelp() {
+  if (!localStorage.getItem('sozle_seen_help')) showHelp();
+}
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Backspace') { deleteLetter(); return; }
@@ -244,6 +263,7 @@ document.addEventListener('keydown', e => {
 
 initGame();
 initReveal();
+maybeShowHelp();
 
 // ── Supabase Auth + Streak ─────────────────────────────
 const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
@@ -391,6 +411,7 @@ function showAuthModal() {
     try {
       const { user, profile } = await doSignUp(name, selectedAvatar, pwd, confirm);
       setActiveProfile(user.id, profile);
+      localStorage.setItem('sozle_seen_help', '1');
       document.getElementById('sozleAuthOverlay').classList.add('hidden');
     } catch (e) { showSozleError('signup', e.message); }
     finally { setSozleLoading('sozleBtnSignup', false); }
@@ -433,17 +454,93 @@ document.getElementById('sozleSignOut').addEventListener('click', async () => {
   document.getElementById('sozleProfileBtn').textContent = '👤';
 });
 
+// ── Word History ──────────────────────────────────────
+function getWordForDate(date) {
+  const start = new Date(2026, 0, 1);
+  const diff  = Math.floor((date - start) / 864e5);
+  const hash  = (diff * 2654435761) >>> 0;
+  return WORD_LIST[hash % WORD_LIST.length];
+}
+
+function showHistory() {
+  const overlay = document.getElementById('sozleHistory');
+  overlay.classList.remove('hidden');
+  document.getElementById('histClose').onclick = () => overlay.classList.add('hidden');
+
+  const months = ['Yan','Fev','Mar','Apr','May','İyn','İyl','Avq','Sen','Okt','Noy','Dek'];
+  const body   = document.getElementById('histBody');
+  const today  = new Date();
+  today.setHours(0,0,0,0);
+
+  const rows = [];
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today - i * 864e5);
+    const word = getWordForDate(date);
+    const label = i === 0 ? 'Bu gün' : i === 1 ? 'Dünən' : `${date.getDate()} ${months[date.getMonth()]}`;
+    rows.push(`
+      <div class="lb-row">
+        <span class="hist-date">${label}</span>
+        <span class="hist-word">${word}</span>
+      </div>`);
+  }
+
+  body.innerHTML = rows.join('');
+}
+
+// ── Leaderboard ───────────────────────────────────────
+let lbCurrentTab = 'streak';
+
+async function showLeaderboard() {
+  document.getElementById('sozleLeaderboard').classList.remove('hidden');
+  document.getElementById('lbClose').onclick = () =>
+    document.getElementById('sozleLeaderboard').classList.add('hidden');
+  await loadLeaderboard(lbCurrentTab);
+}
+
+function switchLbTab(tab) {
+  lbCurrentTab = tab;
+  document.getElementById('lbTabStreak').classList.toggle('active', tab === 'streak');
+  document.getElementById('lbTabWins').classList.toggle('active', tab === 'wins');
+  loadLeaderboard(tab);
+}
+
+async function loadLeaderboard(tab) {
+  const body = document.getElementById('lbBody');
+  body.innerHTML = '<div class="lb-loading">Yüklənir...</div>';
+
+  const orderCol = tab === 'streak' ? 'sozle_streak' : 'sozle_games_won';
+  const { data, error } = await db
+    .from('sozle_profiles')
+    .select('display_name, avatar, sozle_streak, sozle_games_won, sozle_games_played')
+    .order(orderCol, { ascending: false })
+    .limit(20);
+
+  if (error || !data) { body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>'; return; }
+
+  const currentName = sozleProfile?.display_name || null;
+
+  body.innerHTML = data.map((p, i) => {
+    const pct     = p.sozle_games_played > 0 ? Math.round((p.sozle_games_won / p.sozle_games_played) * 100) : 0;
+    const isMe    = p.display_name === currentName;
+    const medal   = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+    const streak  = tab === 'streak' ? `<strong>🔥 ${p.sozle_streak}</strong>` : `🔥 ${p.sozle_streak}`;
+    const wins    = tab === 'wins'   ? `<strong>⭐ ${p.sozle_games_won}</strong>` : `⭐ ${p.sozle_games_won}`;
+    return `
+      <div class="lb-row ${isMe ? 'lb-me' : ''}">
+        <span class="lb-rank">${medal}</span>
+        <span class="lb-avatar">${p.avatar || '👤'}</span>
+        <span class="lb-name">${p.display_name}</span>
+        <span class="lb-stats">${streak} &nbsp; ${wins} &nbsp; <span class="lb-pct">${pct}%</span></span>
+      </div>`;
+  }).join('') || '<div class="lb-loading">Hələ heç kim yoxdur.</div>';
+}
+
 // Auto-login on page load
 (async () => {
   const { data: { session } } = await db.auth.getSession();
   if (session) {
     const { data: profile } = await db.from('sozle_profiles').select('*').eq('id', session.user.id).single();
-    if (profile) {
-      setActiveProfile(session.user.id, profile);
-    } else {
-      showAuthModal();
-    }
-  } else {
-    showAuthModal();
+    if (profile) setActiveProfile(session.user.id, profile);
   }
+  // Guests just play — auth prompt appears after first game
 })();
