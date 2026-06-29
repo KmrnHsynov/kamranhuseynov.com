@@ -13,24 +13,18 @@
 <header>
   <a href="index.html" class="home-link">← KH.dev</a>
   <img class="logo_image" src="images/sözlə.png">
-  <div class="header-btns">
-    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-    <button class="icon-btn" onclick="showLeaderboard()">🏆</button>
-    <button class="icon-btn" onclick="showHistory()">📅</button>
-    <button class="icon-btn" onclick="showHelp()">❓</button>
-    <div class="sozle-profile-wrap">
-      <button class="sozle-profile-btn" id="sozleProfileBtn">👤</button>
-      <div class="sozle-dropdown hidden" id="sozleDropdown">
-        <div class="sozle-dropdown-avatar" id="sozleDropAvatar"></div>
-        <div class="sozle-dropdown-name"   id="sozleDropName"></div>
-        <div class="sozle-stats-grid">
-          <div class="sozle-stat"><span id="sozleStatPlayed">0</span><span>oyun</span></div>
-          <div class="sozle-stat"><span id="sozleStatWin">0%</span><span>qalib</span></div>
-          <div class="sozle-stat"><span id="sozleStatStreak">🔥 0</span><span>ardıcıl</span></div>
-        </div>
-        <hr class="sozle-divider">
-        <button class="sozle-signout-btn" id="sozleSignOut">Çıxış et</button>
+  <div class="sozle-profile-wrap">
+    <button class="sozle-profile-btn" id="sozleProfileBtn">👤</button>
+    <div class="sozle-dropdown hidden" id="sozleDropdown">
+      <div class="sozle-dropdown-avatar" id="sozleDropAvatar"></div>
+      <div class="sozle-dropdown-name"   id="sozleDropName"></div>
+      <div class="sozle-stats-grid">
+        <div class="sozle-stat"><span id="sozleStatPlayed">0</span><span>oyun</span></div>
+        <div class="sozle-stat"><span id="sozleStatWin">0%</span><span>qalib</span></div>
+        <div class="sozle-stat"><span id="sozleStatStreak">🔥 0</span><span>ardıcıl</span></div>
       </div>
+      <hr class="sozle-divider">
+      <button class="sozle-signout-btn" id="sozleSignOut">Çıxış et</button>
     </div>
   </div>
 </header>
@@ -38,6 +32,12 @@
   <div class="mode-toggle">
     <button class="mode-btn active" id="btn-daily"  onclick="setMode('daily')">Günlük</button>
     <button class="mode-btn"        id="btn-random" onclick="setMode('random')">Təsadüfi</button>
+  </div>
+  <div class="mode-bar-icons">
+    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+    <button class="icon-btn" onclick="showLeaderboard()">🏆</button>
+    <button class="icon-btn" onclick="showHistory()">📅</button>
+    <button class="icon-btn" onclick="showHelp()">❓</button>
   </div>
 </div>
 

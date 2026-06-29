@@ -419,7 +419,6 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
 }
 .home-link:hover { opacity: 1; }
 
-.header-btns { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
 
 .logo_image {
   height: 40px;
@@ -447,8 +446,15 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   max-width: 500px;
   margin: 0 auto;
   display: flex;
-  justify-content: center;
-  padding: 10px 16px 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 0;
+}
+
+.mode-bar-icons {
+  display: flex;
+  gap: 2px;
+  align-items: center;
 }
 
 .mode-toggle {
