@@ -438,7 +438,11 @@ document.getElementById('sozleSignOut').addEventListener('click', async () => {
   const { data: { session } } = await db.auth.getSession();
   if (session) {
     const { data: profile } = await db.from('sozle_profiles').select('*').eq('id', session.user.id).single();
-    if (profile) setActiveProfile(session.user.id, profile);
+    if (profile) {
+      setActiveProfile(session.user.id, profile);
+    } else {
+      showAuthModal();
+    }
   } else {
     showAuthModal();
   }
