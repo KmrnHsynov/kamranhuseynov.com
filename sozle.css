@@ -349,6 +349,13 @@
   text-align: right;
 }
 
+.hist-locked {
+  flex: 1;
+  text-align: right;
+  font-size: 0.8rem;
+  opacity: 0.45;
+}
+
 body {
   font-family: 'Rubik', sans-serif;
   display: flex;
@@ -395,13 +402,16 @@ body.light { background: #fff; color: #121213; }
 /* HEADER */
 header {
   width: 100%;
-  max-width: 500px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 20px;
+  background: var(--modal-bg);
   border-bottom: 1px solid var(--border);
-  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
@@ -443,12 +453,12 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
 
 .mode-bar {
   width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px 0;
+  padding: 8px 20px;
+  background: var(--modal-bg);
+  border-bottom: 1px solid var(--border);
 }
 
 .mode-bar-icons {
