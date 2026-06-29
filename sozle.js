@@ -286,26 +286,38 @@ function validatePassword(pwd) {
   return null;
 }
 
+async function upsertProfile(userId, name, avatar) {
+  const newProfile = { display_name: name, avatar, sozle_streak: 0, sozle_last_played: null, sozle_games_played: 0, sozle_games_won: 0 };
+  const { error } = await db.from('sozle_profiles').insert({ id: userId, ...newProfile });
+  if (error) throw new Error(error.message);
+  return newProfile;
+}
+
 async function doSignUp(name, avatar, pwd, confirm) {
-  if (!name.trim())         throw new Error('Ad daxil edin.');
+  if (!name.trim())    throw new Error('Ad daxil edin.');
   const pwdErr = validatePassword(pwd);
-  if (pwdErr)               throw new Error(pwdErr);
-  if (pwd !== confirm)      throw new Error('Şifrələr uyğun gəlmir.');
+  if (pwdErr)          throw new Error(pwdErr);
+  if (pwd !== confirm) throw new Error('Şifrələr uyğun gəlmir.');
 
   const { data: avail } = await db.rpc('is_sozle_username_available', { uname: name.toLowerCase() });
-  if (!avail)               throw new Error('Bu ad artıq istifadə olunur.');
+  if (!avail)          throw new Error('Bu ad artıq istifadə olunur.');
 
   const email = await nameToEmail(name);
   const { data, error } = await db.auth.signUp({ email, password: pwd });
-  if (error)                throw new Error(error.message);
 
-  const { error: profErr } = await db.from('sozle_profiles').insert({
-    id: data.user.id, display_name: name, avatar,
-    sozle_streak: 0, sozle_last_played: null,
-    sozle_games_played: 0, sozle_games_won: 0
-  });
-  if (profErr)              throw new Error(profErr.message);
-  return { user: data.user, profile: { display_name: name, avatar, sozle_streak: 0, sozle_games_played: 0, sozle_games_won: 0, sozle_last_played: null } };
+  // Auth user exists but profile row was never created — sign in and recover
+  if (error && error.message.toLowerCase().includes('already registered')) {
+    const { data: sd, error: se } = await db.auth.signInWithPassword({ email, password: pwd });
+    if (se) throw new Error('Bu ad mövcuddur, lakin şifrə yanlışdır.');
+    const { data: existing } = await db.from('sozle_profiles').select('*').eq('id', sd.user.id).single();
+    if (existing) return { user: sd.user, profile: existing };
+    const profile = await upsertProfile(sd.user.id, name, avatar);
+    return { user: sd.user, profile };
+  }
+  if (error) throw new Error(error.message);
+
+  const profile = await upsertProfile(data.user.id, name, avatar);
+  return { user: data.user, profile };
 }
 
 async function doSignIn(name, pwd) {
@@ -313,9 +325,13 @@ async function doSignIn(name, pwd) {
   if (!pwd)         throw new Error('Şifrə daxil edin.');
   const email = await nameToEmail(name);
   const { data, error } = await db.auth.signInWithPassword({ email, password: pwd });
-  if (error)        throw new Error(error.message);
-  const { data: profile, error: profErr } = await db.from('sozle_profiles').select('*').eq('id', data.user.id).single();
-  if (profErr || !profile) throw new Error('Profil tapılmadı.');
+  if (error) throw new Error(error.message);
+  const { data: profile } = await db.from('sozle_profiles').select('*').eq('id', data.user.id).single();
+  // Profile missing — orphaned auth user, create the row now
+  if (!profile) {
+    const newProfile = await upsertProfile(data.user.id, name, '👦');
+    return { user: data.user, profile: newProfile };
+  }
   return { user: data.user, profile };
 }
 
