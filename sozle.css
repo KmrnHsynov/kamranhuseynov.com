@@ -79,25 +79,28 @@
 .sozle-auth-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 200;
+  padding: 1rem;
 }
 .sozle-auth-overlay.hidden { display: none; }
 
 .sozle-auth-modal {
   background: var(--modal-bg);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 36px 32px 28px;
-  width: min(420px, 94vw);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 92vh;
-  overflow-y: auto;
 }
 
 .sozle-auth-modal h2 { margin-bottom: 4px; }
@@ -221,6 +224,19 @@
   padding: 4px;
 }
 .sozle-skip-btn:hover { opacity: 0.8; }
+
+/* Panel modals (leaderboard, history) — zero out the base padding/gap */
+.sozle-auth-modal.modal-panel {
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* Centered-content modals (save prompt) */
+.sozle-auth-modal.modal-centered {
+  text-align: center;
+  gap: 14px;
+}
 
 /* ── Leaderboard ── */
 .lb-header {
@@ -361,11 +377,12 @@ body.light { background: #fff; color: #121213; }
 header {
   width: 100%;
   max-width: 500px;
-  display: grid;
-  grid-template-columns: 0.3fr 1fr 1fr;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
+  position: relative;
 }
 
 h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
@@ -390,7 +407,10 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   width: auto;
   object-fit: contain;
   display: block;
-  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .icon-btn {
@@ -435,6 +455,7 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   width: 100%;
   max-width: 500px;
   padding: 16px 16px 0;
+  margin: 0 auto;
 }
 
 #grid {
@@ -484,6 +505,7 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   flex-direction: column;
   gap: 6px;
   align-items: center;
+  margin: 0 auto;
 }
 
 .kb-row { display: flex; gap: 4px; justify-content: center; width: 100%; }
@@ -620,6 +642,7 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  margin: 0 auto;
 }
 
 #reveal-btn {
