@@ -644,12 +644,13 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   position: relative;
   max-height: 90vh;
   overflow-y: auto;
+  text-align: center;
 }
 
 .modal h2 { font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 16px; letter-spacing: .1em; }
 .modal p  { font-size: 0.9rem; line-height: 1.6; margin-bottom: 12px; color: inherit; opacity: .9; }
 
-.example-tiles { display: flex; gap: 4px; margin: 8px 0; }
+.example-tiles { display: flex; gap: 4px; margin: 8px 0; justify-content: center; }
 
 .ex-tile {
   width: 44px;
