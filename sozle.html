@@ -11,6 +11,10 @@
 <body class="dark">
 
 <header>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-daily"  onclick="setMode('daily')">Günlük</button>
+    <button class="mode-btn"        id="btn-random" onclick="setMode('random')">Təsadüfi</button>
+  </div>
   <img class="logo_image" src="images/sözlə.png">
   <div class="header-actions">
     <button class="icon-btn" onclick="showLeaderboard()">🏆</button>
@@ -32,12 +36,6 @@
     </div>
   </div>
 </header>
-<div class="mode-bar">
-  <div class="mode-toggle">
-    <button class="mode-btn active" id="btn-daily"  onclick="setMode('daily')">Günlük</button>
-    <button class="mode-btn"        id="btn-random" onclick="setMode('random')">Təsadüfi</button>
-  </div>
-</div>
 
 <!-- Auth Modal -->
 <div class="sozle-auth-overlay hidden" id="sozleAuthOverlay">

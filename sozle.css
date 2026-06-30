@@ -485,15 +485,6 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   gap: 4px;
 }
 
-.mode-bar {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 20px;
-  background: var(--modal-bg);
-  border-bottom: 1px solid var(--border);
-}
 
 .mode-toggle {
   display: flex;
