@@ -66,6 +66,20 @@
 
 .sozle-divider { width: 100%; border: none; border-top: 1px solid var(--border); margin: 2px 0; }
 
+.sozle-dropdown-theme {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: inherit;
+  padding: 7px 18px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  width: 100%;
+  font-family: 'Rubik', sans-serif;
+  text-align: left;
+}
+.sozle-dropdown-theme:hover { background: rgba(255,255,255,0.06); }
+
 .sozle-signout-btn {
   background: none;
   border: 1.5px solid #e74c3c;
@@ -78,6 +92,32 @@
   font-family: 'Rubik', sans-serif;
 }
 .sozle-signout-btn:hover { background: rgba(231,76,60,0.1); }
+
+/* Footer */
+.sozle-footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px 32px;
+  font-size: 0.78rem;
+  opacity: 0.45;
+}
+
+.sozle-footer-sep { opacity: 0.5; }
+
+.sozle-footer-link {
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: 'Rubik', sans-serif;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+.sozle-footer-link:hover { opacity: 1; text-decoration: underline; }
 
 /* Auth overlay */
 .sozle-auth-overlay {
@@ -416,18 +456,6 @@ header {
 
 h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
 
-.home-link {
-  width: 64px;
-  font-family: 'Rubik', sans-serif;
-  font-size: 0.72rem;
-  color: var(--key-text);
-  text-decoration: none;
-  opacity: 0.6;
-  transition: opacity .2s;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-.home-link:hover { opacity: 1; }
 
 
 .logo_image {
@@ -451,20 +479,20 @@ h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.15em; }
   border-radius: 4px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .mode-bar {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 8px 20px;
   background: var(--modal-bg);
   border-bottom: 1px solid var(--border);
-}
-
-.mode-bar-icons {
-  display: flex;
-  gap: 2px;
-  align-items: center;
 }
 
 .mode-toggle {
