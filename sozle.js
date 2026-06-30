@@ -254,6 +254,11 @@ function maybeShowHelp() {
 }
 
 document.addEventListener('keydown', e => {
+  // Don't intercept keys when user is typing in an input or a modal is open
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const overlays = document.querySelectorAll('.sozle-auth-overlay, .modal-overlay');
+  if ([...overlays].some(el => !el.classList.contains('hidden') && el.style.display !== 'none')) return;
+
   if (e.key === 'Backspace') { deleteLetter(); return; }
   if (e.key === 'Enter')     { submitRow(); return; }
   const k = e.key.toUpperCase();
