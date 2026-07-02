@@ -316,6 +316,14 @@
     if (tab === 'questions') loadQuestions();
   }
 
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   async function loadVocabItems() {
     const { data } = await db.from('vocab_items').select('*').order('category').order('english');
     const list = document.getElementById('vocabList');
@@ -332,10 +340,10 @@
         const card = document.createElement('div');
         card.className = 'v-card';
         card.innerHTML = `
-          <span class="v-emoji">${v.emoji}</span>
+          <span class="v-emoji">${escapeHtml(v.emoji)}</span>
           <div class="v-content">
-            <div class="v-en">${v.english} <span class="v-cat">${v.category}</span></div>
-            <div class="v-az">${v.azerbaijani}</div>
+            <div class="v-en">${escapeHtml(v.english)} <span class="v-cat">${escapeHtml(v.category)}</span></div>
+            <div class="v-az">${escapeHtml(v.azerbaijani)}</div>
           </div>
           <button class="btn btn-danger" onclick="deleteVocabItem('${v.id}')">Sil</button>`;
         list.appendChild(card);
@@ -368,7 +376,8 @@
 
   async function deleteVocabItem(id) {
     if (!confirm('Bu sözü silmək istəyirsiniz?')) return;
-    await db.from('vocab_items').delete().eq('id', id);
+    const { error } = await db.from('vocab_items').delete().eq('id', id);
+    if (error) { alert('Xəta: ' + error.message); return; }
     loadVocabItems();
   }
 </script>
