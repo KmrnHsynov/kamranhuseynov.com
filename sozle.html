@@ -51,15 +51,24 @@
         <button class="sozle-avatar-opt"           data-avatar="👧">👧<span>Qız</span></button>
       </div>
       <input type="text"     id="sozleSignupName" class="sozle-input" placeholder="Adınız..." maxlength="24" />
-      <input type="password" id="sozleSignupPwd"  class="sozle-input" placeholder="Şifrə (8+, böyük hərf, simvol)" />
-      <input type="password" id="sozleSignupCfm"  class="sozle-input" placeholder="Şifrəni təsdiqləyin" />
+      <div class="sozle-pwd-wrap">
+        <input type="password" id="sozleSignupPwd"  class="sozle-input" placeholder="Şifrə (8+, böyük hərf, simvol)" />
+        <button type="button" class="sozle-pwd-toggle" data-target="sozleSignupPwd" aria-label="Şifrəni göstər">👁️</button>
+      </div>
+      <div class="sozle-pwd-wrap">
+        <input type="password" id="sozleSignupCfm"  class="sozle-input" placeholder="Şifrəni təsdiqləyin" />
+        <button type="button" class="sozle-pwd-toggle" data-target="sozleSignupCfm" aria-label="Şifrəni göstər">👁️</button>
+      </div>
       <div class="sozle-auth-error hidden" id="sozleSignupErr"></div>
       <button class="sozle-auth-btn" id="sozleBtnSignup">Hesab yarat</button>
       <button class="sozle-skip-btn" id="sozleBtnSkip">İndi deyil</button>
     </div>
     <div id="sozleFormSignin" class="sozle-form hidden">
       <input type="text"     id="sozleSigninName" class="sozle-input" placeholder="Adınız..." />
-      <input type="password" id="sozleSigninPwd"  class="sozle-input" placeholder="Şifrəniz..." />
+      <div class="sozle-pwd-wrap">
+        <input type="password" id="sozleSigninPwd"  class="sozle-input" placeholder="Şifrəniz..." />
+        <button type="button" class="sozle-pwd-toggle" data-target="sozleSigninPwd" aria-label="Şifrəni göstər">👁️</button>
+      </div>
       <div class="sozle-auth-error hidden" id="sozleSigninErr"></div>
       <button class="sozle-auth-btn" id="sozleBtnSignin">Daxil ol</button>
       <button class="sozle-skip-btn" id="sozleBtnSkip2">İndi deyil</button>

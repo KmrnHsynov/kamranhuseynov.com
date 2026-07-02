@@ -243,6 +243,27 @@
 }
 .sozle-input:focus { outline: none; border-color: var(--correct); }
 
+.sozle-pwd-wrap { position: relative; }
+
+.sozle-pwd-wrap .sozle-input { padding-right: 42px; }
+
+.sozle-pwd-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  font-size: 0.95rem;
+  line-height: 1;
+  opacity: 0.65;
+  filter: grayscale(1);
+}
+
+.sozle-pwd-toggle:hover { opacity: 1; }
+
 .sozle-auth-error {
   background: rgba(231,76,60,0.15);
   border: 1px solid #e74c3c;
