@@ -158,6 +158,7 @@
         <div><label>B variantı</label><input type="text" id="fB" placeholder="Variant B"></div>
         <div><label>C variantı</label><input type="text" id="fC" placeholder="Variant C"></div>
         <div><label>D variantı</label><input type="text" id="fD" placeholder="Variant D"></div>
+        <div><label>E variantı <span style="opacity:0.4">(isteğe bağlı)</span></label><input type="text" id="fE" placeholder="Variant E"></div>
       </div>
       <div class="correct-row">
         <label>Düzgün cavab:</label>
@@ -166,11 +167,23 @@
           <option value="b">B</option>
           <option value="c">C</option>
           <option value="d">D</option>
+          <option value="e">E</option>
         </select>
       </div>
       <div style="margin-top:14px; display:flex; align-items:center; gap:12px">
         <button class="btn btn-primary" onclick="addQuestion()">Əlavə et</button>
         <span class="status" id="addStatus"></span>
+      </div>
+    </div>
+
+    <!-- Bulk paste -->
+    <div class="add-card">
+      <h3>📋 Cədvəldən Toplu Əlavə</h3>
+      <p style="font-size:0.8rem;opacity:0.5;margin-bottom:12px">Google Sheets / Excel-dən kopyalayın. Sütun sırası: <strong>Sual | A | B | C | D | E (optional) | Düzgün (a/b/c/d/e)</strong></p>
+      <textarea id="bulkPaste" style="min-height:120px" placeholder="Buraya yapışdırın..."></textarea>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary" onclick="bulkAddQuestions()">Hamısını əlavə et</button>
+        <span class="status" id="bulkStatus"></span>
       </div>
     </div>
 
@@ -258,6 +271,7 @@
 
     data.forEach((q, i) => {
       const opts = { a: q.option_a, b: q.option_b, c: q.option_c, d: q.option_d };
+      if (q.option_e) opts.e = q.option_e;
       const card = document.createElement('div');
       card.className = 'q-card';
       card.innerHTML = `
@@ -281,23 +295,62 @@
     const option_b  = document.getElementById('fB').value.trim();
     const option_c  = document.getElementById('fC').value.trim();
     const option_d  = document.getElementById('fD').value.trim();
+    const option_e  = document.getElementById('fE').value.trim() || null;
     const correct   = document.getElementById('fCorrect').value;
     const status    = document.getElementById('addStatus');
 
     if (!question || !option_a || !option_b || !option_c || !option_d) {
-      status.textContent = '⚠️ Bütün sahələri doldurun.';
+      status.textContent = '⚠️ A–D variantları mütləqdir.';
       return;
     }
 
     status.textContent = 'Əlavə edilir...';
-    const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, correct });
+    const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct });
 
     if (error) { status.textContent = '❌ Xəta: ' + error.message; return; }
 
-    ['fQuestion','fA','fB','fC','fD'].forEach(id => document.getElementById(id).value = '');
+    ['fQuestion','fA','fB','fC','fD','fE'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('fCorrect').value = 'a';
     status.textContent = '✓ Əlavə edildi!';
     setTimeout(() => status.textContent = '', 2000);
+    loadQuestions();
+  }
+
+  async function bulkAddQuestions() {
+    const raw    = document.getElementById('bulkPaste').value.trim();
+    const status = document.getElementById('bulkStatus');
+    if (!raw) { status.textContent = '⚠️ Mətn boşdur.'; return; }
+
+    const rows = raw.split('\n').map(r => r.split('\t').map(c => c.trim())).filter(r => r.length >= 6);
+    if (rows.length === 0) {
+      status.textContent = '⚠️ Format yanlışdır. Ən az 6 sütun lazımdır.';
+      return;
+    }
+
+    const records = [];
+    for (const cols of rows) {
+      // cols: [question, a, b, c, d, (e|correct), (correct if e present)]
+      const hasE   = cols.length >= 7;
+      const correct = (hasE ? cols[6] : cols[5]).toLowerCase().trim();
+      if (!['a','b','c','d','e'].includes(correct)) {
+        status.textContent = `⚠️ Yanlış cavab: "${correct}" — a/b/c/d/e olmalıdır.`;
+        return;
+      }
+      records.push({
+        question: cols[0], option_a: cols[1], option_b: cols[2],
+        option_c: cols[3], option_d: cols[4],
+        option_e: hasE ? cols[5] || null : null,
+        correct
+      });
+    }
+
+    status.textContent = `${records.length} sual əlavə edilir...`;
+    const { error } = await db.from('review_questions').insert(records);
+    if (error) { status.textContent = '❌ ' + error.message; return; }
+
+    document.getElementById('bulkPaste').value = '';
+    status.textContent = `✓ ${records.length} sual əlavə edildi!`;
+    setTimeout(() => status.textContent = '', 3000);
     loadQuestions();
   }
 

@@ -398,7 +398,7 @@ async function startReviewQuiz() {
   const pool = shuffle(data).slice(0, 25);
   const questions = pool.map(q => ({
     question: q.question,
-    options: shuffle([q.option_a, q.option_b, q.option_c, q.option_d]),
+    options: shuffle([q.option_a, q.option_b, q.option_c, q.option_d, ...(q.option_e ? [q.option_e] : [])]),
     answer: q[`option_${q.correct}`]
   }));
 
