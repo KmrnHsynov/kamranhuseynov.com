@@ -88,6 +88,26 @@
     }
     .status { font-size: 0.82rem; opacity: 0.6; margin-top: 8px; }
     .empty { text-align: center; padding: 48px 0; opacity: 0.35; font-size: 0.9rem; }
+
+    /* Tabs */
+    .admin-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .admin-tab {
+      padding: 8px 20px; border-radius: 8px; border: 1.5px solid #2a2d3a;
+      background: transparent; color: #e8eaf0; font-family: 'Rubik', sans-serif;
+      font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    }
+    .admin-tab.active { background: #4f8ef7; border-color: #4f8ef7; color: #fff; }
+
+    /* Vocab cards */
+    .v-card {
+      background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 12px;
+      padding: 14px 18px; display: flex; align-items: center; gap: 14px;
+    }
+    .v-emoji { font-size: 1.8rem; min-width: 36px; text-align: center; }
+    .v-content { flex: 1; }
+    .v-en { font-size: 0.92rem; font-weight: 600; }
+    .v-az { font-size: 0.8rem; opacity: 0.5; }
+    .v-cat { font-size: 0.72rem; background: #2a2d3a; border-radius: 6px; padding: 2px 8px; margin-left: 6px; }
   </style>
 </head>
 <body>
@@ -117,38 +137,65 @@
     <span id="qCount"></span>
   </div>
 
-  <!-- Add form -->
-  <div class="add-card">
-    <h3>Yeni Sual Əlavə Et</h3>
-    <div class="form-grid single">
-      <div>
-        <label>Sual mətni</label>
-        <textarea id="fQuestion" placeholder="Sualı buraya yazın..."></textarea>
-      </div>
-    </div>
-    <div class="form-grid">
-      <div><label>A variantı</label><input type="text" id="fA" placeholder="Variant A"></div>
-      <div><label>B variantı</label><input type="text" id="fB" placeholder="Variant B"></div>
-      <div><label>C variantı</label><input type="text" id="fC" placeholder="Variant C"></div>
-      <div><label>D variantı</label><input type="text" id="fD" placeholder="Variant D"></div>
-    </div>
-    <div class="correct-row">
-      <label>Düzgün cavab:</label>
-      <select id="fCorrect">
-        <option value="a">A</option>
-        <option value="b">B</option>
-        <option value="c">C</option>
-        <option value="d">D</option>
-      </select>
-    </div>
-    <div style="margin-top:14px; display:flex; align-items:center; gap:12px">
-      <button class="btn btn-primary" onclick="addQuestion()">Əlavə et</button>
-      <span class="status" id="addStatus"></span>
-    </div>
+  <!-- Tab bar -->
+  <div class="admin-tabs" id="adminTabs">
+    <button class="admin-tab active" id="tabQuestions" onclick="switchAdminTab('questions')">📝 Suallar</button>
+    <button class="admin-tab" id="tabVocab" onclick="switchAdminTab('vocab')">🃏 Söz Oyunu</button>
   </div>
 
-  <!-- Question list -->
-  <div class="q-list" id="qList"></div>
+  <div id="panelQuestions">
+    <!-- Add form -->
+    <div class="add-card">
+      <h3>Yeni Sual Əlavə Et</h3>
+      <div class="form-grid single">
+        <div>
+          <label>Sual mətni</label>
+          <textarea id="fQuestion" placeholder="Sualı buraya yazın..."></textarea>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div><label>A variantı</label><input type="text" id="fA" placeholder="Variant A"></div>
+        <div><label>B variantı</label><input type="text" id="fB" placeholder="Variant B"></div>
+        <div><label>C variantı</label><input type="text" id="fC" placeholder="Variant C"></div>
+        <div><label>D variantı</label><input type="text" id="fD" placeholder="Variant D"></div>
+      </div>
+      <div class="correct-row">
+        <label>Düzgün cavab:</label>
+        <select id="fCorrect">
+          <option value="a">A</option>
+          <option value="b">B</option>
+          <option value="c">C</option>
+          <option value="d">D</option>
+        </select>
+      </div>
+      <div style="margin-top:14px; display:flex; align-items:center; gap:12px">
+        <button class="btn btn-primary" onclick="addQuestion()">Əlavə et</button>
+        <span class="status" id="addStatus"></span>
+      </div>
+    </div>
+
+    <!-- Question list -->
+    <div class="q-list" id="qList"></div>
+  </div>
+
+  <!-- Söz Oyunu panel -->
+  <div id="panelVocab" style="display:none">
+    <div class="add-card">
+      <h3>Yeni Söz Əlavə Et</h3>
+      <div class="form-grid">
+        <div><label>Emoji</label><input type="text" id="vEmoji" placeholder="🍎" maxlength="4"></div>
+        <div><label>Kateqoriya</label><input type="text" id="vCategory" placeholder="food" list="categoryList"><datalist id="categoryList"></datalist></div>
+        <div><label>İngiliscə</label><input type="text" id="vEnglish" placeholder="apple"></div>
+        <div><label>Azərbaycanca</label><input type="text" id="vAz" placeholder="alma"></div>
+      </div>
+      <div><label style="font-size:0.72rem;opacity:0.4;margin-top:8px;display:block">Şəkil URL (isteğe bağlı — gələcək üçün)</label><input type="text" id="vImageUrl" placeholder="https://..."></div>
+      <div style="margin-top:14px;display:flex;align-items:center;gap:12px">
+        <button class="btn btn-primary" onclick="addVocabItem()">Əlavə et</button>
+        <span class="status" id="vocabAddStatus"></span>
+      </div>
+    </div>
+    <div class="q-list" id="vocabList"></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -258,6 +305,71 @@
     if (!confirm('Bu sualı silmək istəyirsiniz?')) return;
     await db.from('review_questions').delete().eq('id', id);
     loadQuestions();
+  }
+
+  function switchAdminTab(tab) {
+    document.getElementById('panelQuestions').style.display = tab === 'questions' ? 'block' : 'none';
+    document.getElementById('panelVocab').style.display     = tab === 'vocab'     ? 'block' : 'none';
+    document.getElementById('tabQuestions').classList.toggle('active', tab === 'questions');
+    document.getElementById('tabVocab').classList.toggle('active', tab === 'vocab');
+    if (tab === 'vocab')     loadVocabItems();
+    if (tab === 'questions') loadQuestions();
+  }
+
+  async function loadVocabItems() {
+    const { data } = await db.from('vocab_items').select('*').order('category').order('english');
+    const list = document.getElementById('vocabList');
+    list.innerHTML = '';
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="empty">Hələ söz əlavə edilməyib.</div>';
+    } else {
+      // Populate category datalist
+      const cats = [...new Set(data.map(v => v.category))];
+      document.getElementById('categoryList').innerHTML = cats.map(c => `<option value="${c}">`).join('');
+
+      data.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'v-card';
+        card.innerHTML = `
+          <span class="v-emoji">${v.emoji}</span>
+          <div class="v-content">
+            <div class="v-en">${v.english} <span class="v-cat">${v.category}</span></div>
+            <div class="v-az">${v.azerbaijani}</div>
+          </div>
+          <button class="btn btn-danger" onclick="deleteVocabItem('${v.id}')">Sil</button>`;
+        list.appendChild(card);
+      });
+    }
+  }
+
+  async function addVocabItem() {
+    const emoji      = document.getElementById('vEmoji').value.trim();
+    const english    = document.getElementById('vEnglish').value.trim();
+    const azerbaijani = document.getElementById('vAz').value.trim();
+    const category   = document.getElementById('vCategory').value.trim().toLowerCase();
+    const image_url  = document.getElementById('vImageUrl').value.trim() || null;
+    const status     = document.getElementById('vocabAddStatus');
+
+    if (!emoji || !english || !azerbaijani || !category) {
+      status.textContent = '⚠️ Emoji, İngiliscə, Azərbaycanca və Kateqoriya mütləqdir.';
+      return;
+    }
+
+    status.textContent = 'Əlavə edilir...';
+    const { error } = await db.from('vocab_items').insert({ emoji, english, azerbaijani, category, image_url });
+    if (error) { status.textContent = '❌ ' + error.message; return; }
+
+    ['vEmoji','vEnglish','vAz','vCategory','vImageUrl'].forEach(id => document.getElementById(id).value = '');
+    status.textContent = '✓ Əlavə edildi!';
+    setTimeout(() => status.textContent = '', 2000);
+    loadVocabItems();
+  }
+
+  async function deleteVocabItem(id) {
+    if (!confirm('Bu sözü silmək istəyirsiniz?')) return;
+    await db.from('vocab_items').delete().eq('id', id);
+    loadVocabItems();
   }
 </script>
 </body>
