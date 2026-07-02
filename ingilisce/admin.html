@@ -116,7 +116,7 @@
 <div class="login-wrap" id="loginWrap">
   <div class="login-box">
     <h2>Admin Girişi</h2>
-    <p>Yalnız Kamran hesabı ilə daxil ola bilərsiniz.</p>
+    <p style="font-size:0.85rem;opacity:0.55">Daxil olmaq üçün etimadnamələrinizi daxil edin.</p>
     <div>
       <label>Ad</label>
       <input type="text" id="adminName" placeholder="Adınız..." autocomplete="username">
@@ -240,7 +240,7 @@
       const { data: profile } = await db.from('profiles').select('display_name').eq('id', data.user.id).single();
       if (!profile || profile.display_name.toLowerCase() !== 'kamran') {
         await db.auth.signOut();
-        throw new Error('Bu hesabın admin icazəsi yoxdur.');
+        throw new Error('Giriş icazəniz yoxdur.');
       }
 
       document.getElementById('loginWrap').style.display = 'none';
