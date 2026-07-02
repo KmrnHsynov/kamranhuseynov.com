@@ -806,6 +806,23 @@ body {
 .feedback.correct { background: var(--success); }
 .feedback.wrong   { background: var(--danger); }
 
+.ig-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--white);
+  background: rgba(0,0,0,0.75);
+  z-index: 200;
+  animation: fadeUp 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateX(-50%) translateY(10px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -873,19 +890,19 @@ body {
 /* ── Vocab Game ─────────────────────────────────────── */
 
 .vocab-game-btn {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: inherit;
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  border: 1.5px solid rgba(255,255,255,0.4);
+  padding: 4px 10px;
+  border-radius: 12px;
   font-family: 'Rubik', sans-serif;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.2s;
   white-space: nowrap;
 }
-.vocab-game-btn:hover { background: var(--border); }
+.vocab-game-btn:hover { background: rgba(255,255,255,0.25); }
 
 .vocab-emoji-display {
   font-size: 5rem;

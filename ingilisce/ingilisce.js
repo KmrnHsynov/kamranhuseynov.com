@@ -188,6 +188,16 @@ function getNodeStatus(nodeId, allNodeIds, state) {
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+function showToast(msg) {
+  const existing = document.querySelector('.ig-toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'ig-toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
 function renderLives(containerId, lives) {
   document.getElementById(containerId).innerHTML =
     Array.from({ length: 5 }, (_, i) => i < lives ? '❤️' : '🤍').join('');
@@ -381,7 +391,7 @@ async function startReviewQuiz() {
   btn.disabled = false;
 
   if (error || !data || data.length === 0) {
-    alert('Suallar tapılmadı. Admin suallar əlavə etməlidir.');
+    showToast('Suallar tapılmadı. Admin suallar əlavə etməlidir.');
     return;
   }
 
@@ -496,7 +506,7 @@ async function startVocabGame(preselect) {
   try {
     const { data, error } = await db.from('vocab_items').select('category');
     if (error || !data || data.length === 0) {
-      alert('Söz tapılmadı. Əvvəlcə admin panelindən söz əlavə edin.');
+      showToast('Söz tapılmadı. Əvvəlcə admin panelindən söz əlavə edin.');
       return;
     }
 
@@ -536,7 +546,7 @@ async function launchVocabSession(category) {
     : await query.eq('category', category);
 
   if (error || !allItems || allItems.length === 0) {
-    alert('Bu kateqoriyada söz tapılmadı.');
+    showToast('Bu kateqoriyada söz tapılmadı.');
     return;
   }
 
