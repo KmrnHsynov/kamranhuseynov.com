@@ -218,6 +218,36 @@ body {
 .mode-toggle:hover { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.7); }
 .mode-toggle.active { background: var(--white); color: var(--blue); border-color: var(--white); }
 
+.review-quiz-btn {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  border: 1.5px solid rgba(255,255,255,0.4);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.review-quiz-btn:hover { background: rgba(255,255,255,0.25); }
+
+.review-wrong-list { width: 100%; margin-top: 8px; max-height: 220px; overflow-y: auto; text-align: left; }
+.review-wrong-heading { font-weight: 600; font-size: 0.85rem; opacity: 0.65; margin-bottom: 8px; text-align: center; }
+.review-wrong-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.83rem;
+}
+.review-wrong-item:last-child { border-bottom: none; }
+.review-wrong-q { flex: 1; opacity: 0.75; }
+.review-wrong-a { color: var(--success); font-weight: 600; white-space: nowrap; }
+
 /* ── Path ── */
 .path-container {
   max-width: 480px;

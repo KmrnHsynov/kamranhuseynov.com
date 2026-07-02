@@ -365,6 +365,127 @@ function openLesson(nodeId, curriculum, isReview) {
   openModal('lessonOverlay');
 }
 
+// ── Review Quiz ────────────────────────────────────────
+
+let reviewSession = null;
+
+async function startReviewQuiz() {
+  const btn = document.getElementById('reviewQuizBtn');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+
+  const { data, error } = await db.from('review_questions').select('*');
+
+  btn.textContent = '📝 Təkrar';
+  btn.disabled = false;
+
+  if (error || !data || data.length === 0) {
+    alert('Suallar tapılmadı. Admin suallar əlavə etməlidir.');
+    return;
+  }
+
+  const pool = shuffle(data).slice(0, 25);
+  const questions = pool.map(q => ({
+    question: q.question,
+    options: shuffle([q.option_a, q.option_b, q.option_c, q.option_d]),
+    answer: q[`option_${q.correct}`]
+  }));
+
+  reviewSession = { questions, currentIndex: 0, correct: 0, wrong: [], selectedAnswer: null };
+
+  document.getElementById('reviewClose').onclick = () => closeModal('reviewOverlay');
+  openModal('reviewOverlay');
+  renderReviewQuestion();
+}
+
+function renderReviewQuestion() {
+  const { questions, currentIndex } = reviewSession;
+  const question = questions[currentIndex];
+
+  document.getElementById('reviewProgress').textContent = `Sual ${currentIndex + 1} / ${questions.length}`;
+
+  const body = document.getElementById('reviewBody');
+  body.innerHTML = '';
+  reviewSession.selectedAnswer = null;
+
+  const checkBtn = document.getElementById('reviewCheck');
+  checkBtn.disabled = true;
+  checkBtn.onclick = checkReviewAnswer;
+
+  const qEl = document.createElement('p');
+  qEl.className = 'quiz-question';
+  qEl.textContent = question.question;
+  body.appendChild(qEl);
+
+  const container = document.createElement('div');
+  container.className = 'quiz-options';
+  question.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt;
+    btn.dataset.value = opt;
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      reviewSession.selectedAnswer = opt;
+      checkBtn.disabled = false;
+    });
+    container.appendChild(btn);
+  });
+  body.appendChild(container);
+}
+
+function checkReviewAnswer() {
+  const { questions, currentIndex, selectedAnswer } = reviewSession;
+  const question = questions[currentIndex];
+  const isCorrect = normalizeAnswer(selectedAnswer) === normalizeAnswer(question.answer);
+
+  document.querySelectorAll('#reviewBody .quiz-option').forEach(btn => {
+    btn.disabled = true;
+    if (normalizeAnswer(btn.dataset.value) === normalizeAnswer(question.answer)) btn.classList.add('correct');
+    else if (btn.classList.contains('selected') && !isCorrect) btn.classList.add('wrong');
+  });
+  document.getElementById('reviewCheck').disabled = true;
+
+  if (isCorrect) reviewSession.correct++;
+  else reviewSession.wrong.push({ question: question.question, answer: question.answer });
+
+  setTimeout(() => {
+    const next = currentIndex + 1;
+    if (next >= questions.length) showReviewResult();
+    else { reviewSession.currentIndex = next; renderReviewQuestion(); }
+  }, 1000);
+}
+
+function showReviewResult() {
+  closeModal('reviewOverlay');
+  const { correct, questions, wrong } = reviewSession;
+  const total = questions.length;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('reviewResultIcon').textContent = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+  document.getElementById('reviewResultTitle').textContent = pct >= 80 ? 'Əla nəticə!' : pct >= 50 ? 'Yaxşı cəhd!' : 'Daha çox oxu!';
+  document.getElementById('reviewResultText').textContent = `${correct} / ${total} düzgün · ${pct}%`;
+
+  const wrongList = document.getElementById('reviewWrongList');
+  wrongList.innerHTML = '';
+  if (wrong.length > 0) {
+    const heading = document.createElement('p');
+    heading.className = 'review-wrong-heading';
+    heading.textContent = 'Səhv cavablar:';
+    wrongList.appendChild(heading);
+    wrong.forEach(w => {
+      const item = document.createElement('div');
+      item.className = 'review-wrong-item';
+      item.innerHTML = `<span class="review-wrong-q">${w.question}</span><span class="review-wrong-a">✓ ${w.answer}</span>`;
+      wrongList.appendChild(item);
+    });
+  }
+
+  document.getElementById('reviewResultClose').onclick = () => closeModal('reviewResultOverlay');
+  openModal('reviewResultOverlay');
+}
+
 // ── Quiz engine ────────────────────────────────────────
 
 let quizSession = null;

@@ -44,6 +44,7 @@
         <hr class="profile-dropdown-divider">
         <button class="profile-dropdown-signout" id="btnSignOut">Çıxış et</button>
       </div>
+      <button class="review-quiz-btn" id="reviewQuizBtn" onclick="startReviewQuiz()">📝 Təkrar</button>
       <button class="mode-toggle" id="modeToggle">SAT Rejimi</button>
     </div>
   </header>
@@ -128,6 +129,31 @@
       <h2 id="celebrationTitle">Əla!</h2>
       <p id="celebrationText"></p>
       <button class="btn-primary" id="celebrationClose">Davam et</button>
+    </div>
+  </div>
+
+  <!-- Review Quiz -->
+  <div class="modal-overlay hidden" id="reviewOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="quiz-progress" id="reviewProgress"></span>
+        <button class="modal-close" id="reviewClose">✕</button>
+      </div>
+      <div class="modal-body" id="reviewBody"></div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="reviewCheck" disabled>Yoxla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Result -->
+  <div class="modal-overlay hidden" id="reviewResultOverlay">
+    <div class="modal celebration-modal">
+      <div class="celebration-icon" id="reviewResultIcon">📊</div>
+      <h2 id="reviewResultTitle"></h2>
+      <p id="reviewResultText"></p>
+      <div id="reviewWrongList" class="review-wrong-list"></div>
+      <button class="btn-primary" id="reviewResultClose">Bağla</button>
     </div>
   </div>
 

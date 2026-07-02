@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Sual İdarəsi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Rubik', sans-serif; background: #0f1117; color: #e8eaf0; min-height: 100vh; }
+
+    /* ── Login ── */
+    .login-wrap {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .login-box {
+      background: #1a1d27; border: 1px solid #2a2d3a;
+      border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 380px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .login-box h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+    .login-box p  { font-size: 0.85rem; opacity: 0.55; }
+
+    /* ── Admin panel ── */
+    .admin-wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+    .admin-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .admin-header h1 { font-size: 1.3rem; font-weight: 700; }
+    .admin-header span { font-size: 0.8rem; opacity: 0.45; }
+
+    /* ── Add form ── */
+    .add-card {
+      background: #1a1d27; border: 1px solid #2a2d3a;
+      border-radius: 14px; padding: 24px; margin-bottom: 28px;
+    }
+    .add-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-grid.single { grid-template-columns: 1fr; }
+
+    label { font-size: 0.75rem; opacity: 0.55; display: block; margin-bottom: 4px; }
+
+    input[type="text"], input[type="password"], select, textarea {
+      width: 100%; background: #0f1117; border: 1.5px solid #2a2d3a;
+      border-radius: 8px; color: #e8eaf0; font-family: 'Rubik', sans-serif;
+      font-size: 0.9rem; padding: 10px 12px; outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
+      border-color: #4f8ef7;
+    }
+    textarea { resize: vertical; min-height: 72px; }
+    select option { background: #1a1d27; }
+
+    .correct-row {
+      display: flex; align-items: center; gap: 8px; margin-top: 10px;
+    }
+    .correct-row label { margin: 0; font-size: 0.85rem; opacity: 0.7; }
+
+    /* ── Buttons ── */
+    .btn { border: none; border-radius: 8px; cursor: pointer; font-family: 'Rubik', sans-serif; font-weight: 600; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: #4f8ef7; color: #fff; font-size: 0.9rem; padding: 11px 24px; }
+    .btn-danger  { background: transparent; border: 1px solid #e05252; color: #e05252; font-size: 0.78rem; padding: 5px 12px; }
+    .btn-sm      { font-size: 0.78rem; padding: 6px 14px; }
+    .btn-outline { background: transparent; border: 1.5px solid #2a2d3a; color: #e8eaf0; font-size: 0.85rem; padding: 9px 18px; }
+
+    /* ── Question list ── */
+    .q-list { display: flex; flex-direction: column; gap: 12px; }
+    .q-card {
+      background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 12px;
+      padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px;
+    }
+    .q-num { font-size: 0.75rem; opacity: 0.4; min-width: 24px; padding-top: 2px; }
+    .q-content { flex: 1; }
+    .q-text { font-size: 0.92rem; font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
+    .q-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+    .q-opt { font-size: 0.8rem; opacity: 0.55; }
+    .q-opt.correct { color: #5cb85c; opacity: 1; font-weight: 600; }
+
+    /* ── Error / status ── */
+    .error-box {
+      background: rgba(224,82,82,0.12); border: 1px solid #e05252;
+      border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; color: #e05252;
+    }
+    .status { font-size: 0.82rem; opacity: 0.6; margin-top: 8px; }
+    .empty { text-align: center; padding: 48px 0; opacity: 0.35; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <h2>Admin Girişi</h2>
+    <p>Yalnız Kamran hesabı ilə daxil ola bilərsiniz.</p>
+    <div>
+      <label>Ad</label>
+      <input type="text" id="adminName" placeholder="Adınız..." autocomplete="username">
+    </div>
+    <div>
+      <label>Şifrə</label>
+      <input type="password" id="adminPwd" placeholder="Şifrəniz...">
+    </div>
+    <div class="error-box" id="loginErr" style="display:none"></div>
+    <button class="btn btn-primary" id="loginBtn" onclick="doAdminLogin()">Daxil ol</button>
+  </div>
+</div>
+
+<!-- Admin panel -->
+<div class="admin-wrap" id="adminWrap" style="display:none">
+  <div class="admin-header">
+    <h1>📝 Sual İdarəsi</h1>
+    <span id="qCount"></span>
+  </div>
+
+  <!-- Add form -->
+  <div class="add-card">
+    <h3>Yeni Sual Əlavə Et</h3>
+    <div class="form-grid single">
+      <div>
+        <label>Sual mətni</label>
+        <textarea id="fQuestion" placeholder="Sualı buraya yazın..."></textarea>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div><label>A variantı</label><input type="text" id="fA" placeholder="Variant A"></div>
+      <div><label>B variantı</label><input type="text" id="fB" placeholder="Variant B"></div>
+      <div><label>C variantı</label><input type="text" id="fC" placeholder="Variant C"></div>
+      <div><label>D variantı</label><input type="text" id="fD" placeholder="Variant D"></div>
+    </div>
+    <div class="correct-row">
+      <label>Düzgün cavab:</label>
+      <select id="fCorrect">
+        <option value="a">A</option>
+        <option value="b">B</option>
+        <option value="c">C</option>
+        <option value="d">D</option>
+      </select>
+    </div>
+    <div style="margin-top:14px; display:flex; align-items:center; gap:12px">
+      <button class="btn btn-primary" onclick="addQuestion()">Əlavə et</button>
+      <span class="status" id="addStatus"></span>
+    </div>
+  </div>
+
+  <!-- Question list -->
+  <div class="q-list" id="qList"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  async function nameToEmail(name) {
+    const data = new TextEncoder().encode(name.toLowerCase());
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const hex  = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
+    return hex + '@ingilisce.app';
+  }
+
+  async function doAdminLogin() {
+    const name = document.getElementById('adminName').value.trim();
+    const pwd  = document.getElementById('adminPwd').value;
+    const err  = document.getElementById('loginErr');
+    const btn  = document.getElementById('loginBtn');
+    err.style.display = 'none';
+    btn.disabled = true; btn.textContent = '...';
+
+    try {
+      const email = await nameToEmail(name);
+      const { data, error } = await db.auth.signInWithPassword({ email, password: pwd });
+      if (error) throw new Error('Ad və ya şifrə yanlışdır.');
+
+      const { data: profile } = await db.from('profiles').select('display_name').eq('id', data.user.id).single();
+      if (!profile || profile.display_name.toLowerCase() !== 'kamran') {
+        await db.auth.signOut();
+        throw new Error('Bu hesabın admin icazəsi yoxdur.');
+      }
+
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('adminWrap').style.display = 'block';
+      loadQuestions();
+    } catch (e) {
+      err.textContent = e.message;
+      err.style.display = 'block';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Daxil ol';
+    }
+  }
+
+  document.getElementById('adminPwd').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doAdminLogin();
+  });
+
+  async function loadQuestions() {
+    const { data } = await db.from('review_questions').select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('qList');
+    list.innerHTML = '';
+    document.getElementById('qCount').textContent = `${data?.length || 0} sual`;
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div class="empty">Hələ sual əlavə edilməyib.</div>';
+      return;
+    }
+
+    data.forEach((q, i) => {
+      const opts = { a: q.option_a, b: q.option_b, c: q.option_c, d: q.option_d };
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.innerHTML = `
+        <span class="q-num">${i + 1}</span>
+        <div class="q-content">
+          <div class="q-text">${q.question}</div>
+          <div class="q-opts">
+            ${Object.entries(opts).map(([k, v]) =>
+              `<span class="q-opt ${k === q.correct ? 'correct' : ''}">${k.toUpperCase()}. ${v}</span>`
+            ).join('')}
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteQuestion('${q.id}')">Sil</button>`;
+      list.appendChild(card);
+    });
+  }
+
+  async function addQuestion() {
+    const question  = document.getElementById('fQuestion').value.trim();
+    const option_a  = document.getElementById('fA').value.trim();
+    const option_b  = document.getElementById('fB').value.trim();
+    const option_c  = document.getElementById('fC').value.trim();
+    const option_d  = document.getElementById('fD').value.trim();
+    const correct   = document.getElementById('fCorrect').value;
+    const status    = document.getElementById('addStatus');
+
+    if (!question || !option_a || !option_b || !option_c || !option_d) {
+      status.textContent = '⚠️ Bütün sahələri doldurun.';
+      return;
+    }
+
+    status.textContent = 'Əlavə edilir...';
+    const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, correct });
+
+    if (error) { status.textContent = '❌ Xəta: ' + error.message; return; }
+
+    ['fQuestion','fA','fB','fC','fD'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fCorrect').value = 'a';
+    status.textContent = '✓ Əlavə edildi!';
+    setTimeout(() => status.textContent = '', 2000);
+    loadQuestions();
+  }
+
+  async function deleteQuestion(id) {
+    if (!confirm('Bu sualı silmək istəyirsiniz?')) return;
+    await db.from('review_questions').delete().eq('id', id);
+    loadQuestions();
+  }
+</script>
+</body>
+</html>
