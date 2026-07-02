@@ -44,6 +44,7 @@
         <hr class="profile-dropdown-divider">
         <button class="profile-dropdown-signout" id="btnSignOut">Çıxış et</button>
       </div>
+      <button class="vocab-game-btn" id="vocabGameBtn" onclick="startVocabGame()">🃏 Söz</button>
       <button class="review-quiz-btn" id="reviewQuizBtn" onclick="startReviewQuiz()">📝 Təkrar</button>
       <button class="mode-toggle" id="modeToggle">SAT Rejimi</button>
     </div>
@@ -129,6 +130,63 @@
       <h2 id="celebrationTitle">Əla!</h2>
       <p id="celebrationText"></p>
       <button class="btn-primary" id="celebrationClose">Davam et</button>
+    </div>
+  </div>
+
+  <!-- Vocab Category Picker -->
+  <div class="modal-overlay hidden" id="vocabCategoryOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">🃏 Söz Oyunu</h2>
+        <button class="modal-close" onclick="closeModal('vocabCategoryOverlay')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem;opacity:0.6;margin-bottom:12px">Kateqoriya seç:</p>
+        <div class="vocab-category-chips" id="vocabCategoryChips"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="vocabStartBtn" onclick="launchVocabSession()">Başla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vocab Game -->
+  <div class="modal-overlay hidden" id="vocabOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="quiz-progress" id="vocabProgress"></span>
+        <button class="modal-close" onclick="closeModal('vocabOverlay')">✕</button>
+      </div>
+      <div class="lives-bar" id="vocabLives"></div>
+      <div class="modal-body" id="vocabBody"></div>
+      <div class="modal-footer" style="display:none" id="vocabFooter"></div>
+    </div>
+  </div>
+
+  <!-- Vocab Result -->
+  <div class="modal-overlay hidden" id="vocabResultOverlay">
+    <div class="modal celebration-modal">
+      <div class="celebration-icon" id="vocabResultIcon">📊</div>
+      <h2 id="vocabResultTitle"></h2>
+      <p id="vocabResultText"></p>
+      <div id="vocabWrongList" class="vocab-wrong-list"></div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:4px">
+        <button class="btn-primary" id="vocabResultRetry">Yenidən</button>
+        <button class="btn-outline" id="vocabResultClose">Bağla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vocab Canlar Bitdi -->
+  <div class="modal-overlay hidden" id="vocabFailOverlay">
+    <div class="modal celebration-modal">
+      <div class="celebration-icon">💔</div>
+      <h2>Canlar Bitdi</h2>
+      <p>Yenidən cəhd et!</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:4px">
+        <button class="btn-primary" id="vocabFailRetry">Yenidən</button>
+        <button class="btn-outline" id="vocabFailClose">Bağla</button>
+      </div>
     </div>
   </div>
 
