@@ -368,6 +368,7 @@ function openLesson(nodeId, curriculum, isReview) {
 // ── Review Quiz ────────────────────────────────────────
 
 let reviewSession = null;
+let vocabSession = null;
 
 async function startReviewQuiz() {
   const btn = document.getElementById('reviewQuizBtn');
@@ -484,6 +485,232 @@ function showReviewResult() {
 
   document.getElementById('reviewResultClose').onclick = () => closeModal('reviewResultOverlay');
   openModal('reviewResultOverlay');
+}
+
+// ── Vocab Game ─────────────────────────────────────────
+async function startVocabGame() {
+  const btn = document.getElementById('vocabGameBtn');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await db.from('vocab_items').select('category');
+    if (error || !data || data.length === 0) {
+      alert('Söz tapılmadı. Əvvəlcə admin panelindən söz əlavə edin.');
+      return;
+    }
+
+    const categories = ['Hamısı', ...new Set(data.map(v => v.category).sort())];
+    const chips = document.getElementById('vocabCategoryChips');
+    chips.innerHTML = '';
+    let selectedCategory = 'Hamısı';
+
+    categories.forEach(cat => {
+      const chip = document.createElement('button');
+      chip.className = 'vocab-chip' + (cat === 'Hamısı' ? ' selected' : '');
+      chip.textContent = cat;
+      chip.addEventListener('click', () => {
+        chips.querySelectorAll('.vocab-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        selectedCategory = cat;
+      });
+      chips.appendChild(chip);
+    });
+
+    document.getElementById('vocabStartBtn').onclick = () => {
+      closeModal('vocabCategoryOverlay');
+      launchVocabSession(selectedCategory);
+    };
+
+    openModal('vocabCategoryOverlay');
+  } finally {
+    btn.textContent = '🃏 Söz';
+    btn.disabled = false;
+  }
+}
+
+async function launchVocabSession(category) {
+  const query = db.from('vocab_items').select('*');
+  const { data: allItems, error } = category === 'Hamısı'
+    ? await query
+    : await query.eq('category', category);
+
+  if (error || !allItems || allItems.length === 0) {
+    alert('Bu kateqoriyada söz tapılmadı.');
+    return;
+  }
+
+  // Also fetch full pool for distractor fallback
+  const { data: fullPool } = await db.from('vocab_items').select('*');
+
+  const pool = shuffle(allItems).slice(0, 20);
+
+  // Assign modes: first 12 Mode A (emoji→word), last 8 Mode B (word→emoji), then shuffle
+  const questions = shuffle(pool.map((item, i) => {
+    const isA = i < 12;  // 12 Mode A, 8 Mode B before shuffle
+    // Build 3 distractors from category pool first, fall back to full pool
+    const categoryPool = allItems.filter(v => v.id !== item.id);
+    const fallbackPool = (fullPool || allItems).filter(v => v.id !== item.id);
+    let distPool = categoryPool.length >= 3 ? categoryPool : fallbackPool;
+    const distractors = shuffle(distPool).slice(0, 3);
+    // options array: 4 items (correct + 3 distractors), shuffled
+    const options = shuffle([item, ...distractors]);
+    return { item, mode: isA ? 'A' : 'B', options };
+  }));
+
+  vocabSession = {
+    questions,
+    current: 0,
+    lives: 5,
+    wrong: [],
+    category
+  };
+
+  document.getElementById('vocabFailRetry').onclick = () => {
+    closeModal('vocabFailOverlay');
+    startVocabGame();
+  };
+  document.getElementById('vocabFailClose').onclick = () => closeModal('vocabFailOverlay');
+  document.getElementById('vocabResultRetry').onclick = () => {
+    closeModal('vocabResultOverlay');
+    startVocabGame();
+  };
+  document.getElementById('vocabResultClose').onclick = () => closeModal('vocabResultOverlay');
+
+  openModal('vocabOverlay');
+  renderVocabQuestion();
+}
+
+function renderVocabQuestion() {
+  const { questions, current, lives } = vocabSession;
+  const { item, mode, options } = questions[current];
+
+  document.getElementById('vocabProgress').textContent = `${current + 1} / ${questions.length}`;
+  renderLives('vocabLives', lives);
+
+  const body = document.getElementById('vocabBody');
+  body.innerHTML = '';
+
+  if (mode === 'A') {
+    // Show emoji → pick English word
+    const emojiEl = document.createElement('div');
+    emojiEl.className = 'vocab-emoji-display';
+    emojiEl.textContent = item.emoji;
+    body.appendChild(emojiEl);
+
+    const prompt = document.createElement('p');
+    prompt.className = 'vocab-prompt';
+    prompt.textContent = 'Bu nədir?';
+    body.appendChild(prompt);
+
+    const optContainer = document.createElement('div');
+    optContainer.className = 'vocab-options';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'vocab-option';
+      btn.textContent = opt.english;
+      btn.addEventListener('click', () => checkVocabAnswer(btn, opt.id, optContainer, 'id'));
+      optContainer.appendChild(btn);
+    });
+    body.appendChild(optContainer);
+
+  } else {
+    // Mode B: Show English word → pick emoji
+    const wordEl = document.createElement('div');
+    wordEl.className = 'vocab-word-display';
+    wordEl.textContent = item.english;
+    body.appendChild(wordEl);
+
+    const prompt = document.createElement('p');
+    prompt.className = 'vocab-prompt';
+    prompt.textContent = 'Emojiini tap!';
+    body.appendChild(prompt);
+
+    const optContainer = document.createElement('div');
+    optContainer.className = 'vocab-options-grid';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'vocab-option-emoji';
+      btn.textContent = opt.emoji;
+      btn.addEventListener('click', () => checkVocabAnswer(btn, opt.id, optContainer, 'id'));
+      optContainer.appendChild(btn);
+    });
+    body.appendChild(optContainer);
+  }
+}
+
+function checkVocabAnswer(btn, selectedId, container, _key) {
+  const { questions, current } = vocabSession;
+  const { item, mode } = questions[current];
+  const isCorrect = selectedId === item.id;
+
+  // Disable all buttons
+  const btnClass = mode === 'A' ? '.vocab-option' : '.vocab-option-emoji';
+  container.querySelectorAll(btnClass).forEach(b => b.disabled = true);
+
+  // Visual feedback: mark correct button green, selected wrong button red
+  container.querySelectorAll(btnClass).forEach((b, i) => {
+    if (vocabSession.questions[current].options[i].id === item.id) {
+      b.classList.add('correct');
+    } else if (b === btn && !isCorrect) {
+      b.classList.add('wrong');
+    }
+  });
+
+  if (!isCorrect) {
+    vocabSession.lives -= 1;
+    renderLives('vocabLives', vocabSession.lives);
+    vocabSession.wrong.push({ item });
+  }
+
+  const delay = isCorrect ? 600 : 900;
+
+  setTimeout(() => {
+    if (!isCorrect && vocabSession.lives <= 0) {
+      closeModal('vocabOverlay');
+      openModal('vocabFailOverlay');
+      return;
+    }
+    const next = current + 1;
+    if (next >= vocabSession.questions.length) {
+      closeModal('vocabOverlay');
+      showVocabResult();
+    } else {
+      vocabSession.current = next;
+      renderVocabQuestion();
+    }
+  }, delay);
+}
+
+function showVocabResult() {
+  const { questions, wrong } = vocabSession;
+  const correct = questions.length - wrong.length;
+  const total   = questions.length;
+  const pct     = Math.round((correct / total) * 100);
+
+  document.getElementById('vocabResultIcon').textContent  = pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📚';
+  document.getElementById('vocabResultTitle').textContent = pct >= 80 ? 'Əla nəticə!' : pct >= 50 ? 'Yaxşı cəhd!' : 'Daha çox məşq et!';
+  document.getElementById('vocabResultText').textContent  = `${correct} / ${total} düzgün · ${pct}%`;
+
+  const wrongList = document.getElementById('vocabWrongList');
+  wrongList.innerHTML = '';
+  if (wrong.length > 0) {
+    const heading = document.createElement('p');
+    heading.className = 'review-wrong-heading';
+    heading.textContent = 'Səhvlər:';
+    wrongList.appendChild(heading);
+    wrong.forEach(({ item }) => {
+      const el = document.createElement('div');
+      el.className = 'vocab-wrong-item';
+      el.innerHTML = `
+        <span class="vocab-wrong-emoji">${item.emoji}</span>
+        <span class="vocab-wrong-en">${item.english}</span>
+        <span class="vocab-wrong-az">${item.azerbaijani}</span>`;
+      wrongList.appendChild(el);
+    });
+  }
+
+  openModal('vocabResultOverlay');
 }
 
 // ── Quiz engine ────────────────────────────────────────
