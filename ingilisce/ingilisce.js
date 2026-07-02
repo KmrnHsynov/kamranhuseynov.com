@@ -650,6 +650,17 @@ function showAuthModal() {
     };
   });
 
+  // Password show/hide toggles
+  document.querySelectorAll('.profile-pwd-toggle').forEach(btn => {
+    btn.onclick = () => {
+      const input = document.getElementById(btn.dataset.target);
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.textContent = show ? '🙈' : '👁️';
+      btn.setAttribute('aria-label', show ? 'Şifrəni gizlət' : 'Şifrəni göstər');
+    };
+  });
+
   // Tab switching
   document.getElementById('tabSignup').onclick = () => switchTab('signup');
   document.getElementById('tabSignin').onclick = () => switchTab('signin');

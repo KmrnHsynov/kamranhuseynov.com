@@ -68,8 +68,14 @@
           <button class="avatar-option" data-avatar="👧">👧<span class="avatar-label">Qız</span></button>
         </div>
         <input type="text"     id="signupName"     class="profile-input" placeholder="Adınız..."                          maxlength="24" />
-        <input type="password" id="signupPassword" class="profile-input" placeholder="Şifrə (8+, böyük hərf, simvol)"               />
-        <input type="password" id="signupConfirm"  class="profile-input" placeholder="Şifrəni təsdiqləyin"                           />
+        <div class="profile-pwd-wrap">
+          <input type="password" id="signupPassword" class="profile-input" placeholder="Şifrə (8+, böyük hərf, simvol)"               />
+          <button type="button" class="profile-pwd-toggle" data-target="signupPassword" aria-label="Şifrəni göstər">👁️</button>
+        </div>
+        <div class="profile-pwd-wrap">
+          <input type="password" id="signupConfirm"  class="profile-input" placeholder="Şifrəni təsdiqləyin"                           />
+          <button type="button" class="profile-pwd-toggle" data-target="signupConfirm" aria-label="Şifrəni göstər">👁️</button>
+        </div>
         <div class="auth-error hidden" id="signupError"></div>
         <button class="btn-primary auth-btn" id="btnSignup">Hesab yarat</button>
       </div>
@@ -77,7 +83,10 @@
       <!-- Sign In -->
       <div id="formSignin" class="hidden">
         <input type="text"     id="signinName"     class="profile-input" placeholder="Adınız..."   />
-        <input type="password" id="signinPassword" class="profile-input" placeholder="Şifrəniz..." />
+        <div class="profile-pwd-wrap">
+          <input type="password" id="signinPassword" class="profile-input" placeholder="Şifrəniz..." />
+          <button type="button" class="profile-pwd-toggle" data-target="signinPassword" aria-label="Şifrəni göstər">👁️</button>
+        </div>
         <div class="auth-error hidden" id="signinError"></div>
         <button class="btn-primary auth-btn" id="btnSignin">Daxil ol</button>
       </div>
