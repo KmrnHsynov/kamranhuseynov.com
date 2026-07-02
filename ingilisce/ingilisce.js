@@ -551,7 +551,7 @@ async function launchVocabSession(category) {
     // Build 3 distractors from category pool first, fall back to full pool
     const categoryPool = allItems.filter(v => v.id !== item.id);
     const fallbackPool = (fullPool || allItems).filter(v => v.id !== item.id);
-    let distPool = categoryPool.length >= 3 ? categoryPool : fallbackPool;
+    let distPool = categoryPool.length >= 4 ? categoryPool : fallbackPool;
     const distractors = shuffle(distPool).slice(0, 3);
     // options array: 4 items (correct + 3 distractors), shuffled
     const options = shuffle([item, ...distractors]);
@@ -702,10 +702,22 @@ function showVocabResult() {
     wrong.forEach(({ item }) => {
       const el = document.createElement('div');
       el.className = 'vocab-wrong-item';
-      el.innerHTML = `
-        <span class="vocab-wrong-emoji">${item.emoji}</span>
-        <span class="vocab-wrong-en">${item.english}</span>
-        <span class="vocab-wrong-az">${item.azerbaijani}</span>`;
+
+      const emojiSpan = document.createElement('span');
+      emojiSpan.className = 'vocab-wrong-emoji';
+      emojiSpan.textContent = item.emoji;
+
+      const enSpan = document.createElement('span');
+      enSpan.className = 'vocab-wrong-en';
+      enSpan.textContent = item.english;
+
+      const azSpan = document.createElement('span');
+      azSpan.className = 'vocab-wrong-az';
+      azSpan.textContent = item.azerbaijani;
+
+      el.appendChild(emojiSpan);
+      el.appendChild(enSpan);
+      el.appendChild(azSpan);
       wrongList.appendChild(el);
     });
   }
