@@ -334,7 +334,7 @@
     } else {
       // Populate category datalist
       const cats = [...new Set(data.map(v => v.category))];
-      document.getElementById('categoryList').innerHTML = cats.map(c => `<option value="${c}">`).join('');
+      document.getElementById('categoryList').innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
 
       data.forEach(v => {
         const card = document.createElement('div');

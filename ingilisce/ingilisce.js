@@ -488,7 +488,7 @@ function showReviewResult() {
 }
 
 // ── Vocab Game ─────────────────────────────────────────
-async function startVocabGame() {
+async function startVocabGame(preselect) {
   const btn = document.getElementById('vocabGameBtn');
   btn.textContent = '⏳';
   btn.disabled = true;
@@ -503,11 +503,11 @@ async function startVocabGame() {
     const categories = ['Hamısı', ...new Set(data.map(v => v.category).sort())];
     const chips = document.getElementById('vocabCategoryChips');
     chips.innerHTML = '';
-    let selectedCategory = 'Hamısı';
+    let selectedCategory = preselect || 'Hamısı';
 
     categories.forEach(cat => {
       const chip = document.createElement('button');
-      chip.className = 'vocab-chip' + (cat === 'Hamısı' ? ' selected' : '');
+      chip.className = 'vocab-chip' + (cat === selectedCategory ? ' selected' : '');
       chip.textContent = cat;
       chip.addEventListener('click', () => {
         chips.querySelectorAll('.vocab-chip').forEach(c => c.classList.remove('selected'));
@@ -551,7 +551,7 @@ async function launchVocabSession(category) {
     // Build 3 distractors from category pool first, fall back to full pool
     const categoryPool = allItems.filter(v => v.id !== item.id);
     const fallbackPool = (fullPool || allItems).filter(v => v.id !== item.id);
-    let distPool = categoryPool.length >= 4 ? categoryPool : fallbackPool;
+    let distPool = categoryPool.length >= 3 ? categoryPool : fallbackPool;
     const distractors = shuffle(distPool).slice(0, 3);
     // options array: 4 items (correct + 3 distractors), shuffled
     const options = shuffle([item, ...distractors]);
@@ -566,14 +566,15 @@ async function launchVocabSession(category) {
     category
   };
 
+  const prevCategory = category;
   document.getElementById('vocabFailRetry').onclick = () => {
     closeModal('vocabFailOverlay');
-    startVocabGame();
+    startVocabGame(prevCategory);
   };
   document.getElementById('vocabFailClose').onclick = () => closeModal('vocabFailOverlay');
   document.getElementById('vocabResultRetry').onclick = () => {
     closeModal('vocabResultOverlay');
-    startVocabGame();
+    startVocabGame(prevCategory);
   };
   document.getElementById('vocabResultClose').onclick = () => closeModal('vocabResultOverlay');
 
