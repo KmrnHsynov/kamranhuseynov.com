@@ -195,6 +195,23 @@
     </div>
   </div>
 
+  <!-- Review Category Picker -->
+  <div class="modal-overlay hidden" id="reviewCategoryOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">📝 Təkrar</h2>
+        <button class="modal-close" onclick="closeModal('reviewCategoryOverlay')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem;opacity:0.6;margin-bottom:12px">Mövzu seç:</p>
+        <div class="vocab-category-chips" id="reviewCategoryChips"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="reviewStartBtn" onclick="launchReviewSession()">Başla</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Review Quiz -->
   <div class="modal-overlay hidden" id="reviewOverlay">
     <div class="modal">

@@ -380,23 +380,58 @@ function openLesson(nodeId, curriculum, isReview) {
 let reviewSession = null;
 let vocabSession = null;
 
+let reviewAllQuestions = [];
+let selectedReviewCategory = null;
+
 async function startReviewQuiz() {
   const { data, error } = await db.from('review_questions').select('*');
-
   if (error || !data || data.length === 0) {
     showToast('Suallar tapılmadı. Admin suallar əlavə etməlidir.');
     return;
   }
+  reviewAllQuestions = data;
 
-  const pool = shuffle(data).slice(0, 25);
-  const questions = pool.map(q => ({
+  const cats = [...new Set(data.map(q => q.category).filter(Boolean))].sort();
+  selectedReviewCategory = null;
+
+  const chips = document.getElementById('reviewCategoryChips');
+  chips.innerHTML = '';
+
+  const allChip = document.createElement('button');
+  allChip.className = 'vocab-chip active';
+  allChip.textContent = 'Hamısı';
+  allChip.onclick = () => { selectedReviewCategory = null; chips.querySelectorAll('.vocab-chip').forEach(c => c.classList.remove('active')); allChip.classList.add('active'); };
+  chips.appendChild(allChip);
+
+  cats.forEach(cat => {
+    const chip = document.createElement('button');
+    chip.className = 'vocab-chip';
+    chip.textContent = cat;
+    chip.onclick = () => { selectedReviewCategory = cat; chips.querySelectorAll('.vocab-chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); };
+    chips.appendChild(chip);
+  });
+
+  openModal('reviewCategoryOverlay');
+}
+
+function launchReviewSession() {
+  const pool = selectedReviewCategory
+    ? reviewAllQuestions.filter(q => q.category === selectedReviewCategory)
+    : reviewAllQuestions;
+
+  if (pool.length === 0) {
+    showToast('Bu kateqoriyada sual yoxdur.');
+    return;
+  }
+
+  const questions = shuffle(pool).slice(0, 25).map(q => ({
     question: q.question,
     options: shuffle([q.option_a, q.option_b, q.option_c, q.option_d, ...(q.option_e ? [q.option_e] : [])]),
     answer: q[`option_${q.correct}`]
   }));
 
   reviewSession = { questions, currentIndex: 0, correct: 0, wrong: [], selectedAnswer: null };
-
+  closeModal('reviewCategoryOverlay');
   document.getElementById('reviewClose').onclick = () => closeModal('reviewOverlay');
   openModal('reviewOverlay');
   renderReviewQuestion();
