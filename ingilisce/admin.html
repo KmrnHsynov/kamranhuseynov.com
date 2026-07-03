@@ -444,13 +444,20 @@
 
     const parseRow = r => {
       if (r.includes('\t')) return r.split('\t').map(c => c.trim());
+      // Always peel the correct answer (single letter) from the very end first
+      const lastComma = r.lastIndexOf(',');
+      if (lastComma === -1) return [r.trim()];
+      const correct = r.slice(lastComma + 1).trim();
+      const body = r.slice(0, lastComma);
+      // Parse the rest (question + options) as CSV
       const cols = []; let cur = '', inQ = false;
-      for (let i = 0; i < r.length; i++) {
-        if (r[i] === '"') { inQ = !inQ; }
-        else if (r[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-        else { cur += r[i]; }
+      for (let i = 0; i < body.length; i++) {
+        if (body[i] === '"') { inQ = !inQ; }
+        else if (body[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else { cur += body[i]; }
       }
       cols.push(cur.trim());
+      cols.push(correct);
       return cols;
     };
     const rows = raw.split('\n').map(r => parseRow(r.trim())).filter(r => r.length >= 6);
