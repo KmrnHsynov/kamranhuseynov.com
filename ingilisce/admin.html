@@ -312,9 +312,10 @@
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-sm btn-outline" onclick='editQuestion(${JSON.stringify(q)})'>Düzəlt</button>
+          <button class="btn btn-sm btn-outline" data-qid="${q.id}">Düzəlt</button>
           <button class="btn btn-danger" onclick="deleteQuestion('${q.id}')">Sil</button>
         </div>`;
+      card.querySelector('[data-qid]').addEventListener('click', () => editQuestion(q));
       list.appendChild(card);
     });
 
