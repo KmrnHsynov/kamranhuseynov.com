@@ -1126,9 +1126,20 @@ async function init() {
     updateDropdownStats();
   });
 
-  // Close dropdown when clicking outside
+  // İmtahan dropdown
+  document.getElementById('imtahanBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('imtahanMenu').classList.toggle('hidden');
+    document.getElementById('profileDropdown').classList.add('hidden');
+  });
+  document.getElementById('imtahanMenu').addEventListener('click', () => {
+    document.getElementById('imtahanMenu').classList.add('hidden');
+  });
+
+  // Close dropdowns when clicking outside
   document.addEventListener('click', () => {
     document.getElementById('profileDropdown').classList.add('hidden');
+    document.getElementById('imtahanMenu').classList.add('hidden');
   });
 
   document.getElementById('profileDropdown').addEventListener('click', (e) => e.stopPropagation());

@@ -12,7 +12,6 @@
   <header class="app-header">
     <h1 class="app-title">İngiliscə Öyrən</h1>
     <div class="header-right">
-      <span class="streak-display" id="streakDisplay"></span>
       <button class="profile-btn" id="profileBtn"><span id="profileName"></span></button>
       <div class="profile-dropdown hidden" id="profileDropdown">
         <div class="profile-dropdown-avatar" id="dropdownAvatar"></div>
@@ -44,9 +43,15 @@
         <hr class="profile-dropdown-divider">
         <button class="profile-dropdown-signout" id="btnSignOut">Çıxış et</button>
       </div>
-      <button class="vocab-game-btn" id="vocabGameBtn" onclick="startVocabGame()">🃏 Söz</button>
-      <button class="review-quiz-btn" id="reviewQuizBtn" onclick="startReviewQuiz()">📝 Təkrar</button>
-      <button class="mode-toggle" id="modeToggle">SAT Rejimi</button>
+      <!-- İmtahan dropdown -->
+      <div class="imtahan-wrap" id="imtahanWrap">
+        <button class="review-quiz-btn imtahan-trigger" id="imtahanBtn">İmtahan ▾</button>
+        <div class="imtahan-menu hidden" id="imtahanMenu">
+          <button onclick="startVocabGame()">🃏 Söz</button>
+          <button onclick="startReviewQuiz()">📝 Təkrar</button>
+        </div>
+      </div>
+      <!-- <button class="mode-toggle" id="modeToggle">SAT Rejimi</button> -->
     </div>
   </header>
 
