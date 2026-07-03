@@ -381,14 +381,7 @@ let reviewSession = null;
 let vocabSession = null;
 
 async function startReviewQuiz() {
-  const btn = document.getElementById('reviewQuizBtn');
-  btn.textContent = '⏳';
-  btn.disabled = true;
-
   const { data, error } = await db.from('review_questions').select('*');
-
-  btn.textContent = '📝 Təkrar';
-  btn.disabled = false;
 
   if (error || !data || data.length === 0) {
     showToast('Suallar tapılmadı. Admin suallar əlavə etməlidir.');
