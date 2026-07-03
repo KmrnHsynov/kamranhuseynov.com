@@ -171,7 +171,8 @@
         </select>
       </div>
       <div style="margin-top:14px; display:flex; align-items:center; gap:12px">
-        <button class="btn btn-primary" onclick="addQuestion()">Əlavə et</button>
+        <button class="btn btn-primary" id="saveBtn" onclick="addQuestion()">Əlavə et</button>
+        <button class="btn btn-outline" id="cancelEditBtn" onclick="cancelEdit()" style="display:none">Ləğv et</button>
         <span class="status" id="addStatus"></span>
       </div>
     </div>
@@ -187,8 +188,12 @@
       </div>
     </div>
 
-    <!-- Question list -->
+    <!-- Search + list -->
+    <div style="margin-bottom:14px">
+      <input type="text" id="searchInput" placeholder="Sual axtar..." oninput="applySearch()" style="max-width:400px">
+    </div>
     <div class="q-list" id="qList"></div>
+    <div id="qPager" style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;font-size:0.85rem;opacity:0.7"></div>
   </div>
 
   <!-- Söz Oyunu panel -->
@@ -258,24 +263,46 @@
     if (e.key === 'Enter') doAdminLogin();
   });
 
+  let allQuestions = [];
+  let filteredQuestions = [];
+  let currentPage = 0;
+  let editingId = null;
+  const PAGE_SIZE = 10;
+
   async function loadQuestions() {
     const { data } = await db.from('review_questions').select('*').order('created_at', { ascending: false });
+    allQuestions = data || [];
+    document.getElementById('qCount').textContent = `${allQuestions.length} sual`;
+    applySearch();
+  }
+
+  function applySearch() {
+    const term = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+    filteredQuestions = term
+      ? allQuestions.filter(q => q.question.toLowerCase().includes(term))
+      : [...allQuestions];
+    currentPage = 0;
+    renderQuestions();
+  }
+
+  function renderQuestions() {
     const list = document.getElementById('qList');
     list.innerHTML = '';
-    document.getElementById('qCount').textContent = `${data?.length || 0} sual`;
 
-    if (!data || data.length === 0) {
-      list.innerHTML = '<div class="empty">Hələ sual əlavə edilməyib.</div>';
+    if (filteredQuestions.length === 0) {
+      list.innerHTML = '<div class="empty">Sual tapılmadı.</div>';
+      document.getElementById('qPager').innerHTML = '';
       return;
     }
 
-    data.forEach((q, i) => {
+    const start = currentPage * PAGE_SIZE;
+    filteredQuestions.slice(start, start + PAGE_SIZE).forEach((q, i) => {
       const opts = { a: q.option_a, b: q.option_b, c: q.option_c, d: q.option_d };
       if (q.option_e) opts.e = q.option_e;
       const card = document.createElement('div');
       card.className = 'q-card';
       card.innerHTML = `
-        <span class="q-num">${i + 1}</span>
+        <span class="q-num">${start + i + 1}</span>
         <div class="q-content">
           <div class="q-text">${q.question}</div>
           <div class="q-opts">
@@ -284,9 +311,53 @@
             ).join('')}
           </div>
         </div>
-        <button class="btn btn-danger" onclick="deleteQuestion('${q.id}')">Sil</button>`;
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-sm btn-outline" onclick='editQuestion(${JSON.stringify(q)})'>Düzəlt</button>
+          <button class="btn btn-danger" onclick="deleteQuestion('${q.id}')">Sil</button>
+        </div>`;
       list.appendChild(card);
     });
+
+    // Pagination
+    const totalPages = Math.ceil(filteredQuestions.length / PAGE_SIZE);
+    const pager = document.getElementById('qPager');
+    if (totalPages <= 1) { pager.innerHTML = ''; return; }
+    pager.innerHTML = `
+      <button class="btn btn-sm btn-outline" onclick="changePage(-1)" ${currentPage === 0 ? 'disabled' : ''}>← Əvvəlki</button>
+      <span>${currentPage + 1} / ${totalPages}</span>
+      <button class="btn btn-sm btn-outline" onclick="changePage(1)" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Növbəti →</button>`;
+  }
+
+  function changePage(dir) {
+    currentPage += dir;
+    renderQuestions();
+    document.getElementById('qList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function editQuestion(q) {
+    editingId = q.id;
+    document.getElementById('fQuestion').value = q.question;
+    document.getElementById('fA').value = q.option_a;
+    document.getElementById('fB').value = q.option_b;
+    document.getElementById('fC').value = q.option_c;
+    document.getElementById('fD').value = q.option_d;
+    document.getElementById('fE').value = q.option_e || '';
+    document.getElementById('fCorrect').value = q.correct;
+    document.getElementById('saveBtn').textContent = 'Yadda saxla';
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    document.getElementById('addStatus').textContent = '';
+    document.querySelector('.add-card h3').textContent = '✏️ Sualı Düzəlt';
+    document.querySelector('.add-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function cancelEdit() {
+    editingId = null;
+    ['fQuestion','fA','fB','fC','fD','fE'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fCorrect').value = 'a';
+    document.getElementById('saveBtn').textContent = 'Əlavə et';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+    document.getElementById('addStatus').textContent = '';
+    document.querySelector('.add-card h3').textContent = 'Yeni Sual Əlavə Et';
   }
 
   async function addQuestion() {
@@ -304,14 +375,23 @@
       return;
     }
 
-    status.textContent = 'Əlavə edilir...';
-    const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct });
+    if (editingId) {
+      status.textContent = 'Yadda saxlanılır...';
+      const { error } = await db.from('review_questions')
+        .update({ question, option_a, option_b, option_c, option_d, option_e, correct })
+        .eq('id', editingId);
+      if (error) { status.textContent = '❌ ' + error.message; return; }
+      status.textContent = '✓ Yeniləndi!';
+      cancelEdit();
+    } else {
+      status.textContent = 'Əlavə edilir...';
+      const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct });
+      if (error) { status.textContent = '❌ ' + error.message; return; }
+      ['fQuestion','fA','fB','fC','fD','fE'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('fCorrect').value = 'a';
+      status.textContent = '✓ Əlavə edildi!';
+    }
 
-    if (error) { status.textContent = '❌ Xəta: ' + error.message; return; }
-
-    ['fQuestion','fA','fB','fC','fD','fE'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('fCorrect').value = 'a';
-    status.textContent = '✓ Əlavə edildi!';
     setTimeout(() => status.textContent = '', 2000);
     loadQuestions();
   }
