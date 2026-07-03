@@ -1016,6 +1016,7 @@ body {
   flex-wrap: wrap;
   gap: 8px;
   margin: 4px 0 8px;
+  justify-content: center;
 }
 
 .vocab-chip {
@@ -1029,7 +1030,8 @@ body {
   font-family: 'Rubik', sans-serif;
   transition: border-color 0.15s, background 0.15s;
 }
-.vocab-chip.selected {
+.vocab-chip.selected,
+.vocab-chip.active {
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;
