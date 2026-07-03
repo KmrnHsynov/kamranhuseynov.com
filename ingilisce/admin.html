@@ -383,16 +383,17 @@
         .eq('id', editingId);
       if (error) { status.textContent = '❌ ' + error.message; return; }
       status.textContent = '✓ Yeniləndi!';
-      cancelEdit();
-    } else {
-      status.textContent = 'Əlavə edilir...';
-      const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct });
-      if (error) { status.textContent = '❌ ' + error.message; return; }
-      ['fQuestion','fA','fB','fC','fD','fE'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('fCorrect').value = 'a';
-      status.textContent = '✓ Əlavə edildi!';
+      loadQuestions();
+      setTimeout(() => cancelEdit(), 1500);
+      return;
     }
 
+    status.textContent = 'Əlavə edilir...';
+    const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct });
+    if (error) { status.textContent = '❌ ' + error.message; return; }
+    ['fQuestion','fA','fB','fC','fD','fE'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fCorrect').value = 'a';
+    status.textContent = '✓ Əlavə edildi!';
     setTimeout(() => status.textContent = '', 2000);
     loadQuestions();
   }
