@@ -461,17 +461,18 @@
 
     const records = [];
     for (const cols of rows) {
-      // cols: [question, a, b, c, d, (e|correct), (correct if e present)]
-      const hasE   = cols.length >= 7;
-      const correct = (hasE ? cols[6] : cols[5]).toLowerCase().trim();
+      // last col is always the correct letter; everything between [1..last-1] are options
+      const correct = cols[cols.length - 1].toLowerCase().trim();
       if (!['a','b','c','d','e'].includes(correct)) {
         status.textContent = `⚠️ Yanlış cavab: "${correct}" — a/b/c/d/e olmalıdır.`;
         return;
       }
+      const opts = cols.slice(1, cols.length - 1);
       records.push({
-        question: cols[0], option_a: cols[1], option_b: cols[2],
-        option_c: cols[3], option_d: cols[4],
-        option_e: hasE ? cols[5] || null : null,
+        question: cols[0],
+        option_a: opts[0] || '', option_b: opts[1] || '',
+        option_c: opts[2] || '', option_d: opts[3] || '',
+        option_e: opts[4] || null,
         correct
       });
     }
