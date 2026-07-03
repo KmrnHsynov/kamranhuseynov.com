@@ -442,7 +442,18 @@
     const status = document.getElementById('bulkStatus');
     if (!raw) { status.textContent = '⚠️ Mətn boşdur.'; return; }
 
-    const rows = raw.split('\n').map(r => r.split('\t').map(c => c.trim())).filter(r => r.length >= 6);
+    const parseRow = r => {
+      if (r.includes('\t')) return r.split('\t').map(c => c.trim());
+      const cols = []; let cur = '', inQ = false;
+      for (let i = 0; i < r.length; i++) {
+        if (r[i] === '"') { inQ = !inQ; }
+        else if (r[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else { cur += r[i]; }
+      }
+      cols.push(cur.trim());
+      return cols;
+    };
+    const rows = raw.split('\n').map(r => parseRow(r.trim())).filter(r => r.length >= 6);
     if (rows.length === 0) {
       status.textContent = '⚠️ Format yanlışdır. Ən az 6 sütun lazımdır.';
       return;
