@@ -1032,9 +1032,10 @@ body {
 }
 .vocab-chip.selected,
 .vocab-chip.active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #fff;
+  border: 2px solid #1a73e8;
+  background: #e8f0fe;
+  color: #1a73e8;
+  font-weight: 600;
 }
 
 .vocab-wrong-list {
