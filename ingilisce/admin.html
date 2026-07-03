@@ -359,6 +359,8 @@
     document.getElementById('cancelEditBtn').style.display = 'none';
     document.getElementById('addStatus').textContent = '';
     document.querySelector('.add-card h3').textContent = 'Yeni Sual Əlavə Et';
+    const si = document.getElementById('searchInput');
+    if (si) { si.value = ''; applySearch(); }
   }
 
   async function addQuestion() {
