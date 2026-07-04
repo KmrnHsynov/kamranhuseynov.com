@@ -127,6 +127,22 @@ function renderKeyboard() {
   });
 }
 
+// Used after every guess instead of a full renderKeyboard() call — that
+// was tearing down and rebuilding all 30 keys (30 createElement + 30
+// addEventListener) just to recolor a handful of them, six times per
+// game, causing a visible flash/reflow on lower-end mobile (which is
+// exactly where this game is most likely played). renderKeyboard() itself
+// is still used for the initial build and mode switches, where a full
+// rebuild is actually needed.
+function updateKeyboardColors() {
+  Object.entries(keyStates).forEach(([k, state]) => {
+    const btn = document.getElementById('key-' + k);
+    if (!btn) return;
+    btn.classList.remove('correct', 'present', 'absent');
+    btn.classList.add(state);
+  });
+}
+
 function updateTile(r, c, letter) {
   const t = document.getElementById(`tile-${r}-${c}`);
   t.textContent = letter;
@@ -192,7 +208,7 @@ async function submitRow() {
   submittedGuesses.add(guess);
   revealRow(currentRow, result, () => {
     updateKeyStates(board[currentRow], result);
-    renderKeyboard();
+    updateKeyboardColors();
     if (result.every(r => r === 'correct')) {
       gameOver = true;
       setTimeout(() => { showToast(WIN_MSG[Math.floor(Math.random() * WIN_MSG.length)], 3000); unlockReveal(true); }, 400);
@@ -702,6 +718,14 @@ function switchLbTab(tab) {
   loadLeaderboard(tab);
 }
 
+// sozle-leaderboard already caches server-side for 30s (the query it
+// backs is a full ORDER BY + LIMIT), but switching tabs back and forth
+// still round-tripped over the network every time even within that
+// window. This client-side cache skips the network call entirely for a
+// quick re-visit to a tab, on top of the existing server cache.
+const lbClientCache = {};
+const LB_CLIENT_CACHE_TTL_MS = 10_000;
+
 // Routed through sozle-leaderboard (service-role, cached) instead of
 // querying sozle_profiles directly with the anon key — this was the one
 // read path in the app that bypassed the server-function layer everything
@@ -709,18 +733,25 @@ function switchLbTab(tab) {
 // codebase.
 async function loadLeaderboard(tab) {
   const body = document.getElementById('lbBody');
-  body.innerHTML = '<div class="lb-loading">Yüklənir...</div>';
 
-  let res;
-  try {
-    res = await callSozleFunction('sozle-leaderboard', { tab });
-  } catch (e) {
-    console.error('sozle-leaderboard failed:', e);
-    body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>';
-    return;
+  const cached = lbClientCache[tab];
+  let data;
+  if (cached && Date.now() - cached.ts < LB_CLIENT_CACHE_TTL_MS) {
+    data = cached.data;
+  } else {
+    body.innerHTML = '<div class="lb-loading">Yüklənir...</div>';
+    let res;
+    try {
+      res = await callSozleFunction('sozle-leaderboard', { tab });
+    } catch (e) {
+      console.error('sozle-leaderboard failed:', e);
+      body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>';
+      return;
+    }
+    data = res && res.data;
+    if (!data) { body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>'; return; }
+    lbClientCache[tab] = { data, ts: Date.now() };
   }
-  const data = res && res.data;
-  if (!data) { body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>'; return; }
 
   const currentName = sozleProfile?.display_name || null;
 
