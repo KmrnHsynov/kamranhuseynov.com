@@ -8,6 +8,28 @@ const WORDS = [
 const WORD_LIST = [...new Set(WORDS)];
 const VALID_SET = new Set(WORD_LIST);
 
+// ── Supabase client + edge functions ──────────────────
+// Moved up front (was previously declared near the auth code, further down)
+// so initGame() can call the daily-guess edge function on page load without
+// hitting a temporal-dead-zone error.
+const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+async function callSozleFunction(name, payload) {
+  const { data: { session } } = await db.auth.getSession();
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session ? session.access_token : SUPABASE_ANON}`,
+      'apikey': SUPABASE_ANON
+    },
+    body: JSON.stringify(payload || {})
+  });
+  return res.json();
+}
+
 const WIN_MSG  = ["Təbriklərrr!", "Halaldır!", "Bu işi bacarırsan!", "Əlasan!", "Babat"];
 const LOSE_MSG = ["Bu səfər alınmadı :( Söz: ", "Məğlub oldun. Söz: ", "Növbəti dəfə bacaracaqsan! Söz: ", "Çətin idi, hə? Söz: ", "Yenə cəhd et! Söz: "];
 
@@ -23,13 +45,6 @@ let board = Array.from({ length: 6 }, () => Array(5).fill(""));
 let keyStates = {};
 let submittedGuesses = new Set();
 
-function getDailyWord() {
-  const start = new Date(2026, 0, 1);
-  const diff = Math.floor((new Date() - start) / 864e5);
-  const hash = (diff * 2654435761) >>> 0;
-  return WORD_LIST[hash % WORD_LIST.length];
-}
-
 function setMode(m) {
   mode = m;
   document.getElementById('btn-daily').classList.toggle('active', m === 'daily');
@@ -39,7 +54,11 @@ function setMode(m) {
 }
 
 function initGame() {
-  target = mode === 'daily' ? getDailyWord() : WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+  // Daily mode's target is never computed client-side (it used to be
+  // `WORD_LIST[dailyIndexFormula]`, which anyone could run in devtools to
+  // read today's — or any future day's — answer). It's evaluated guess by
+  // guess on the server instead; see submitRow()/sozle-guess.
+  target = mode === 'random' ? WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)] : "";
   currentRow = 0; currentCol = 0; gameOver = false; revealing = false; submittedGuesses = new Set();
   board = Array.from({ length: 6 }, () => Array(5).fill(""));
   keyStates = {};
@@ -109,13 +128,34 @@ function handleKey(k) {
   }
 }
 
-function submitRow() {
+async function submitRow() {
+  if (gameOver || revealing) return;
   if (currentCol < 5) { showToast("5 hərf daxil edin!"); shakeRow(currentRow); return; }
   const guess = board[currentRow].join('');
   if (!VALID_SET.has(guess)) { showToast("Söz tapılmadı!"); shakeRow(currentRow); return; }
   if (submittedGuesses.has(guess)) { showToast("Bu sözü artıq yoxladınız!"); shakeRow(currentRow); return; }
+
+  let result;
+  if (mode === 'daily') {
+    revealing = true; // block further input while we wait on the network
+    let res;
+    try {
+      res = await callSozleFunction('sozle-guess', { guess, attemptNumber: currentRow + 1 });
+    } catch (e) {
+      revealing = false;
+      showToast("Xəta baş verdi, yenidən cəhd edin.");
+      return;
+    }
+    revealing = false;
+    if (res.error === 'already_finished') { showToast("Günlük oyun artıq bitib."); gameOver = true; return; }
+    if (res.error) { showToast("Xəta baş verdi, yenidən cəhd edin."); return; }
+    result = res.result;
+    if (res.finished) dailyWord = res.word;
+  } else {
+    result = evaluateGuess(guess);
+  }
+
   submittedGuesses.add(guess);
-  const result = evaluateGuess(guess);
   revealRow(currentRow, result, () => {
     updateKeyStates(board[currentRow], result);
     renderKeyboard();
@@ -124,7 +164,8 @@ function submitRow() {
       setTimeout(() => { showToast(WIN_MSG[Math.floor(Math.random() * WIN_MSG.length)], 3000); unlockReveal(true); }, 400);
     } else if (currentRow === 5) {
       gameOver = true;
-      setTimeout(() => { showToast(LOSE_MSG[Math.floor(Math.random() * LOSE_MSG.length)] + target, 4000); unlockReveal(false); }, 400);
+      const revealedWord = mode === 'daily' ? (dailyWord || '') : target;
+      setTimeout(() => { showToast(LOSE_MSG[Math.floor(Math.random() * LOSE_MSG.length)] + revealedWord, 4000); unlockReveal(false); }, 400);
     }
     currentRow++; currentCol = 0;
   });
@@ -191,13 +232,30 @@ function initReveal() {
   document.getElementById('reveal-panel').style.display = 'none';
 }
 
+// Holds a just-finished daily result for a guest until they sign up/in, so
+// the game that motivated the signup isn't silently dropped from their
+// stats (previously: recordSozleGame() no-op'd because sozleUser was still
+// null at this point, and nothing retried it after auth completed).
+let pendingGameResult = null;
+
 function unlockReveal(won = false) {
-  if (mode === 'daily') {
-    dailyCompleted = true;
-    dailyWord = target;
-    updateRevealBtn();
+  if (mode !== 'daily') return;
+  dailyCompleted = true;
+  // dailyWord is set by submitRow() from the server's response — the
+  // client never computes/holds the answer itself in daily mode.
+  updateRevealBtn();
+  if (sozleUser) {
     recordSozleGame(won);
-    if (!sozleUser) setTimeout(showSavePrompt, 2000);
+  } else {
+    pendingGameResult = won;
+    setTimeout(showSavePrompt, 2000);
+  }
+}
+
+function flushPendingGameResult() {
+  if (pendingGameResult !== null) {
+    recordSozleGame(pendingGameResult);
+    pendingGameResult = null;
   }
 }
 
@@ -274,14 +332,21 @@ initReveal();
 maybeShowHelp();
 
 // ── Supabase Auth + Streak ─────────────────────────────
-const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+// (db / SUPABASE_URL / SUPABASE_ANON are declared near the top of the file now)
 
 let sozleUser = null, sozleProfile = null, selectedAvatar = '👦';
 
+// Azerbaijani-aware case folding. JS's default (locale-unaware) toLowerCase()
+// turns 'İ' into 'i̇' (i + combining dot above, 2 codepoints) instead of 'i',
+// and doesn't map 'I' to the dotless 'ı'. Left unhandled, two names typed
+// with different I variants (e.g. "İlqar" vs "Ilqar") hash to different
+// emails and land on different accounts, breaking the uniqueness check.
+function azLower(s) {
+  return s.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
+}
+
 async function nameToEmail(name) {
-  const data = new TextEncoder().encode(name.toLowerCase());
+  const data = new TextEncoder().encode(azLower(name));
   const hash = await crypto.subtle.digest('SHA-256', data);
   const hex  = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2,'0')).join('').slice(0,32);
   return hex + '@ingilisce.app';
@@ -307,16 +372,24 @@ async function doSignUp(name, avatar, pwd, confirm) {
   if (pwdErr)          throw new Error(pwdErr);
   if (pwd !== confirm) throw new Error('Şifrələr uyğun gəlmir.');
 
-  const { data: avail } = await db.rpc('is_sozle_username_available', { uname: name.toLowerCase() });
+  const { data: avail } = await db.rpc('is_sozle_username_available', { uname: azLower(name) });
   if (!avail)          throw new Error('Bu ad artıq istifadə olunur.');
 
   const email = await nameToEmail(name);
   const { data, error } = await db.auth.signUp({ email, password: pwd });
 
-  // Auth user exists but profile row was never created — sign in and recover
+  // Auth user exists under this email already. Two distinct cases land here
+  // and look identical from the client's perspective:
+  //   1. You recovering your own orphaned account (profile row never got
+  //      created after a previous signup that errored out).
+  //   2. A name collision: someone else grabbed this name between the
+  //      availability check above and this signUp call (TOCTOU race).
+  // Signing in tells them apart, but a failed sign-in here doesn't
+  // necessarily mean "wrong password" — it may just as well mean the name
+  // is already someone else's, so the message stays intentionally generic.
   if (error && error.message.toLowerCase().includes('already registered')) {
     const { data: sd, error: se } = await db.auth.signInWithPassword({ email, password: pwd });
-    if (se) throw new Error('Bu ad mövcuddur, lakin şifrə yanlışdır.');
+    if (se) throw new Error('Bu ad artıq istifadə olunur və ya şifrə yanlışdır.');
     const { data: existing } = await db.from('sozle_profiles').select('*').eq('id', sd.user.id).single();
     if (existing) return { user: sd.user, profile: existing };
     const profile = await upsertProfile(sd.user.id, name, avatar);
@@ -350,6 +423,7 @@ function setActiveProfile(userId, profile) {
   document.getElementById('sozleDropAvatar').textContent = profile.avatar;
   document.getElementById('sozleDropName').textContent   = profile.display_name;
   updateProfileStats();
+  flushPendingGameResult();
 }
 
 function updateProfileStats() {
@@ -364,26 +438,24 @@ function updateProfileStats() {
   document.getElementById('sozleStatStreak').textContent = '🔥 ' + streak;
 }
 
+// The increment used to happen client-side (read sozleProfile, add 1, write
+// it back) which raced across tabs/devices and trusted the client's clock
+// for "today"/"yesterday". record_sozle_game() does the read-modify-write
+// atomically in Postgres under a row lock, keyed off current_date, so a
+// duplicate call for the same day is a no-op and the client clock is
+// irrelevant.
 async function recordSozleGame(won) {
   if (!sozleUser || !sozleProfile) return;
-  const today     = new Date().toDateString();
-  const yesterday = new Date(Date.now() - 864e5).toDateString();
-  const p         = sozleProfile;
-  if (p.sozle_last_played === today) return;
-
-  const newStreak = won
-    ? (p.sozle_last_played === yesterday ? (p.sozle_streak || 0) + 1 : 1)
-    : 0;
-
-  const updates = {
-    sozle_games_played: (p.sozle_games_played || 0) + 1,
-    sozle_games_won:    (p.sozle_games_won    || 0) + (won ? 1 : 0),
-    sozle_streak:       newStreak,
-    sozle_last_played:  today
-  };
-
-  await db.from('sozle_profiles').update(updates).eq('id', sozleUser.id);
-  Object.assign(sozleProfile, updates);
+  const { data, error } = await db.rpc('record_sozle_game', { p_won: won });
+  if (error) { console.error(error); return; }
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return;
+  Object.assign(sozleProfile, {
+    sozle_games_played: row.sozle_games_played,
+    sozle_games_won:    row.sozle_games_won,
+    sozle_streak:       row.sozle_streak,
+    sozle_last_played:  row.sozle_last_played
+  });
   updateProfileStats();
 }
 
@@ -489,40 +561,41 @@ document.getElementById('sozleSignOut').addEventListener('click', async () => {
 });
 
 // ── Word History ──────────────────────────────────────
-function getWordForDate(date) {
-  const start = new Date(2026, 0, 1);
-  const diff  = Math.floor((date - start) / 864e5);
-  const hash  = (diff * 2654435761) >>> 0;
-  return WORD_LIST[hash % WORD_LIST.length];
-}
-
-function showHistory() {
+// Word history used to be computed client-side with the same formula as
+// the daily target — which meant devtools could read every past *and
+// future* answer straight out of WORD_LIST. It's now fetched from the
+// sozle-history edge function, which only reveals today's word once the
+// caller has actually finished it.
+async function showHistory() {
   const overlay = document.getElementById('sozleHistory');
   overlay.classList.remove('hidden');
   document.getElementById('histClose').onclick = () => overlay.classList.add('hidden');
 
   const months = ['Yan','Fev','Mar','Apr','May','İyn','İyl','Avq','Sen','Okt','Noy','Dek'];
   const body   = document.getElementById('histBody');
-  const today  = new Date();
-  today.setHours(0,0,0,0);
+  body.innerHTML = '<div class="lb-loading">Yüklənir...</div>';
 
-  const todayDone = dailyCompleted ||
-    (sozleProfile && sozleProfile.sozle_last_played === today.toDateString());
+  let data;
+  try {
+    data = await callSozleFunction('sozle-history');
+  } catch (e) {
+    body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>';
+    return;
+  }
+  if (!data || !data.days) { body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>'; return; }
 
-  const rows = [];
-  for (let i = 0; i < 30; i++) {
-    const date = new Date(today - i * 864e5);
-    const word = getWordForDate(date);
-    const label = i === 0 ? 'Bu gün' : i === 1 ? 'Dünən' : `${date.getDate()} ${months[date.getMonth()]}`;
-    const display = (i === 0 && !todayDone)
-      ? `<span class="hist-locked">🔒 Oyunu bitir</span>`
-      : `<span class="hist-word">${word}</span>`;
-    rows.push(`
+  const rows = data.days.map((d, i) => {
+    const date = new Date(d.date + 'T00:00:00Z');
+    const label = i === 0 ? 'Bu gün' : i === 1 ? 'Dünən' : `${date.getUTCDate()} ${months[date.getUTCMonth()]}`;
+    const display = d.word
+      ? `<span class="hist-word">${d.word}</span>`
+      : `<span class="hist-locked">🔒 Oyunu bitir</span>`;
+    return `
       <div class="lb-row">
         <span class="hist-date">${label}</span>
         ${display}
-      </div>`);
-  }
+      </div>`;
+  });
 
   body.innerHTML = rows.join('');
 }
