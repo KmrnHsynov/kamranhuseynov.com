@@ -26,7 +26,18 @@ async function callSozleFunction(name, payload) {
     },
     body: JSON.stringify(payload || {})
   });
-  return res.json();
+  // Expected errors (already_finished, rate_limited, not_in_list, ...) come
+  // back as a non-2xx status with a { error } body, and callers key off
+  // that .error field rather than a thrown exception — so this doesn't
+  // throw on !res.ok, it'd break every one of those call sites. What it
+  // does fix: a response that's non-JSON, empty, or non-ok with no .error
+  // field used to parse as `{}`/null and get treated as "success with no
+  // data" by callers that only check for specific known error strings.
+  const body = await res.json().catch(() => null);
+  if (!res.ok && !(body && body.error)) {
+    return { error: `${name}_failed_${res.status}` };
+  }
+  return body ?? { error: `${name}_empty_response` };
 }
 
 const WIN_MSG  = ["Təbriklərrr!", "Halaldır!", "Bu işi bacarırsan!", "Əlasan!", "Babat"];
@@ -154,6 +165,7 @@ async function submitRow() {
     try {
       res = await callSozleFunction('sozle-guess', { guess, attemptNumber: currentRow + 1 });
     } catch (e) {
+      console.error('sozle-guess failed:', e);
       revealing = false;
       showToast("Xəta baş verdi, yenidən cəhd edin.");
       return;
@@ -363,8 +375,12 @@ let sozleUser = null, sozleProfile = null, selectedAvatar = '👦';
 // and doesn't map 'I' to the dotless 'ı'. Left unhandled, two names typed
 // with different I variants (e.g. "İlqar" vs "Ilqar") hash to different
 // emails and land on different accounts, breaking the uniqueness check.
+// .normalize('NFC') first for the same reason: two visually-identical names
+// that differ only in Unicode composition (a combining accent vs. a single
+// precomposed character) would otherwise hash to different emails too —
+// same duplicate-account vector, just via composition instead of casing.
 function azLower(s) {
-  return s.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
+  return s.normalize('NFC').replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
 }
 
 async function nameToEmail(name) {
@@ -617,6 +633,7 @@ async function showHistory() {
   try {
     data = await callSozleFunction('sozle-history');
   } catch (e) {
+    console.error('sozle-history failed:', e);
     body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>';
     return;
   }
@@ -679,6 +696,7 @@ async function loadLeaderboard(tab) {
   try {
     res = await callSozleFunction('sozle-leaderboard', { tab });
   } catch (e) {
+    console.error('sozle-leaderboard failed:', e);
     body.innerHTML = '<div class="lb-loading">Xəta baş verdi.</div>';
     return;
   }
@@ -735,6 +753,14 @@ function renderCompletedRow(row, guess, result) {
 async function restoreDailyStatus() {
   if (mode !== 'daily') { boardReady = true; return; }
   boardReady = false; // block input for the duration of this fetch — see initGame()
+  // Reset first, before the fetch: without this, dailyCompleted/dailyWord
+  // from a previous day (still sitting in memory if the tab was left open
+  // overnight, or from switching modes and back) stuck around as "true"/
+  // stale even on a fresh day with zero guesses, since the early return
+  // below never touched them otherwise.
+  dailyCompleted = false;
+  dailyWord = "";
+  updateRevealBtn();
   try {
     const data = await callSozleFunction('sozle-status');
     if (!data || !data.guesses || data.guesses.length === 0) return;
@@ -747,7 +773,12 @@ async function restoreDailyStatus() {
       if (data.word) dailyWord = data.word;
       updateRevealBtn();
     }
-  } catch (e) { /* best-effort; a failed check just leaves the board empty */ }
+  } catch (e) {
+    // Best-effort by design (a failed check just leaves the board empty
+    // instead of blocking the page), but that shouldn't mean invisible in
+    // production — log it so a spike in these is actually noticeable.
+    console.error('sozle-status failed:', e);
+  }
   finally {
     // Always re-zero currentCol: if the restore replayed N rows, row N is
     // the fresh one the player types into next, regardless of whatever
