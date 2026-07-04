@@ -334,8 +334,18 @@ function toggleReveal() {
 }
 
 function toggleTheme() {
-  document.body.classList.toggle('dark');
-  document.body.classList.toggle('light');
+  const isDark = document.body.classList.toggle('dark');
+  document.body.classList.toggle('light', !isDark);
+  localStorage.setItem('sozle_theme', isDark ? 'dark' : 'light');
+}
+
+// <body class="dark"> is hardcoded in sozle.html, so without this a user
+// who picked light mode had it silently reverted to dark on every reload.
+function applySavedTheme() {
+  const saved = localStorage.getItem('sozle_theme');
+  if (!saved) return;
+  document.body.classList.toggle('light', saved === 'light');
+  document.body.classList.toggle('dark', saved !== 'light');
 }
 
 function showHelp()  { document.getElementById('modal').style.display = 'flex'; }
@@ -361,6 +371,7 @@ document.addEventListener('keydown', e => {
   if (allKeys.includes(k)) handleKey(k);
 });
 
+applySavedTheme();
 initGame();
 initReveal();
 maybeShowHelp();
@@ -497,7 +508,15 @@ function updateProfileStats() {
 async function recordSozleGame(won) {
   if (!sozleUser || !sozleProfile) return;
   const { data, error } = await db.rpc('record_sozle_game', { p_won: won });
-  if (error) { console.error(error); return; }
+  if (error) {
+    // Saving your streak/stats is the entire point of creating an account
+    // (see showSavePrompt's copy) — failing here with only a console.error
+    // meant a signed-in player could win the daily game and never know
+    // their streak silently didn't update.
+    console.error(error);
+    showToast("Nəticə saxlanılmadı, bağlantını yoxlayın.");
+    return;
+  }
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return;
   Object.assign(sozleProfile, {
@@ -750,8 +769,18 @@ function renderCompletedRow(row, guess, result) {
 // server evaluated, so this replays them into the grid and restores the
 // reveal/lock state on load. Guests get nothing back here (anonymous play
 // was never server-tracked, same as before).
+// setMode() can call this again before a prior call's fetch has resolved
+// (rapid daily -> random -> daily toggling). Nothing serialized that, so
+// two overlapping calls could both land and mutate currentRow/board/
+// dailyCompleted out of order — last response to arrive wins, regardless
+// of which restore it actually belonged to. restoreGen tags each call and
+// every caller-side mutation checks it's still the latest before applying,
+// so a superseded response is discarded instead of corrupting state.
+let restoreGen = 0;
+
 async function restoreDailyStatus() {
   if (mode !== 'daily') { boardReady = true; return; }
+  const myGen = ++restoreGen;
   boardReady = false; // block input for the duration of this fetch — see initGame()
   // Reset first, before the fetch: without this, dailyCompleted/dailyWord
   // from a previous day (still sitting in memory if the tab was left open
@@ -763,6 +792,7 @@ async function restoreDailyStatus() {
   updateRevealBtn();
   try {
     const data = await callSozleFunction('sozle-status');
+    if (myGen !== restoreGen) return; // a newer restore superseded this one
     if (!data || !data.guesses || data.guesses.length === 0) return;
     data.guesses.forEach((g, i) => renderCompletedRow(i, g.guess, g.result));
     currentRow = data.guesses.length;
@@ -783,8 +813,10 @@ async function restoreDailyStatus() {
     // Always re-zero currentCol: if the restore replayed N rows, row N is
     // the fresh one the player types into next, regardless of whatever
     // column a race with live typing left it at before this resolved.
-    currentCol = 0;
-    boardReady = true;
+    // Only the latest generation gets to touch boardReady/currentCol too —
+    // otherwise a stale call's finally could re-lock input after a newer
+    // call already finished and unlocked it.
+    if (myGen === restoreGen) { currentCol = 0; boardReady = true; }
   }
 }
 restoreDailyStatus();
