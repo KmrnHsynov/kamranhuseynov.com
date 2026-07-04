@@ -657,3 +657,24 @@ async function loadLeaderboard(tab) {
   }
   // Guests just play — auth prompt appears after first game
 })();
+
+// The board/tiles were never persisted across page reloads (that's
+// unchanged), but dailyCompleted/dailyWord are just in-memory JS state, so
+// refreshing after finishing today's word made the reveal button relock
+// even though the server (sozle_daily_attempts) still correctly remembers
+// you finished — and still correctly shows it in the history tab. This
+// re-syncs the main page with that same server truth on load, for signed-in
+// users (guests have no server-tracked completion, same as before).
+(async () => {
+  if (mode !== 'daily') return;
+  try {
+    const data = await callSozleFunction('sozle-history');
+    const todayEntry = data && data.days && data.days[0];
+    if (todayEntry && todayEntry.word) {
+      dailyCompleted = true;
+      dailyWord = todayEntry.word;
+      gameOver = true;
+      updateRevealBtn();
+    }
+  } catch (e) { /* best-effort; a failed check just leaves the reveal locked */ }
+})();
