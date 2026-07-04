@@ -131,8 +131,8 @@
   </header>
 
   <div class="lang-toggle">
-    <button class="lang-btn active" onclick="setLang('az')">Azərbaycanca</button>
-    <button class="lang-btn"       onclick="setLang('en')">English</button>
+    <button class="lang-btn active" onclick="setLang('az', event)">Azərbaycanca</button>
+    <button class="lang-btn"       onclick="setLang('en', event)">English</button>
   </div>
 
   <!-- ── AZERBAIJANI ── -->
@@ -266,7 +266,10 @@
 </div>
 
 <script>
-  function setLang(lang) {
+  // event was previously the implicit global window.event — non-standard
+  // and historically unreliable in Firefox. Passed explicitly from the
+  // onclick attributes instead.
+  function setLang(lang, event) {
     document.querySelectorAll('.lang-section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
     document.getElementById('lang-' + lang).classList.add('active');
