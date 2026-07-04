@@ -658,23 +658,39 @@ async function loadLeaderboard(tab) {
   // Guests just play — auth prompt appears after first game
 })();
 
-// The board/tiles were never persisted across page reloads (that's
-// unchanged), but dailyCompleted/dailyWord are just in-memory JS state, so
-// refreshing after finishing today's word made the reveal button relock
-// even though the server (sozle_daily_attempts) still correctly remembers
-// you finished — and still correctly shows it in the history tab. This
-// re-syncs the main page with that same server truth on load, for signed-in
-// users (guests have no server-tracked completion, same as before).
-(async () => {
+// Renders an already-evaluated guess into a row immediately (no reveal
+// animation) — used to redraw prior guesses on load, not for a live guess.
+function renderCompletedRow(row, guess, result) {
+  guess.split('').forEach((l, i) => {
+    board[row][i] = l;
+    const t = document.getElementById(`tile-${row}-${i}`);
+    t.textContent = l;
+    t.classList.add('filled', result[i]);
+  });
+  updateKeyStates(guess.split(''), result);
+  submittedGuesses.add(guess);
+}
+
+// The board/tiles used to be lost on every refresh — nothing (client or
+// server) remembered individual guesses, only the final finished/solved
+// flags. sozle_daily_attempts.guesses now stores each {guess, result} the
+// server evaluated, so this replays them into the grid and restores the
+// reveal/lock state on load. Guests get nothing back here (anonymous play
+// was never server-tracked, same as before).
+async function restoreDailyStatus() {
   if (mode !== 'daily') return;
   try {
-    const data = await callSozleFunction('sozle-history');
-    const todayEntry = data && data.days && data.days[0];
-    if (todayEntry && todayEntry.word) {
-      dailyCompleted = true;
-      dailyWord = todayEntry.word;
+    const data = await callSozleFunction('sozle-status');
+    if (!data || !data.guesses || data.guesses.length === 0) return;
+    data.guesses.forEach((g, i) => renderCompletedRow(i, g.guess, g.result));
+    currentRow = data.guesses.length;
+    renderKeyboard();
+    if (data.finished) {
       gameOver = true;
+      dailyCompleted = true;
+      if (data.word) dailyWord = data.word;
       updateRevealBtn();
     }
-  } catch (e) { /* best-effort; a failed check just leaves the reveal locked */ }
-})();
+  } catch (e) { /* best-effort; a failed check just leaves the board empty */ }
+}
+restoreDailyStatus();
