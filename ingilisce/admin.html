@@ -188,9 +188,11 @@
       <p style="font-size:0.8rem;opacity:0.5;margin-bottom:12px">Google Sheets / Excel-dən kopyalayın. Sütun sırası: <strong>Sual | A | B | C | D | E (optional) | Düzgün (a/b/c/d/e)</strong></p>
       <textarea id="bulkPaste" style="min-height:120px" placeholder="Buraya yapışdırın..."></textarea>
       <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-        <button class="btn btn-primary" onclick="bulkAddQuestions()">Hamısını əlavə et</button>
+        <button class="btn btn-primary" onclick="previewBulkQuestions()">Önizlə</button>
+        <button class="btn btn-primary" id="bulkConfirmBtn" style="display:none" onclick="confirmBulkAddQuestions()">Təsdiqlə və əlavə et</button>
         <span class="status" id="bulkStatus"></span>
       </div>
+      <div id="bulkPreview" style="margin-top:12px"></div>
     </div>
 
     <!-- Bulk assign category -->
@@ -291,7 +293,7 @@
     document.getElementById('qCount').textContent = `${allQuestions.length} sual`;
     const cats = [...new Set(allQuestions.map(q => q.category).filter(Boolean))].sort();
     const dl = document.getElementById('qCategoryList');
-    if (dl) dl.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+    if (dl) dl.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
     applySearch();
   }
 
@@ -323,11 +325,11 @@
       card.innerHTML = `
         <span class="q-num">${start + i + 1}</span>
         <div class="q-content">
-          <div class="q-text">${q.question}</div>
-          ${q.category ? `<div style="font-size:0.72rem;opacity:0.45;margin-bottom:4px">🏷️ ${q.category}</div>` : ''}
+          <div class="q-text">${escapeHtml(q.question)}</div>
+          ${q.category ? `<div style="font-size:0.72rem;opacity:0.45;margin-bottom:4px">🏷️ ${escapeHtml(q.category)}</div>` : ''}
           <div class="q-opts">
             ${Object.entries(opts).map(([k, v]) =>
-              `<span class="q-opt ${k === q.correct ? 'correct' : ''}">${k.toUpperCase()}. ${v}</span>`
+              `<span class="q-opt ${k === q.correct ? 'correct' : ''}">${k.toUpperCase()}. ${escapeHtml(v)}</span>`
             ).join('')}
           </div>
         </div>
@@ -437,9 +439,16 @@
     loadQuestions();
   }
 
-  async function bulkAddQuestions() {
-    const raw    = document.getElementById('bulkPaste').value.trim();
-    const status = document.getElementById('bulkStatus');
+  let pendingBulkRecords = null;
+
+  function previewBulkQuestions() {
+    const raw     = document.getElementById('bulkPaste').value.trim();
+    const status  = document.getElementById('bulkStatus');
+    const preview = document.getElementById('bulkPreview');
+    const confirmBtn = document.getElementById('bulkConfirmBtn');
+    preview.innerHTML = '';
+    confirmBtn.style.display = 'none';
+    pendingBulkRecords = null;
     if (!raw) { status.textContent = '⚠️ Mətn boşdur.'; return; }
 
     const parseRow = r => {
@@ -484,12 +493,67 @@
       });
     }
 
-    status.textContent = `${records.length} sual əlavə edilir...`;
-    const { error } = await db.from('review_questions').insert(records);
-    if (error) { status.textContent = '❌ ' + error.message; return; }
+    // Render a visual sanity-check table so a shifted/misparsed row is caught
+    // before insert, instead of silently landing wrong in the DB.
+    records.forEach((rec, i) => {
+      const row = document.createElement('div');
+      row.className = 'q-card';
+      const optsLine = ['a','b','c','d','e']
+        .map(k => rec[`option_${k}`])
+        .filter(v => v)
+        .map((v, idx) => `${String.fromCharCode(97 + idx)}. ${v}`)
+        .join('  ·  ');
+
+      const num = document.createElement('span');
+      num.className = 'q-num';
+      num.textContent = i + 1;
+
+      const content = document.createElement('div');
+      content.className = 'q-content';
+
+      const qText = document.createElement('div');
+      qText.className = 'q-text';
+      qText.textContent = rec.question;
+
+      const optsEl = document.createElement('div');
+      optsEl.style.fontSize = '0.8rem';
+      optsEl.style.opacity = '0.7';
+      optsEl.textContent = optsLine;
+
+      const correctEl = document.createElement('div');
+      correctEl.style.fontSize = '0.75rem';
+      correctEl.style.marginTop = '4px';
+      correctEl.textContent = `✓ Düzgün: ${rec.correct}`;
+
+      content.appendChild(qText);
+      content.appendChild(optsEl);
+      content.appendChild(correctEl);
+      row.appendChild(num);
+      row.appendChild(content);
+      preview.appendChild(row);
+    });
+
+    pendingBulkRecords = records;
+    confirmBtn.style.display = '';
+    status.textContent = `${records.length} sual tapıldı — yoxlayıb təsdiqləyin.`;
+  }
+
+  async function confirmBulkAddQuestions() {
+    const status = document.getElementById('bulkStatus');
+    if (!pendingBulkRecords || pendingBulkRecords.length === 0) {
+      status.textContent = '⚠️ Əvvəlcə önizləyin.';
+      return;
+    }
+
+    status.textContent = `${pendingBulkRecords.length} sual əlavə edilir...`;
+    const { error } = await db.from('review_questions').insert(pendingBulkRecords);
+    if (error) { console.error('bulkAddQuestions failed:', error); status.textContent = '❌ ' + error.message; return; }
 
     document.getElementById('bulkPaste').value = '';
-    status.textContent = `✓ ${records.length} sual əlavə edildi!`;
+    document.getElementById('bulkPreview').innerHTML = '';
+    document.getElementById('bulkConfirmBtn').style.display = 'none';
+    status.textContent = `✓ ${pendingBulkRecords.length} sual əlavə edildi!`;
+    pendingBulkRecords = null;
     setTimeout(() => status.textContent = '', 3000);
     loadQuestions();
   }

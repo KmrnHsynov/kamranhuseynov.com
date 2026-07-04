@@ -47,7 +47,7 @@
       <div class="imtahan-wrap" id="imtahanWrap">
         <button class="review-quiz-btn imtahan-trigger" id="imtahanBtn">İmtahan ▾</button>
         <div class="imtahan-menu hidden" id="imtahanMenu">
-          <button onclick="startVocabGame()">🃏 Söz</button>
+          <button onclick="startVocabGame(null, this)">🃏 Söz</button>
           <button onclick="startReviewQuiz()">📝 Təkrar</button>
         </div>
       </div>
@@ -83,7 +83,7 @@
           <input type="password" id="signupConfirm"  class="profile-input" placeholder="Şifrəni təsdiqləyin"                           />
           <button type="button" class="profile-pwd-toggle" data-target="signupConfirm" aria-label="Şifrəni göstər">👁️</button>
         </div>
-        <div class="auth-error hidden" id="signupError"></div>
+        <div class="auth-error hidden" id="signupError" role="alert" aria-live="polite"></div>
         <button class="btn-primary auth-btn" id="btnSignup">Hesab yarat</button>
       </div>
 
@@ -94,7 +94,7 @@
           <input type="password" id="signinPassword" class="profile-input" placeholder="Şifrəniz..." />
           <button type="button" class="profile-pwd-toggle" data-target="signinPassword" aria-label="Şifrəni göstər">👁️</button>
         </div>
-        <div class="auth-error hidden" id="signinError"></div>
+        <div class="auth-error hidden" id="signinError" role="alert" aria-live="polite"></div>
         <button class="btn-primary auth-btn" id="btnSignin">Daxil ol</button>
       </div>
     </div>

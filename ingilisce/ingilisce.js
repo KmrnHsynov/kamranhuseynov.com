@@ -22,16 +22,22 @@ function loadState() {
   } catch { return { ...DEFAULT_STATE }; }
 }
 
+let syncQueue = Promise.resolve();
+
 function saveState(state) {
   localStorage.setItem(storageKey(), JSON.stringify(state));
-  syncProgress();
+  syncQueue = syncQueue.then(syncProgress).catch(() => {});
 }
 
 async function syncProgress() {
   if (!currentUserId) return;
   const col = currentMode === 'sat' ? 'sat_progress' : 'normal_progress';
   const state = loadState();
-  await db.from('profiles').update({ [col]: state.completedNodes }).eq('id', currentUserId);
+  const { error } = await db.from('profiles').update({ [col]: state.completedNodes }).eq('id', currentUserId);
+  if (error) {
+    console.error('syncProgress failed:', error);
+    showToast('Sinxronizasiya alınmadı, internetinizi yoxlayın.');
+  }
 }
 
 // ── Auth helpers ──────────────────────────────────────────
@@ -144,7 +150,11 @@ async function doSignUp(name, avatar, password, confirm) {
     id: data.user.id, display_name: name, avatar,
     normal_progress: [], sat_progress: []
   });
-  if (profErr)                   throw new Error(profErr.message);
+  if (profErr) {
+    // best-effort cleanup so the name isn't permanently orphaned
+    await db.rpc('cleanup_orphaned_signup', { uid: data.user.id }).catch(() => {});
+    throw new Error('Qeydiyyat tamamlanmadı, yenidən cəhd edin.');
+  }
 
   return { user: data.user, profile: { display_name: name, avatar, normal_progress: [], sat_progress: [] } };
 }
@@ -177,12 +187,6 @@ function findNode(nodeId, curriculum) {
   return null;
 }
 
-function getNodeStatus(nodeId, allNodeIds, state) {
-  if (state.completedNodes.includes(nodeId)) return 'completed';
-  const firstIncomplete = allNodeIds.find(id => !state.completedNodes.includes(id));
-  return nodeId === firstIncomplete ? 'active' : 'locked';
-}
-
 // ── Modal helpers ──────────────────────────────────────
 
 function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
@@ -208,7 +212,8 @@ function renderLives(containerId, lives) {
 function getNextNodeId(curriculum) {
   const state      = loadState();
   const allNodeIds = getAllNodeIds(curriculum);
-  return allNodeIds.find(id => getNodeStatus(id, allNodeIds, state) === 'available');
+  const completed  = new Set(state.completedNodes);
+  return allNodeIds.find(id => !completed.has(id));
 }
 
 function resumeProgress(curriculum) {
@@ -230,6 +235,8 @@ function resumeProgress(curriculum) {
 function renderPath(curriculum) {
   const state = loadState();
   const allNodeIds = getAllNodeIds(curriculum);
+  const completed = new Set(state.completedNodes);
+  const firstIncompleteId = allNodeIds.find(id => !completed.has(id));
   const container = document.getElementById('pathContainer');
   container.innerHTML = '';
 
@@ -249,6 +256,9 @@ function renderPath(curriculum) {
 
     const titleEl = document.createElement('div');
     titleEl.className = 'section-title collapsible';
+    // innerHTML is safe here only because section.title comes from the local
+    // curriculum JSON, never from the DB — do not reuse this pattern for any
+    // DB-sourced string (use textContent/createElement instead).
     titleEl.innerHTML = `<span>${section.title}</span><span class="section-chevron">${isCollapsed ? '▶' : '▼'}</span>`;
     block.appendChild(titleEl);
 
@@ -263,7 +273,8 @@ function renderPath(curriculum) {
     });
 
     section.nodes.forEach((node, ni) => {
-      const status = getNodeStatus(node.id, allNodeIds, state);
+      const status = completed.has(node.id) ? 'completed'
+        : node.id === firstIncompleteId ? 'active' : 'locked';
 
       if (ni > 0) {
         const line = document.createElement('div');
@@ -516,7 +527,17 @@ function showReviewResult() {
     wrong.forEach(w => {
       const item = document.createElement('div');
       item.className = 'review-wrong-item';
-      item.innerHTML = `<span class="review-wrong-q">${w.question}</span><span class="review-wrong-a">✓ ${w.answer}</span>`;
+
+      const q = document.createElement('span');
+      q.className = 'review-wrong-q';
+      q.textContent = w.question;
+
+      const a = document.createElement('span');
+      a.className = 'review-wrong-a';
+      a.textContent = '✓ ' + w.answer;
+
+      item.appendChild(q);
+      item.appendChild(a);
       wrongList.appendChild(item);
     });
   }
@@ -526,10 +547,8 @@ function showReviewResult() {
 }
 
 // ── Vocab Game ─────────────────────────────────────────
-async function startVocabGame(preselect) {
-  const btn = document.getElementById('vocabGameBtn');
-  btn.textContent = '⏳';
-  btn.disabled = true;
+async function startVocabGame(preselect, btn) {
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
 
   try {
     const { data, error } = await db.from('vocab_items').select('category');
@@ -562,24 +581,20 @@ async function startVocabGame(preselect) {
 
     openModal('vocabCategoryOverlay');
   } finally {
-    btn.textContent = '🃏 Söz';
-    btn.disabled = false;
+    if (btn) { btn.textContent = '🃏 Söz'; btn.disabled = false; }
   }
 }
 
 async function launchVocabSession(category) {
-  const query = db.from('vocab_items').select('*');
-  const { data: allItems, error } = category === 'Hamısı'
-    ? await query
-    : await query.eq('category', category);
+  const { data: fullPool, error } = await db.from('vocab_items').select('*');
+  const allItems = category === 'Hamısı'
+    ? fullPool
+    : (fullPool || []).filter(v => v.category === category);
 
   if (error || !allItems || allItems.length === 0) {
     showToast('Bu kateqoriyada söz tapılmadı.');
     return;
   }
-
-  // Also fetch full pool for distractor fallback
-  const { data: fullPool } = await db.from('vocab_items').select('*');
 
   const pool = shuffle(allItems).slice(0, 20);
 
@@ -769,7 +784,12 @@ function showVocabResult() {
 let quizSession = null;
 
 function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 function startQuiz(nodeId, curriculum) {
@@ -1111,6 +1131,7 @@ function switchTab(tab) {
 }
 
 function showAuthError(form, msg) {
+  if (msg) console.error(`auth error (${form}):`, msg);
   const el = document.getElementById(form + 'Error');
   el.textContent = msg;
   el.classList.toggle('hidden', !msg);
@@ -1125,12 +1146,19 @@ function setAuthLoading(btnId, loading) {
 // ── Init ──────────────────────────────────────────────────
 
 async function init() {
-  const [normalRes, satRes] = await Promise.all([
-    fetch('curriculum.json'),
-    fetch('sat_curriculum.json')
-  ]);
-  window._normalCurriculum = await normalRes.json();
-  window._satCurriculum    = await satRes.json();
+  try {
+    const [normalRes, satRes] = await Promise.all([
+      fetch('curriculum.json'),
+      fetch('sat_curriculum.json')
+    ]);
+    if (!normalRes.ok || !satRes.ok) throw new Error('curriculum fetch not ok');
+    window._normalCurriculum = await normalRes.json();
+    window._satCurriculum    = await satRes.json();
+  } catch (e) {
+    console.error('Kurikulum yüklənmədi:', e);
+    showToast('Kurikulum yüklənmədi, səhifəni yeniləyin.');
+    return;
+  }
 
   // Check existing Supabase session
   const { data: { session } } = await db.auth.getSession();
@@ -1183,21 +1211,6 @@ async function init() {
     showAuthModal();
   });
 
-  // Mode toggle
-  const toggleBtn = document.getElementById('modeToggle');
-  toggleBtn.addEventListener('click', () => {
-    if (currentMode === 'normal') {
-      currentMode = 'sat';
-      toggleBtn.textContent = 'Normal Rejim';
-      toggleBtn.classList.add('active');
-      renderPath(window._satCurriculum);
-    } else {
-      currentMode = 'normal';
-      toggleBtn.textContent = 'SAT Rejimi';
-      toggleBtn.classList.remove('active');
-      renderPath(window._normalCurriculum);
-    }
-  });
 }
 
 init();
