@@ -234,11 +234,12 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"
+        integrity="sha384-3wY11tldQ5+yWqAvmTN4XtQvnjoTva0cV15O/O/O5NTtp0ivVopSzLOzsVXWZse9"
+        crossorigin="anonymous"></script>
+<script src="config.js"></script>
 <script>
-  const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
-  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  // SUPABASE_URL/SUPABASE_ANON/db are defined in config.js, loaded above.
 
   async function nameToEmail(name) {
     const data = new TextEncoder().encode(name.toLowerCase());
@@ -260,8 +261,10 @@
       const { data, error } = await db.auth.signInWithPassword({ email, password: pwd });
       if (error) throw new Error('Ad və ya şifrə yanlışdır.');
 
-      const { data: profile } = await db.from('profiles').select('display_name').eq('id', data.user.id).single();
-      if (!profile || profile.display_name.toLowerCase() !== 'kamran') {
+      // Checked via the same is_admin() RPC that RLS relies on server-side,
+      // instead of a hardcoded username literal shipped in this file.
+      const { data: isAdmin } = await db.rpc('is_admin');
+      if (!isAdmin) {
         await db.auth.signOut();
         throw new Error('Giriş icazəniz yoxdur.');
       }
@@ -281,43 +284,64 @@
     if (e.key === 'Enter') doAdminLogin();
   });
 
-  let allQuestions = [];
-  let filteredQuestions = [];
+  let pageQuestions = [];
+  let totalCount = 0;
   let currentPage = 0;
   let editingId = null;
+  let searchTerm = '';
+  let searchDebounceTimer = null;
   const PAGE_SIZE = 10;
 
+  // Questions are fetched one page at a time from the server (with search
+  // pushed into the query) instead of downloading the whole table and
+  // paginating/filtering client-side — keeps this cheap as the bank grows.
   async function loadQuestions() {
-    const { data } = await db.from('review_questions').select('*').order('created_at', { ascending: false });
-    allQuestions = data || [];
-    document.getElementById('qCount').textContent = `${allQuestions.length} sual`;
-    const cats = [...new Set(allQuestions.map(q => q.category).filter(Boolean))].sort();
+    let query = db.from('review_questions').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+    if (searchTerm) query = query.ilike('question', `%${searchTerm}%`);
+    const start = currentPage * PAGE_SIZE;
+    query = query.range(start, start + PAGE_SIZE - 1);
+
+    const { data, error, count } = await query;
+    if (error) {
+      document.getElementById('qCount').textContent = 'Xəta: ' + error.message;
+      return;
+    }
+    pageQuestions = data || [];
+    totalCount = count || 0;
+    document.getElementById('qCount').textContent = `${totalCount} sual`;
+    renderQuestions();
+    loadCategoryList();
+  }
+
+  async function loadCategoryList() {
+    const { data, error } = await db.from('review_questions').select('category').not('category', 'is', null);
+    if (error) return;
+    const cats = [...new Set(data.map(q => q.category).filter(Boolean))].sort();
     const dl = document.getElementById('qCategoryList');
     if (dl) dl.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
-    applySearch();
   }
 
   function applySearch() {
-    const term = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
-    filteredQuestions = term
-      ? allQuestions.filter(q => q.question.toLowerCase().includes(term))
-      : [...allQuestions];
-    currentPage = 0;
-    renderQuestions();
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      searchTerm = (document.getElementById('searchInput')?.value || '').trim();
+      currentPage = 0;
+      loadQuestions();
+    }, 300);
   }
 
   function renderQuestions() {
     const list = document.getElementById('qList');
     list.innerHTML = '';
 
-    if (filteredQuestions.length === 0) {
+    if (pageQuestions.length === 0) {
       list.innerHTML = '<div class="empty">Sual tapılmadı.</div>';
       document.getElementById('qPager').innerHTML = '';
       return;
     }
 
     const start = currentPage * PAGE_SIZE;
-    filteredQuestions.slice(start, start + PAGE_SIZE).forEach((q, i) => {
+    pageQuestions.forEach((q, i) => {
       const opts = { a: q.option_a, b: q.option_b, c: q.option_c, d: q.option_d };
       if (q.option_e) opts.e = q.option_e;
       const card = document.createElement('div');
@@ -342,7 +366,7 @@
     });
 
     // Pagination
-    const totalPages = Math.ceil(filteredQuestions.length / PAGE_SIZE);
+    const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
     const pager = document.getElementById('qPager');
     if (totalPages <= 1) { pager.innerHTML = ''; return; }
     pager.innerHTML = `
@@ -353,7 +377,7 @@
 
   function changePage(dir) {
     currentPage += dir;
-    renderQuestions();
+    loadQuestions();
     document.getElementById('qList').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -383,10 +407,19 @@
     document.getElementById('addStatus').textContent = '';
     document.querySelector('.add-card h3').textContent = 'Yeni Sual Əlavə Et';
     const si = document.getElementById('searchInput');
-    if (si) { si.value = ''; applySearch(); }
+    if (si) {
+      si.value = '';
+      clearTimeout(searchDebounceTimer);
+      searchTerm = '';
+      currentPage = 0;
+      loadQuestions();
+    }
   }
 
   async function addQuestion() {
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn.disabled) return;
+
     const question  = document.getElementById('fQuestion').value.trim();
     const option_a  = document.getElementById('fA').value.trim();
     const option_b  = document.getElementById('fB').value.trim();
@@ -402,34 +435,42 @@
       return;
     }
 
-    if (editingId) {
-      status.textContent = 'Yadda saxlanılır...';
-      const { error } = await db.from('review_questions')
-        .update({ question, option_a, option_b, option_c, option_d, option_e, correct, category })
-        .eq('id', editingId);
-      if (error) { status.textContent = '❌ ' + error.message; return; }
-      status.textContent = '✓ Yeniləndi!';
-      loadQuestions();
-      setTimeout(() => cancelEdit(), 1500);
-      return;
-    }
+    saveBtn.disabled = true;
+    try {
+      if (editingId) {
+        status.textContent = 'Yadda saxlanılır...';
+        const { error } = await db.from('review_questions')
+          .update({ question, option_a, option_b, option_c, option_d, option_e, correct, category })
+          .eq('id', editingId);
+        if (error) { status.textContent = '❌ ' + error.message; return; }
+        status.textContent = '✓ Yeniləndi!';
+        loadQuestions();
+        setTimeout(() => cancelEdit(), 1500);
+        return;
+      }
 
-    status.textContent = 'Əlavə edilir...';
-    const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct, category });
-    if (error) { status.textContent = '❌ ' + error.message; return; }
-    ['fQuestion','fA','fB','fC','fD','fE','fCategory'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('fCorrect').value = 'a';
-    status.textContent = '✓ Əlavə edildi!';
-    setTimeout(() => status.textContent = '', 2000);
-    loadQuestions();
+      status.textContent = 'Əlavə edilir...';
+      const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct, category });
+      if (error) { status.textContent = '❌ ' + error.message; return; }
+      ['fQuestion','fA','fB','fC','fD','fE','fCategory'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('fCorrect').value = 'a';
+      status.textContent = '✓ Əlavə edildi!';
+      setTimeout(() => status.textContent = '', 2000);
+      loadQuestions();
+    } finally {
+      saveBtn.disabled = false;
+    }
   }
 
   async function bulkAssignCategory() {
     const category = document.getElementById('bulkCategoryInput').value.trim();
     const status   = document.getElementById('bulkCategoryStatus');
     if (!category) { status.textContent = '⚠️ Kateqoriya daxil edin.'; return; }
-    const uncategorized = allQuestions.filter(q => !q.category);
-    if (uncategorized.length === 0) { status.textContent = '✓ Bütün sualların kateqoriyası var.'; return; }
+    // Query uncategorized rows directly — pageQuestions only holds the
+    // current page now, not the whole table.
+    const { data: uncategorized, error: selError } = await db.from('review_questions').select('id').is('category', null);
+    if (selError) { status.textContent = '❌ ' + selError.message; return; }
+    if (!uncategorized || uncategorized.length === 0) { status.textContent = '✓ Bütün sualların kateqoriyası var.'; return; }
     status.textContent = `${uncategorized.length} sual yenilənir...`;
     const ids = uncategorized.map(q => q.id);
     const { error } = await db.from('review_questions').update({ category }).in('id', ids);
@@ -451,25 +492,7 @@
     pendingBulkRecords = null;
     if (!raw) { status.textContent = '⚠️ Mətn boşdur.'; return; }
 
-    const parseRow = r => {
-      if (r.includes('\t')) return r.split('\t').map(c => c.trim());
-      // Always peel the correct answer (single letter) from the very end first
-      const lastComma = r.lastIndexOf(',');
-      if (lastComma === -1) return [r.trim()];
-      const correct = r.slice(lastComma + 1).trim();
-      const body = r.slice(0, lastComma);
-      // Parse the rest (question + options) as CSV
-      const cols = []; let cur = '', inQ = false;
-      for (let i = 0; i < body.length; i++) {
-        if (body[i] === '"') { inQ = !inQ; }
-        else if (body[i] === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-        else { cur += body[i]; }
-      }
-      cols.push(cur.trim());
-      cols.push(correct);
-      return cols;
-    };
-    const rows = raw.split('\n').map(r => parseRow(r.trim())).filter(r => r.length >= 6);
+    const rows = tokenizeDelimited(raw, raw.includes('\t') ? '\t' : ',').filter(r => r.length >= 6);
     if (rows.length === 0) {
       status.textContent = '⚠️ Format yanlışdır. Ən az 6 sütun lazımdır.';
       return;
@@ -540,27 +563,35 @@
 
   async function confirmBulkAddQuestions() {
     const status = document.getElementById('bulkStatus');
+    const confirmBtn = document.getElementById('bulkConfirmBtn');
+    if (confirmBtn.disabled) return;
     if (!pendingBulkRecords || pendingBulkRecords.length === 0) {
       status.textContent = '⚠️ Əvvəlcə önizləyin.';
       return;
     }
 
-    status.textContent = `${pendingBulkRecords.length} sual əlavə edilir...`;
-    const { error } = await db.from('review_questions').insert(pendingBulkRecords);
-    if (error) { console.error('bulkAddQuestions failed:', error); status.textContent = '❌ ' + error.message; return; }
+    confirmBtn.disabled = true;
+    try {
+      status.textContent = `${pendingBulkRecords.length} sual əlavə edilir...`;
+      const { error } = await db.from('review_questions').insert(pendingBulkRecords);
+      if (error) { console.error('bulkAddQuestions failed:', error); status.textContent = '❌ ' + error.message; return; }
 
-    document.getElementById('bulkPaste').value = '';
-    document.getElementById('bulkPreview').innerHTML = '';
-    document.getElementById('bulkConfirmBtn').style.display = 'none';
-    status.textContent = `✓ ${pendingBulkRecords.length} sual əlavə edildi!`;
-    pendingBulkRecords = null;
-    setTimeout(() => status.textContent = '', 3000);
-    loadQuestions();
+      document.getElementById('bulkPaste').value = '';
+      document.getElementById('bulkPreview').innerHTML = '';
+      confirmBtn.style.display = 'none';
+      status.textContent = `✓ ${pendingBulkRecords.length} sual əlavə edildi!`;
+      pendingBulkRecords = null;
+      setTimeout(() => status.textContent = '', 3000);
+      loadQuestions();
+    } finally {
+      confirmBtn.disabled = false;
+    }
   }
 
   async function deleteQuestion(id) {
     if (!confirm('Bu sualı silmək istəyirsiniz?')) return;
-    await db.from('review_questions').delete().eq('id', id);
+    const { error } = await db.from('review_questions').delete().eq('id', id);
+    if (error) { showAdminToast('❌ Xəta: ' + error.message); return; }
     loadQuestions();
   }
 
@@ -573,6 +604,57 @@
     if (tab === 'questions') loadQuestions();
   }
 
+  // Quote-aware CSV/TSV tokenizer: parses the whole pasted block in one pass
+  // so a quoted field containing the row delimiter or an embedded newline
+  // (e.g. wrapped text pasted from Sheets) doesn't shear rows apart the way
+  // a naive text.split('\n') would.
+  function tokenizeDelimited(text, delimiter) {
+    const rows = [];
+    let row = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { cur += '"'; i++; }
+          else { inQuotes = false; }
+        } else {
+          cur += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === delimiter) {
+        row.push(cur.trim()); cur = '';
+      } else if (ch === '\n') {
+        row.push(cur.trim()); cur = '';
+        rows.push(row); row = [];
+      } else if (ch === '\r') {
+        // skip; \n (handled above) marks the row boundary
+      } else {
+        cur += ch;
+      }
+    }
+    if (cur.length > 0 || row.length > 0) { row.push(cur.trim()); rows.push(row); }
+    return rows.filter(r => r.some(c => c !== ''));
+  }
+
+  // Single feedback mechanism for actions with no dedicated status element
+  // nearby (e.g. per-row delete buttons), instead of native alert() or a
+  // silently-ignored error.
+  function showAdminToast(msg) {
+    const existing = document.querySelector('.admin-toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.className = 'admin-toast';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:10px 18px;font-size:0.85rem;color:#e8eaf0;box-shadow:0 4px 16px rgba(0,0,0,0.4);z-index:1000';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, '&amp;')
@@ -582,11 +664,13 @@
   }
 
   async function loadVocabItems() {
-    const { data } = await db.from('vocab_items').select('*').order('category').order('english');
+    const { data, error } = await db.from('vocab_items').select('*').order('category').order('english');
     const list = document.getElementById('vocabList');
     list.innerHTML = '';
 
-    if (!data || data.length === 0) {
+    if (error) {
+      list.innerHTML = '<div class="empty">Xəta: ' + escapeHtml(error.message) + '</div>';
+    } else if (!data || data.length === 0) {
       list.innerHTML = '<div class="empty">Hələ söz əlavə edilməyib.</div>';
     } else {
       // Populate category datalist
@@ -634,7 +718,7 @@
   async function deleteVocabItem(id) {
     if (!confirm('Bu sözü silmək istəyirsiniz?')) return;
     const { error } = await db.from('vocab_items').delete().eq('id', id);
-    if (error) { alert('Xəta: ' + error.message); return; }
+    if (error) { showAdminToast('❌ Xəta: ' + error.message); return; }
     loadVocabItems();
   }
 </script>

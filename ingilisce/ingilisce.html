@@ -47,8 +47,8 @@
       <div class="imtahan-wrap" id="imtahanWrap">
         <button class="review-quiz-btn imtahan-trigger" id="imtahanBtn">İmtahan ▾</button>
         <div class="imtahan-menu hidden" id="imtahanMenu">
-          <button onclick="startVocabGame(null, this)">🃏 Söz</button>
-          <button onclick="startReviewQuiz()">📝 Təkrar</button>
+          <button id="vocabMenuBtn">🃏 Söz</button>
+          <button id="reviewMenuBtn">📝 Təkrar</button>
         </div>
       </div>
       <!-- <button class="mode-toggle" id="modeToggle">SAT Rejimi</button> -->
@@ -130,7 +130,7 @@
 
   <!-- Uğur Bildirişi -->
   <div class="modal-overlay hidden" id="celebrationOverlay">
-    <div class="modal celebration-modal">
+    <div class="modal celebration-modal" role="status" aria-live="polite">
       <div class="celebration-icon">🎉</div>
       <h2 id="celebrationTitle">Əla!</h2>
       <p id="celebrationText"></p>
@@ -143,14 +143,14 @@
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title">🃏 Söz Oyunu</h2>
-        <button class="modal-close" onclick="closeModal('vocabCategoryOverlay')">✕</button>
+        <button class="modal-close" data-close="vocabCategoryOverlay">✕</button>
       </div>
       <div class="modal-body">
         <p style="font-size:0.85rem;opacity:0.6;margin-bottom:12px">Kateqoriya seç:</p>
         <div class="vocab-category-chips" id="vocabCategoryChips"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn-primary" id="vocabStartBtn" onclick="launchVocabSession()">Başla</button>
+        <button class="btn-primary" id="vocabStartBtn">Başla</button>
       </div>
     </div>
   </div>
@@ -160,7 +160,7 @@
     <div class="modal">
       <div class="modal-header">
         <span class="quiz-progress" id="vocabProgress"></span>
-        <button class="modal-close" onclick="closeModal('vocabOverlay')">✕</button>
+        <button class="modal-close" data-close="vocabOverlay">✕</button>
       </div>
       <div class="lives-bar" id="vocabLives"></div>
       <div class="modal-body" id="vocabBody"></div>
@@ -170,7 +170,7 @@
 
   <!-- Vocab Result -->
   <div class="modal-overlay hidden" id="vocabResultOverlay">
-    <div class="modal celebration-modal">
+    <div class="modal celebration-modal" role="status" aria-live="polite">
       <div class="celebration-icon" id="vocabResultIcon">📊</div>
       <h2 id="vocabResultTitle"></h2>
       <p id="vocabResultText"></p>
@@ -184,7 +184,7 @@
 
   <!-- Vocab Canlar Bitdi -->
   <div class="modal-overlay hidden" id="vocabFailOverlay">
-    <div class="modal celebration-modal">
+    <div class="modal celebration-modal" role="status" aria-live="polite">
       <div class="celebration-icon">💔</div>
       <h2>Canlar Bitdi</h2>
       <p>Yenidən cəhd et!</p>
@@ -200,14 +200,14 @@
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title">📝 Təkrar</h2>
-        <button class="modal-close" onclick="closeModal('reviewCategoryOverlay')">✕</button>
+        <button class="modal-close" data-close="reviewCategoryOverlay">✕</button>
       </div>
       <div class="modal-body">
         <p style="font-size:0.85rem;opacity:0.6;margin-bottom:12px">Mövzu seç:</p>
         <div class="vocab-category-chips" id="reviewCategoryChips"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn-primary" id="reviewStartBtn" onclick="launchReviewSession()">Başla</button>
+        <button class="btn-primary" id="reviewStartBtn">Başla</button>
       </div>
     </div>
   </div>
@@ -228,7 +228,7 @@
 
   <!-- Review Result -->
   <div class="modal-overlay hidden" id="reviewResultOverlay">
-    <div class="modal celebration-modal">
+    <div class="modal celebration-modal" role="status" aria-live="polite">
       <div class="celebration-icon" id="reviewResultIcon">📊</div>
       <h2 id="reviewResultTitle"></h2>
       <p id="reviewResultText"></p>
@@ -239,7 +239,7 @@
 
   <!-- Can Bitdi -->
   <div class="modal-overlay hidden" id="failOverlay">
-    <div class="modal celebration-modal">
+    <div class="modal celebration-modal" role="status" aria-live="polite">
       <div class="celebration-icon">💔</div>
       <h2>Canlar Bitdi</h2>
       <p>5 can yeniləndi. Dərsi yenidən oxu.</p>
@@ -247,7 +247,10 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"
+          integrity="sha384-3wY11tldQ5+yWqAvmTN4XtQvnjoTva0cV15O/O/O5NTtp0ivVopSzLOzsVXWZse9"
+          crossorigin="anonymous"></script>
+  <script src="config.js"></script>
   <script src="ingilisce.js"></script>
 </body>
 </html>

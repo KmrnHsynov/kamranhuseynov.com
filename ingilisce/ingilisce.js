@@ -1,7 +1,5 @@
 // ── Supabase ─────────────────────────────────────────────
-const SUPABASE_URL  = 'https://krrzidmvtudulflxzrqj.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtycnppZG12dHVkdWxmbHh6cnFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTQ1NzYsImV4cCI6MjA5ODAzMDU3Nn0.zj6zfL7WsCugBGi5rjLbBQ-wmt6Q4q-lNNxc72M8Vj4';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+// SUPABASE_URL/SUPABASE_ANON/db are defined in config.js, loaded before this file.
 
 // ── App state ─────────────────────────────────────────────
 const DEFAULT_STATE = { completedNodes: [], lives: 5 };
@@ -23,20 +21,29 @@ function loadState() {
 }
 
 let syncQueue = Promise.resolve();
+const syncedNodes = { normal: new Set(), sat: new Set() };
 
 function saveState(state) {
   localStorage.setItem(storageKey(), JSON.stringify(state));
   syncQueue = syncQueue.then(syncProgress).catch(() => {});
 }
 
+// Progress is synced one completed node at a time via the append_progress
+// RPC, which only allows appending to the server's array — the client can
+// no longer overwrite normal_progress/sat_progress with an arbitrary value.
 async function syncProgress() {
   if (!currentUserId) return;
-  const col = currentMode === 'sat' ? 'sat_progress' : 'normal_progress';
+  const mode = currentMode === 'sat' ? 'sat' : 'normal';
   const state = loadState();
-  const { error } = await db.from('profiles').update({ [col]: state.completedNodes }).eq('id', currentUserId);
-  if (error) {
-    console.error('syncProgress failed:', error);
-    showToast('Sinxronizasiya alınmadı, internetinizi yoxlayın.');
+  const newNodes = state.completedNodes.filter(id => !syncedNodes[mode].has(id));
+  for (const nodeId of newNodes) {
+    const { error } = await db.rpc('append_progress', { p_mode: mode, p_node_id: nodeId });
+    if (error) {
+      console.error('syncProgress failed:', error);
+      showToast('Sinxronizasiya alınmadı, internetinizi yoxlayın.');
+      return;
+    }
+    syncedNodes[mode].add(nodeId);
   }
 }
 
@@ -102,6 +109,8 @@ function setActiveProfile(userId, profile) {
   const sKey = `igp_sat_${profile.display_name}`;
   localStorage.setItem(nKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.normal_progress || [] }));
   localStorage.setItem(sKey, JSON.stringify({ ...DEFAULT_STATE, completedNodes: profile.sat_progress  || [] }));
+  syncedNodes.normal = new Set(profile.normal_progress || []);
+  syncedNodes.sat    = new Set(profile.sat_progress  || []);
 
   checkDailyLivesReset();
 
@@ -142,18 +151,19 @@ async function doSignUp(name, avatar, password, confirm) {
   const { data: available } = await db.rpc('is_username_available', { uname: name });
   if (!available)                throw new Error('Bu ad artıq istifadə olunur. Başqa ad seçin.');
 
+  // The profiles row is created by a DB trigger on auth.users in the same
+  // transaction as the auth user, so a duplicate name (or any other failure)
+  // rolls back the whole signup instead of leaving an orphaned auth user.
   const email = await nameToEmail(name);
-  const { data, error } = await db.auth.signUp({ email, password });
-  if (error)                     throw new Error(error.message);
-
-  const { error: profErr } = await db.from('profiles').insert({
-    id: data.user.id, display_name: name, avatar,
-    normal_progress: [], sat_progress: []
+  const { data, error } = await db.auth.signUp({
+    email, password,
+    options: { data: { display_name: name, avatar } }
   });
-  if (profErr) {
-    // best-effort cleanup so the name isn't permanently orphaned
-    await db.rpc('cleanup_orphaned_signup', { uid: data.user.id }).catch(() => {});
-    throw new Error('Qeydiyyat tamamlanmadı, yenidən cəhd edin.');
+  if (error) {
+    if (/duplicate key|already registered|already exists|database error saving new user/i.test(error.message)) {
+      throw new Error('Bu ad artıq istifadə olunur. Başqa ad seçin.');
+    }
+    throw new Error(error.message);
   }
 
   return { user: data.user, profile: { display_name: name, avatar, normal_progress: [], sat_progress: [] } };
@@ -179,12 +189,23 @@ function getAllNodeIds(curriculum) {
   return curriculum.sections.flatMap(s => s.nodes.map(n => n.id));
 }
 
-function findNode(nodeId, curriculum) {
-  for (const section of curriculum.sections) {
-    const node = section.nodes.find(n => n.id === nodeId);
-    if (node) return node;
+// findNode is called once per node on every stats/render pass, so a linear
+// section/node scan per call turns an O(n) pass into O(n²). Cache a flat
+// id → node map per curriculum object instead.
+const nodeIndexCache = new WeakMap();
+
+function getNodeIndex(curriculum) {
+  let index = nodeIndexCache.get(curriculum);
+  if (!index) {
+    index = new Map();
+    curriculum.sections.forEach(s => s.nodes.forEach(n => index.set(n.id, n)));
+    nodeIndexCache.set(curriculum, index);
   }
-  return null;
+  return index;
+}
+
+function findNode(nodeId, curriculum) {
+  return getNodeIndex(curriculum).get(nodeId) || null;
 }
 
 // ── Modal helpers ──────────────────────────────────────
@@ -197,6 +218,8 @@ function showToast(msg) {
   if (existing) existing.remove();
   const t = document.createElement('div');
   t.className = 'ig-toast';
+  t.setAttribute('role', 'status');
+  t.setAttribute('aria-live', 'polite');
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
@@ -242,8 +265,9 @@ function renderPath(curriculum) {
 
   const resumeBtn = document.getElementById('resumeBtn');
   if (resumeBtn) {
-    const hasNext = !!getNextNodeId(curriculum);
-    resumeBtn.classList.toggle('hidden', !hasNext);
+    // firstIncompleteId above already is the "next node", so reuse it
+    // instead of re-reading localStorage and rescanning all node ids again.
+    resumeBtn.classList.toggle('hidden', !firstIncompleteId);
     resumeBtn.onclick = () => resumeProgress(curriculum);
   }
 
@@ -256,10 +280,12 @@ function renderPath(curriculum) {
 
     const titleEl = document.createElement('div');
     titleEl.className = 'section-title collapsible';
-    // innerHTML is safe here only because section.title comes from the local
-    // curriculum JSON, never from the DB — do not reuse this pattern for any
-    // DB-sourced string (use textContent/createElement instead).
-    titleEl.innerHTML = `<span>${section.title}</span><span class="section-chevron">${isCollapsed ? '▶' : '▼'}</span>`;
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = section.title;
+    const chevron = document.createElement('span');
+    chevron.className = 'section-chevron';
+    chevron.textContent = isCollapsed ? '▶' : '▼';
+    titleEl.append(titleSpan, chevron);
     block.appendChild(titleEl);
 
     const nodesContainer = document.createElement('div');
@@ -663,7 +689,7 @@ function renderVocabQuestion() {
       const btn = document.createElement('button');
       btn.className = 'vocab-option';
       btn.textContent = opt.english;
-      btn.addEventListener('click', () => checkVocabAnswer(btn, opt.id, optContainer, 'id'));
+      btn.addEventListener('click', () => checkVocabAnswer(btn, opt.id, optContainer));
       optContainer.appendChild(btn);
     });
     body.appendChild(optContainer);
@@ -686,14 +712,14 @@ function renderVocabQuestion() {
       const btn = document.createElement('button');
       btn.className = 'vocab-option-emoji';
       btn.textContent = opt.emoji;
-      btn.addEventListener('click', () => checkVocabAnswer(btn, opt.id, optContainer, 'id'));
+      btn.addEventListener('click', () => checkVocabAnswer(btn, opt.id, optContainer));
       optContainer.appendChild(btn);
     });
     body.appendChild(optContainer);
   }
 }
 
-function checkVocabAnswer(btn, selectedId, container, _key) {
+function checkVocabAnswer(btn, selectedId, container) {
   const { questions, current } = vocabSession;
   const { item, mode } = questions[current];
   const isCorrect = selectedId === item.id;
@@ -1008,6 +1034,8 @@ function showFeedbackToast(isCorrect, question) {
   if (existing) existing.remove();
   const fb = document.createElement('div');
   fb.className = `feedback ${isCorrect ? 'correct' : 'wrong'}`;
+  fb.setAttribute('role', 'status');
+  fb.setAttribute('aria-live', 'polite');
   if (isCorrect) {
     fb.textContent = '✓ Düzgün!';
   } else if (question.type === 'multiple_choice' || question.type === 'true_false') {
@@ -1145,6 +1173,25 @@ function setAuthLoading(btnId, loading) {
 
 // ── Init ──────────────────────────────────────────────────
 
+// Minimal shape check so a malformed curriculum edit (missing nodes, wrong
+// key name) fails loudly here instead of throwing a confusing TypeError deep
+// inside renderPath later.
+function validateCurriculumShape(curriculum, label) {
+  if (!curriculum || !Array.isArray(curriculum.sections)) {
+    throw new Error(`${label}: sections array is missing`);
+  }
+  curriculum.sections.forEach((section, si) => {
+    if (!section.id || !Array.isArray(section.nodes)) {
+      throw new Error(`${label}: section[${si}] is missing id/nodes`);
+    }
+    section.nodes.forEach((node, ni) => {
+      if (!node.id || typeof node.title !== 'string') {
+        throw new Error(`${label}: section[${si}].nodes[${ni}] is missing id/title`);
+      }
+    });
+  });
+}
+
 async function init() {
   try {
     const [normalRes, satRes] = await Promise.all([
@@ -1152,8 +1199,12 @@ async function init() {
       fetch('sat_curriculum.json')
     ]);
     if (!normalRes.ok || !satRes.ok) throw new Error('curriculum fetch not ok');
-    window._normalCurriculum = await normalRes.json();
-    window._satCurriculum    = await satRes.json();
+    const normalCurriculum = await normalRes.json();
+    const satCurriculum    = await satRes.json();
+    validateCurriculumShape(normalCurriculum, 'curriculum.json');
+    validateCurriculumShape(satCurriculum, 'sat_curriculum.json');
+    window._normalCurriculum = normalCurriculum;
+    window._satCurriculum    = satCurriculum;
   } catch (e) {
     console.error('Kurikulum yüklənmədi:', e);
     showToast('Kurikulum yüklənmədi, səhifəni yeniləyin.');
@@ -1161,16 +1212,22 @@ async function init() {
   }
 
   // Check existing Supabase session
-  const { data: { session } } = await db.auth.getSession();
-  if (session) {
-    const { data: profile } = await db.from('profiles').select('*').eq('id', session.user.id).single();
-    if (profile) {
-      setActiveProfile(session.user.id, profile);
-      renderPath(window._normalCurriculum);
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (session) {
+      const { data: profile } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+      if (profile) {
+        setActiveProfile(session.user.id, profile);
+        renderPath(window._normalCurriculum);
+      } else {
+        showAuthModal();
+      }
     } else {
       showAuthModal();
     }
-  } else {
+  } catch (e) {
+    console.error('Sessiya yoxlanılmadı:', e);
+    showToast('Qoşulma xətası, internetinizi yoxlayıb səhifəni yeniləyin.');
     showAuthModal();
   }
 
@@ -1199,6 +1256,19 @@ async function init() {
   });
 
   document.getElementById('profileDropdown').addEventListener('click', (e) => e.stopPropagation());
+
+  // İmtahan menu actions
+  const vocabMenuBtn = document.getElementById('vocabMenuBtn');
+  vocabMenuBtn.addEventListener('click', () => startVocabGame(null, vocabMenuBtn));
+  document.getElementById('reviewMenuBtn').addEventListener('click', () => startReviewQuiz());
+  document.getElementById('reviewStartBtn').addEventListener('click', () => launchReviewSession());
+  // vocabStartBtn's click handler is (re)assigned in startVocabGame() each time
+  // the category picker opens, since it needs the currently-selected category.
+
+  // Generic modal-close buttons (data-close holds the overlay id)
+  document.querySelectorAll('.modal-close[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+  });
 
   // Sign out button
   document.getElementById('btnSignOut').addEventListener('click', async () => {
