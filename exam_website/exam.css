@@ -316,7 +316,7 @@ body {
 
 .exam-run-question-wrap { width: 100%; max-width: 560px; }
 
-.quiz-question { font-size: 1.05rem; font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
+.quiz-question { font-size: 1.05rem; font-weight: 600; margin-bottom: 20px; line-height: 1.5; white-space: pre-wrap; }
 
 .quiz-options { display: flex; flex-direction: column; gap: 10px; }
 

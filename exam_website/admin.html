@@ -178,6 +178,18 @@
       </div>
 
       <div class="add-card">
+        <h3>🧾 Sənəddən Toplu Əlavə</h3>
+        <p style="font-size:0.8rem;opacity:0.5;margin-bottom:12px">Sual mətnini və <strong>A) B) C) D) E)</strong> formatında variantları olduğu kimi yapışdırın (Word/PDF-dən kopyalanmış mətn kimi). Bir neçə sualı ardıcıl yapışdıra bilərsiniz — hər sual öz variantlarının ardınca gələn növbəti sual mətni ilə avtomatik ayrılır. İstəyə görə hər sualdan sonra <strong>Cavab: X</strong> sətri əlavə etsəniz, düzgün cavab avtomatik seçiləcək (yenə də təsdiqləmədən əvvəl yoxlaya bilərsiniz); olmasa, aşağıda əl ilə seçəcəksiniz.</p>
+        <textarea id="docPaste" style="min-height:140px" placeholder="Solon islahatına aid deyil:&#10;A) Kəndlilərin borcları ləğv edildi&#10;B) Borca görə qul edilən afinalılar azad edildi&#10;C) ...&#10;D) ...&#10;E) ...&#10;Cavab: D"></textarea>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
+          <button class="btn btn-primary" onclick="previewDocQuestions()">Sualları tap</button>
+          <button class="btn btn-primary" id="docConfirmBtn" style="display:none" onclick="confirmDocQuestions()">Təsdiqlə və əlavə et</button>
+          <span class="status" id="docStatus"></span>
+        </div>
+        <div id="docPreview" style="margin-top:12px;display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+      <div class="add-card">
         <h3>📋 Cədvəldən Toplu Əlavə</h3>
         <p style="font-size:0.8rem;opacity:0.5;margin-bottom:12px">Google Sheets / Excel-dən kopyalayın. Sütun sırası: <strong>Sual | A | B | C | D | E (optional) | Düzgün (a/b/c/d/e)</strong></p>
         <textarea id="bulkPaste" style="min-height:120px" placeholder="Buraya yapışdırın..."></textarea>
@@ -564,6 +576,140 @@
     const { error } = await db.from('exam_questions').delete().eq('id', id);
     if (error) { showAdminToast('❌ Xəta: ' + error.message); return; }
     loadQuestions();
+  }
+
+  // ── Document-style bulk add (paste "Question / A) .. B) .. C) .." blocks) ──
+  let pendingDocRecords = null;
+
+  // Walks the pasted text line by line. Any non-option line becomes part of
+  // the current question's stem (so multi-line stems like numbered "1. .. 2. .."
+  // lists survive) until an "A) .." / "B) .." style line is seen; once options
+  // have started, the next non-option line is treated as the start of the
+  // *next* question rather than more stem text — this lets several questions
+  // be pasted back-to-back with no blank-line separator required. An optional
+  // "Cavab: X" line right after the options is picked up as a pre-filled
+  // answer (still shown/overridable in the preview, never inserted blind).
+  function parseQuestionBlocks(text) {
+    const optionLine = /^([A-Ea-e])[)\.:]\s*(.+)$/;
+    const answerLine = /^(?:Cavab|Doğru cavab|Düzgün cavab|Answer|Correct)\s*[:\-]\s*([A-Ea-e])\)?\.?\s*$/i;
+    const lines = text.split('\n').map(l => l.trim());
+    const blocks = [];
+    let cur = null;
+
+    lines.forEach(line => {
+      if (!line) return;
+      const optMatch = line.match(optionLine);
+      const ansMatch = line.match(answerLine);
+      if (optMatch) {
+        if (!cur) return; // stray option line before any question text — ignore
+        cur.options[optMatch[1].toLowerCase()] = optMatch[2].trim();
+      } else if (ansMatch && cur && Object.keys(cur.options).length > 0) {
+        cur.correct = ansMatch[1].toLowerCase();
+      } else if (cur && Object.keys(cur.options).length > 0) {
+        blocks.push(cur);
+        cur = { question: line, options: {}, correct: null };
+      } else if (cur) {
+        cur.question += '\n' + line;
+      } else {
+        cur = { question: line, options: {}, correct: null };
+      }
+    });
+    if (cur) blocks.push(cur);
+
+    return blocks.filter(b => b.question && b.options.a && b.options.b && b.options.c && b.options.d);
+  }
+
+  function previewDocQuestions() {
+    const raw = document.getElementById('docPaste').value.trim();
+    const status = document.getElementById('docStatus');
+    const preview = document.getElementById('docPreview');
+    const confirmBtn = document.getElementById('docConfirmBtn');
+    preview.innerHTML = '';
+    confirmBtn.style.display = 'none';
+    pendingDocRecords = null;
+    if (!raw) { status.textContent = '⚠️ Mətn boşdur.'; return; }
+
+    const blocks = parseQuestionBlocks(raw);
+    if (blocks.length === 0) {
+      status.textContent = '⚠️ Sual tapılmadı. Format: sual mətni, sonra A) B) C) D) sətirləri.';
+      return;
+    }
+
+    pendingDocRecords = blocks.map(b => ({
+      question: b.question,
+      option_a: b.options.a, option_b: b.options.b, option_c: b.options.c, option_d: b.options.d,
+      option_e: b.options.e || null,
+      correct: b.correct && b.options[b.correct] ? b.correct : null
+    }));
+
+    // If the pasted text included a "Cavab: X" line, that letter is
+    // pre-selected here — still shown and overridable, never inserted blind.
+    // Otherwise the dropdown starts empty and must be picked by hand.
+    const prefilledCount = pendingDocRecords.filter(r => r.correct).length;
+    pendingDocRecords.forEach((rec, i) => {
+      const letters = ['a','b','c','d','e'].filter(k => rec[`option_${k}`]);
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.style.flexDirection = 'column';
+      card.style.alignItems = 'stretch';
+      card.innerHTML = `
+        <div class="q-text">${escapeHtml(rec.question)}</div>
+        <div class="q-opts" style="margin-bottom:10px">
+          ${letters.map(k => `<span class="q-opt ${k === rec.correct ? 'correct' : ''}">${k.toUpperCase()}. ${escapeHtml(rec[`option_${k}`])}</span>`).join('')}
+        </div>
+        <div class="correct-row">
+          <label>Düzgün cavab:</label>
+          <select data-doc-correct="${i}">
+            <option value="">— seçin —</option>
+            ${letters.map(k => `<option value="${k}" ${k === rec.correct ? 'selected' : ''}>${k.toUpperCase()}</option>`).join('')}
+          </select>
+        </div>`;
+      preview.appendChild(card);
+    });
+
+    confirmBtn.style.display = '';
+    status.textContent = prefilledCount === pendingDocRecords.length
+      ? `${pendingDocRecords.length} sual tapıldı — bütün cavablar aşkarlandı, yoxlayıb təsdiqləyin.`
+      : `${pendingDocRecords.length} sual tapıldı (${prefilledCount} cavab aşkarlandı) — qalanları seçin.`;
+  }
+
+  async function confirmDocQuestions() {
+    const status = document.getElementById('docStatus');
+    const confirmBtn = document.getElementById('docConfirmBtn');
+    if (confirmBtn.disabled) return;
+    if (!pendingDocRecords || pendingDocRecords.length === 0) {
+      status.textContent = '⚠️ Əvvəlcə sualları tapın.';
+      return;
+    }
+
+    let missing = 0;
+    document.querySelectorAll('[data-doc-correct]').forEach(sel => {
+      const idx = parseInt(sel.dataset.docCorrect, 10);
+      pendingDocRecords[idx].correct = sel.value || null;
+      if (!sel.value) missing++;
+    });
+    if (missing > 0) {
+      status.textContent = `⚠️ ${missing} sual üçün düzgün cavab seçilməyib.`;
+      return;
+    }
+
+    confirmBtn.disabled = true;
+    try {
+      status.textContent = `${pendingDocRecords.length} sual əlavə edilir...`;
+      const records = pendingDocRecords.map(r => ({ exam_id: selectedExamId, ...r }));
+      const { error } = await db.from('exam_questions').insert(records);
+      if (error) { console.error('confirmDocQuestions failed:', error); status.textContent = '❌ ' + error.message; return; }
+
+      document.getElementById('docPaste').value = '';
+      document.getElementById('docPreview').innerHTML = '';
+      confirmBtn.style.display = 'none';
+      status.textContent = `✓ ${records.length} sual əlavə edildi!`;
+      pendingDocRecords = null;
+      setTimeout(() => status.textContent = '', 3000);
+      loadQuestions();
+    } finally {
+      confirmBtn.disabled = false;
+    }
   }
 
   let pendingBulkRecords = null;
