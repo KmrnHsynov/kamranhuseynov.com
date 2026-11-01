@@ -146,7 +146,8 @@ textarea{resize:vertical;line-height:1.6;}
 /* ══════════════════════════════════
    PASSWORD / LOCK VIEW
 ══════════════════════════════════ */
-#lock-view{
+/* #lobby-view is the student page's version of the same screen (lobby, "no active quiz", "closed", exam list). */
+#lock-view,#lobby-view{
   flex-direction:column;align-items:center;justify-content:center;
   padding:20px;
 }
