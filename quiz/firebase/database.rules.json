@@ -31,9 +31,8 @@
           "autoSubmitted":  { ".validate": "newData.isBoolean()" },
           "autoReason":     { ".validate": "newData.isString() && newData.val() === 'leaves'" },
           "events": {
-            ".validate": "newData.numChildren() <= 100",
             "$i": {
-              ".validate": "newData.hasChildren(['type', 't'])",
+              ".validate": "$i.matches(/^([0-9]|[1-9][0-9])$/) && newData.hasChildren(['type', 't'])",
               "type": { ".validate": "newData.isString() && newData.val().length <= 10" },
               "t":    { ".validate": "newData.isNumber()" },
               "$other": { ".validate": false }
