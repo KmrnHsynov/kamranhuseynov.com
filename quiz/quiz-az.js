@@ -408,7 +408,6 @@ function publishTopic(topicName){
   const leaveLimit = Number.isNaN(lv) ? 3 : Math.min(20, Math.max(0, lv));
   db.ref('student_quiz/'+toKey(topicName)).set({questions: filtered, topic: topicName, examMinutes, leaveLimit, publishedAt: Date.now()})
     .then(()=>{
-      localStorage.setItem(STORAGE_KEY_STUDENT, JSON.stringify({questions: filtered, topic: topicName}));
       publishedTopics[topicName] = { count: filtered.length, key: toKey(topicName) };
       renderTopics();
       banner.textContent=`✓ "${topicName}" bütün cihazlara göndərildi`;

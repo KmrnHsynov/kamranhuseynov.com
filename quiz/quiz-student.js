@@ -42,6 +42,8 @@ function analyticsKey(){
 
 // ── INIT ──────────────────────────────────────────────
 (function init(){
+  // Old versions cached the last published exam here and showed it when none was active.
+  try{ localStorage.removeItem(STORAGE_KEY_STUDENT); }catch(e){}
   const saved = loadSavedAttempt();
   if(saved){ resumeExam(saved); return; }
 
@@ -57,11 +59,11 @@ function analyticsKey(){
   db.ref('student_quiz').once('value')
     .then(snapshot=>{
       const val = snapshot.val();
-      if(!val){ _loadFromLocalStorage(); return; }
+      if(!val){ showNoQuiz(); return; }
       const exams = Object.entries(val)
         .map(([key,data])=>({key,...data}))
         .filter(e=>e.questions&&e.questions.length);
-      if(!exams.length){ _loadFromLocalStorage(); return; }
+      if(!exams.length){ showNoQuiz(); return; }
       if(exams.length===1){
         examKey      = exams[0].key;
         quizQs       = exams[0].questions;
@@ -73,27 +75,27 @@ function analyticsKey(){
         showExamList(exams);
       }
     })
-    .catch(()=>_loadFromLocalStorage());
+    .catch(showLoadError);
 })();
-
-function _loadFromLocalStorage(){
-  try{
-    const d = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENT)||'null');
-    if(d && d.questions && d.questions.length){
-      quizQs    = d.questions;
-      topicName = d.topic || '';
-      showLobby(); return;
-    }
-  }catch(e){}
-  showNoQuiz();
-}
 
 function showNoQuiz(){
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
       <div class="lock-icon">📭</div>
-      <h2>Test Tapılmadı</h2>
-      <p>Müəllim hələ test göndərməyib. Daha sonra yenidən cəhd edin.</p>
+      <h2>Aktiv Test Yoxdur</h2>
+      <p>Hazırda aktiv test yoxdur. Müəllim test göndərdikdə bu səhifədə görünəcək.</p>
+      <button class="btn btn-ghost btn-full" onclick="location.reload()">↻ Yenilə</button>
+    </div>`;
+  showView('lobby-view');
+}
+
+function showLoadError(){
+  document.getElementById('lobby-view').innerHTML = `
+    <div class="lock-card">
+      <div class="lock-icon">⚠️</div>
+      <h2>Yüklənmədi</h2>
+      <p>Test məlumatları alına bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin.</p>
+      <button class="btn btn-primary btn-full" onclick="location.reload()">↻ Yenidən cəhd et</button>
     </div>`;
   showView('lobby-view');
 }
