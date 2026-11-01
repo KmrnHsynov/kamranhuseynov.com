@@ -17,10 +17,11 @@
   <div class="lock-card">
     <div class="lock-icon">🔐</div>
     <h2>Müəllim Paneli</h2>
-    <p>Redaktor panelini açmaq üçün müəllim şifrəsini daxil edin.</p>
-    <input type="password" id="pw-input" placeholder="Şifrəni daxil edin…" onkeydown="if(event.key==='Enter')checkPw()"/>
-    <div class="lock-error" id="pw-error">❌ Şifrə yanlışdır. Yenidən cəhd edin.</div>
-    <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="checkPw()">Daxil ol →</button>
+    <p>Redaktor panelini açmaq üçün müəllim hesabı ilə daxil olun.</p>
+    <input type="email" id="email-input" placeholder="E-poçt…" autocomplete="username" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()"/>
+    <input type="password" id="pw-input" placeholder="Şifrəni daxil edin…" autocomplete="current-password" onkeydown="if(event.key==='Enter')signInTeacher()"/>
+    <div class="lock-error" id="pw-error">❌ E-poçt və ya şifrə yanlışdır.</div>
+    <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="signInTeacher()">Daxil ol →</button>
   </div>
 </div>
 
@@ -83,10 +84,9 @@
         <div class="toggle-row"><span>Sualları qarışdır</span><label class="toggle"><input type="checkbox" id="shuffle-q"/><span class="toggle-slider"></span></label></div>
       </div>
       <div class="sidebar-section">
-        <label>Müəllim Şifrəsi</label>
-        <input type="password" id="new-pw" placeholder="Yeni şifrə təyin et…"/>
-        <button class="btn btn-ghost btn-sm btn-full" style="margin-top:8px" onclick="savePw()">Şifrəni Yadda Saxla</button>
-        <p id="pw-saved-msg" style="display:none;font-size:11px;color:var(--correct);margin-top:6px">✓ Şifrə yadda saxlandı</p>
+        <label>Hesab</label>
+        <p id="teacher-email" style="font-size:12px;color:var(--text2);margin-bottom:8px;word-break:break-all"></p>
+        <button class="btn btn-ghost btn-sm btn-full" onclick="signOutTeacher()">Çıxış</button>
       </div>
     </div>
 
@@ -192,6 +192,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="quiz-az.js"></script>
 </body>

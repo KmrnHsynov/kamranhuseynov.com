@@ -2,10 +2,6 @@
 // ══════════════════════════════════════════════════════
 //  CONSTANTS & STATE
 // ══════════════════════════════════════════════════════
-// Password is stored as a SHA-256 hash — not readable as plain text
-// Default password: müəllim2025  (to change, run: sha256("yourpassword") and replace the hash)
-const DEFAULT_PW_HASH = 'a4f795ba6225c5311dcb48a4711fcc924eaa12add1272435413ba06d1c4d1173';
-const STORAGE_KEY_PW  = 'qc_pw_hash';
 const STORAGE_KEY_QS  = 'qc_questions';
 const STORAGE_KEY_CFG  = 'qc_cfg';
 const STORAGE_KEY_STUDENT   = 'qc_student_qs';
@@ -27,43 +23,43 @@ let timerInt = null;
 let timerLeft = 0;
 let answered = false;
 
-
 // ══════════════════════════════════════════════════════
-//  PASSWORD
+//  TEACHER SIGN-IN (Firebase Auth)
 // ══════════════════════════════════════════════════════
-async function hashStr(str){
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-function getStoredHash(){ return localStorage.getItem(STORAGE_KEY_PW) || DEFAULT_PW_HASH; }
+const AUTH_ERRORS = {
+  'auth/too-many-requests':     '❌ Çox cəhd edildi. Bir az gözləyib yenidən cəhd edin.',
+  'auth/network-request-failed': '❌ Şəbəkə xətası. İnternet bağlantısını yoxlayın.'
+};
 
-async function checkPw(){
-  const val = document.getElementById('pw-input').value;
+async function signInTeacher(){
+  const email = document.getElementById('email-input').value.trim();
+  const pw = document.getElementById('pw-input').value;
   const err = document.getElementById('pw-error');
-  const inputHash = await hashStr(val);
-  if(inputHash === getStoredHash()){
-    err.style.display='none';
-    document.getElementById('pw-input').value='';
+  err.style.display = 'none';
+  try{
+    await auth.signInWithEmailAndPassword(email, pw);
+    document.getElementById('pw-input').value = '';
+  } catch(e){
+    document.getElementById('pw-input').value = '';
+    err.textContent = AUTH_ERRORS[e.code] || '❌ E-poçt və ya şifrə yanlışdır.';
+    err.style.display = 'block';
+  }
+}
+
+function signOutTeacher(){ auth.signOut(); }
+
+// Anonymous users (students using the same browser) never get the editor.
+auth.onAuthStateChanged(user=>{
+  if(user && !user.isAnonymous){
+    document.getElementById('teacher-email').textContent = user.email || '';
     loadSaved();
     showView('editor-view');
     renderSidebar();
     renderEditor();
   } else {
-    err.style.display='block';
-    document.getElementById('pw-input').value='';
+    showView('lock-view');
   }
-}
-
-async function savePw(){
-  const v = document.getElementById('new-pw').value.trim();
-  if(!v){alert('Şifrə boş ola bilməz!');return;}
-  const h = await hashStr(v);
-  localStorage.setItem(STORAGE_KEY_PW, h);
-  document.getElementById('new-pw').value='';
-  const msg = document.getElementById('pw-saved-msg');
-  msg.style.display='block';
-  setTimeout(()=>msg.style.display='none', 2500);
-}
+});
 
 function goStudentMode(){
   if(!questions.length){alert('Müəllim hələ test əlavə etməyib.');return;}

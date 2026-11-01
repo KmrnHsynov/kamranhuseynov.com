@@ -11,6 +11,13 @@ let _examList = [];
 const DEFAULT_LEAVE_LIMIT   = 3;
 const STORAGE_KEY_ATTEMPT   = 'qc_student_attempt';
 const OPT_LETTERS           = ['A','B','C','D','E'];
+// Students sign in anonymously so the database rules can tie each attempt to its owner.
+const authReady = new Promise(resolve => {
+  auth.onAuthStateChanged(u => {
+    if(u) resolve(u);
+    else auth.signInAnonymously().catch(e => console.warn('anonymous sign-in failed', e.code));
+  });
+});
 let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null, startedAt = 0;
 
 // The running exam is kept in localStorage so a refresh resumes it instead of restarting it.
@@ -381,7 +388,8 @@ function saveAttempt(status){
   try{
     const g = gradeAll();
     const m = monitor ? monitor.stats() : { tabSwitches:0, timeAway:0, pastes:0, events:[] };
-    db.ref('analytics/'+analyticsKey()+'/'+attemptId).set({
+    const path = 'analytics/'+analyticsKey()+'/'+attemptId;
+    const record = {
       attemptId, status,
       studentName,
       topic: topicName,
@@ -393,14 +401,17 @@ function saveAttempt(status){
       score: g.earned,
       maxScore: g.total,
       pct: g.pct,
-      timeUsed: EXAM_SECONDS - timeLeft,
+      timeUsed: Math.max(0, EXAM_SECONDS - timeLeft),
       tabSwitches: m.tabSwitches,
       timeAway: m.timeAway,
       pastes: m.pastes,
       autoSubmitted: autoReason === 'leaves',
       autoReason: autoReason || null,
       events: m.events
-    });
+    };
+    authReady
+      .then(u => db.ref(path).set({ ...record, uid: u.uid }))
+      .catch(e => console.warn('saving attempt failed', e.code || e));
   }catch(e){}
 }
 
