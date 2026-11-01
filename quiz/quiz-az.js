@@ -68,16 +68,45 @@ auth.onAuthStateChanged(user=>{
 // ══════════════════════════════════════════════════════
 //  BACKUP — questions live only in this browser, so keep a copy in a file
 // ══════════════════════════════════════════════════════
-function exportQuestions(){
-  if(!questions.length){ alert('Saxlamaq üçün sual yoxdur.'); return; }
-  const blob = new Blob([backupToJson(questions)], {type:'application/json'});
+function downloadText(filename, text, mime){
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `suallar-${new Date().toISOString().slice(0,10)}.json`;
+  a.href = URL.createObjectURL(new Blob([text], {type:mime}));
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+function exportQuestions(){
+  if(!questions.length){ alert('Saxlamaq üçün sual yoxdur.'); return; }
+  downloadText(`suallar-${new Date().toISOString().slice(0,10)}.json`, backupToJson(questions), 'application/json');
+}
+
+// CSV in the layout of Kahoot's question spreadsheet (see quiz-csv.js). The leading mark makes Excel read UTF-8.
+function downloadCsvTemplate(){
+  downloadText('sual-sablonu.csv', '﻿'+csvTemplate(), 'text/csv;charset=utf-8');
+}
+
+async function importCsvFile(file){
+  if(!file) return;
+  try{
+    const { questions: parsed, skipped, warnings, encodingProblem } = parseQuestionsCsv(await file.text());
+    const clean = parsed.map(normalizeImportedQuestion).filter(Boolean);
+    const flagged = clean.filter(q=>q.needsReview).length;
+    let msg = `${clean.length} sual mövcud suallara əlavə edilsin?`;
+    if(encodingProblem) msg += '\n\n⚠ Fayl UTF-8 formatında deyil, ə, ş, ı kimi hərflər pozulub. Excel-də "CSV UTF-8" seçib yenidən saxlamaq daha yaxşıdır.';
+    if(skipped) msg += `\n\n${skipped} sətir sual mətni olmadığı üçün atlandı.`;
+    if(flagged) msg += `\n\n${flagged} sualın cavabı yoxlanmalıdır (⚠ ilə işarələnəcək):\n` + warnings.slice(0,5).join('\n') + (warnings.length>5 ? '\n…' : '');
+    if(!confirm(msg)) return;
+    clean.forEach(q=>{ q.id = ++qId; questions.push(q); });
+    if(!activeQId) activeQId = questions[0].id;
+    saveQs(); renderSidebar(); renderEditor();
+  } catch(e){
+    alert(e.message);
+  } finally {
+    document.getElementById('csv-file').value = '';
+  }
 }
 
 async function importQuestions(file){
