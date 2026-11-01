@@ -89,7 +89,7 @@ test('time away accumulates in whole seconds', () => {
   now.set(14000); m.back();
   now.set(20000); m.leave();
   now.set(21400); m.back();
-  assert.strictEqual(m.stats().timeAway, 5 + 1);
+  assert.strictEqual(m.stats().timeAway, 4 + 1);
 });
 
 test('stats include time of a leave that is still ongoing', () => {
