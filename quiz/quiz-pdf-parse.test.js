@@ -88,3 +88,68 @@ test('upper-case and mixed-case Azerbaijani words are recognised', () => {
 test('words that merely contain doğru or true are not true/false markers', () => {
   assert.strictEqual(parsePdfText('1. Explain the construction of trueness.\nCavab: x\n')[0].type, 'short');
 });
+
+test('the answer line never stays inside the question text students see', () => {
+  const short = parsePdfText('1. Capital of France?\nCavab: Paris\n')[0];
+  assert.strictEqual(short.text, 'Capital of France?');
+  const fill = parsePdfText('1. The capital is [blank].\nCavab: Bakı\n')[0];
+  assert.strictEqual(fill.fillText, 'The capital is [blank].');
+  assert.strictEqual(fill.text, 'The capital is [blank].');
+  const tf = parsePdfText('1. The sky is blue. (Doğru / Yanlış)\nCavab: Doğru\n')[0];
+  assert.ok(!/cavabs*:/i.test(tf.text));
+  assert.strictEqual(tf.tfAnswer, true);
+});
+
+test('an answer written on the same line as the question is split off', () => {
+  const [q] = parsePdfText('1. Capital of France? Cavab: Paris\n');
+  assert.strictEqual(q.text, 'Capital of France?');
+  assert.strictEqual(q.shortAnswer, 'Paris');
+});
+
+test('a multiple-choice answer given as the option text instead of a letter', () => {
+  const [q] = parsePdfText('1. Which is a database?\nA) Photoshop\nB) MySQL\nC) Paint\nCavab: MySQL\n');
+  assert.strictEqual(q.options[q.correctOption], 'MySQL');
+  assert.ok(!q.needsReview);
+  assert.ok(!/cavabs*:/i.test(q.text));
+});
+
+// This is the exact example given to the AI in the prompt. If this test fails, the prompt needs updating.
+const PROMPT_EXAMPLE = `1. Hansı verilənlər bazası idarəetmə sistemidir?
+A) MySQL
+B) Photoshop
+C) Excel Chart
+D) Windows
+E) Paint
+Cavab: A
+
+2. SQL-də cədvəldən məlumat seçmək üçün SELECT əmri istifadə olunur. (Doğru / Yanlış)
+Cavab: Doğru
+
+3. Verilənlər bazasında hər sətri unikal şəkildə təyin edən sütun ... adlanır.
+Cavab: Primary key, əsas açar
+
+4. Azərbaycanın paytaxtı [blank] şəhəridir.
+Cavab: Bakı, Baku
+
+5. HTTP protokolunun tam açılışını yazın.
+Cavab: HyperText Transfer Protocol
+
+6. Yalnız bir cavab düzgündür.
+A) Bir
+B) İki
+C) Üç
+Cavab: C
+`;
+
+test('the example from the AI prompt imports completely, with no questions flagged and no answers in the text', () => {
+  const qs = parsePdfText(PROMPT_EXAMPLE);
+  assert.deepStrictEqual(qs.map(q => q.type), ['mc', 'tf', 'short', 'fill', 'short', 'mc']);
+  assert.strictEqual(qs[0].options[qs[0].correctOption], 'MySQL');
+  assert.strictEqual(qs[1].tfAnswer, true);
+  assert.strictEqual(qs[2].shortAnswer, 'Primary key, əsas açar');
+  assert.deepStrictEqual(qs[3].fillAnswers, ['Bakı, Baku']);
+  assert.strictEqual(qs[4].shortAnswer, 'HyperText Transfer Protocol');
+  assert.strictEqual(qs[5].options[qs[5].correctOption], 'Üç');
+  assert.ok(qs.every(q => !q.needsReview), 'no question should need review');
+  assert.ok(qs.every(q => !/cavabs*:/i.test(q.text) && !/cavabs*:/i.test(q.fillText)), 'no answer line inside any question text');
+});

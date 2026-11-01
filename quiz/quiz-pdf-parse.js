@@ -20,7 +20,9 @@ function parsePdfText(text){
   const reTfWord   = word('doğru|yanl[ıiIİ]ş|true|false|T/F');
   const reTrueWord = word('doğru|true');
   const reFalseWord = word('yanl[ıiIİ]ş|false');
-  const reTfAnswer = /(?:cavab|answer)\s*[:\-]?\s*(doğru|yanl[ıiIİ]ş|true|false)(?![\p{L}\p{N}])/iu;
+  const reAnsText   = /^(?:d[üu]zg[üu]n\s*)?(?:cavab|answer)\s*[:\-]\s*(.*)$/i;          // "Cavab: Paris"
+  const reAnsInline = /^(.*?)\s+(?:cavab|answer)\s*[:\-]\s*(.+)$/i;                               // "Question? Cavab: Paris"
+  const reTfAnswer =/(?:cavab|answer)\s*[:\-]?\s*(doğru|yanl[ıiIİ]ş|true|false)(?![\p{L}\p{N}])/iu;
 
   let m;
   while((m=qRegex.exec(text))!==null){
@@ -33,6 +35,7 @@ function parsePdfText(text){
     let correctLetter=null;  // A/B/C/D/E (Cavab format)
     let lastOptIdx=-1;
     let seenOption=false;
+    let answerText=null;     // "Cavab: ..." written out in words, for short / fill / true-false / text-matched choices
     const qTextParts=[];
 
     for(const line of lines){
@@ -52,8 +55,19 @@ function parsePdfText(text){
       mm = line.match(reAnsLine);
       if(mm){ if(!correctLetter) correctLetter=mm[1].toUpperCase(); continue; }
 
+      // "Cavab: Paris" (a written answer). It must never stay in the question: students would see it.
+      mm = line.match(reAnsText);
+      if(mm){ if(answerText===null) answerText=mm[1].trim(); continue; }
+
       // Continuation line: extend the question (before options) or the last option (after)
-      if(!seenOption) qTextParts.push(line);
+      if(!seenOption){
+        // "Capital of France? Cavab: Paris" on one line: split the answer off
+        const inline = line.match(reAnsInline);
+        if(inline){
+          if(inline[1].trim()) qTextParts.push(inline[1].trim());
+          if(answerText===null) answerText=inline[2].trim();
+        } else qTextParts.push(line);
+      }
       else if(lastOptIdx>=0) opts[lastOptIdx]+=' '+line;
     }
 
@@ -61,6 +75,11 @@ function parsePdfText(text){
 
     // Resolve the correct index from whichever marker was found
     if(correctIdx<0 && correctLetter) correctIdx='ABCDEFGHIJ'.indexOf(correctLetter);
+    // "Cavab: MySQL" naming the option instead of its letter
+    if(correctIdx<0 && answerText){
+      const wanted=answerText.trim().toLowerCase();
+      correctIdx=opts.findIndex(o=>o.trim().toLowerCase()===wanted);
+    }
     // No marker found: do not silently pick option A, flag it so the teacher confirms the answer.
     const unresolved = correctIdx<0;
     if(unresolved) correctIdx=0;
@@ -91,10 +110,10 @@ function parsePdfText(text){
       else review=true;
       q={ type:'tf', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:ans, shortAnswer:'', fillText:'', fillAnswers:[], points:1, needsReview:review };
     } else if(/\[blank\]/i.test(block)){
-      const ans=(block.match(/cavab[:\s]+(.+)/i)||[])[1]||'';
+      const ans=answerText ?? '';
       q={ type:'fill', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:true, shortAnswer:'', fillText:questionText, fillAnswers:[ans], points:1, needsReview:!ans.trim() };
     } else {
-      const ans=(block.match(/(?:cavab|answer)[:\s]+(.+)/i)||[])[1]||'';
+      const ans=answerText ?? '';
       q={ type:'short', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:true, shortAnswer:ans, fillText:'', fillAnswers:[], points:1, needsReview:!ans.trim() };
     }
     results.push(q);
