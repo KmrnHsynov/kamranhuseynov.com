@@ -11,6 +11,7 @@ let activeQId = null;
 let publishedTopics = {};   // {topicName: true} — loaded fresh from Firebase
 let analyticsFilter = 'all'; // 'all' or a Firebase exam key
 let analyticsSortLeaves = false;
+let lastReleased = {};
 let lastRecords = [], lastAnswerKeys = {};   // what the Analytics tab is showing, for CSV export and question stats
 
 // quiz runtime
@@ -438,9 +439,10 @@ function renderAnalytics(){
   main.innerHTML='<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Yüklənir…</p></div>';
   sidebar.innerHTML='';
 
-  Promise.all([db.ref('analytics').once('value'), db.ref('answer_keys').once('value')]).then(([snapshot, keySnap])=>{
+  Promise.all([db.ref('analytics').once('value'), db.ref('answer_keys').once('value'), db.ref('results').once('value')]).then(([snapshot, keySnap, resultsSnap])=>{
     const val = snapshot.val()||{};
     const answerKeys = keySnap.val()||{};
+    const released = resultsSnap.val()||{};
     const examKeys = Object.keys(val);
 
     // Build records for current filter
@@ -454,7 +456,8 @@ function renderAnalytics(){
     records.forEach(r=>applyGrade(r, answerKeys));
     records.sort((a,b)=>a.timestamp-b.timestamp);
     markRepeatAttempts(records);
-    lastRecords = records; lastAnswerKeys = answerKeys;
+    records.forEach(r=>{ r.released = !!released[r.attemptId]; });
+    lastRecords = records; lastAnswerKeys = answerKeys; lastReleased = released;
 
     // Exam selector shown when more than one exam has data
     let selectorHtml = '';
@@ -537,6 +540,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
           <span style="display:flex;align-items:center;gap:10px">
+            ${releaseButtonsHtml(records)}
             <button class="btn btn-sm btn-ghost" onclick="renderAnalytics()" title="Yeni nəticələri yüklə">↻</button>
             <button class="btn btn-sm btn-ghost" onclick="exportAnalyticsCsv()" title="Nəticələri CSV faylı kimi yüklə">⬇ CSV</button>
             <button class="btn btn-sm ${analyticsSortLeaves?'btn-accent3':'btn-ghost'}" onclick="toggleLeaveSort()">Çıxışa görə sırala</button>
@@ -568,7 +572,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
             <div style="text-align:center;color:var(--muted);font-weight:700">${r.unanswered??r.totalQuestions-r.correct-r.wrong}</div>
             <div style="text-align:center">${r.ungraded?'<span class="an-badge an-grey" title="Cavab açarı tapılmadı">—</span>':`<span class="an-badge ${cls}">${r.pct}%</span>`}</div>
             <div style="text-align:center;font-size:12px;color:var(--text2)">${r.tabSwitches||0} · ${fmtTime(r.timeAway||0)}${r.pastes?`<br/><span style="color:var(--wrong)">📋 ${r.pastes}</span>`:''}</div>
-            <div style="display:flex;align-items:center;gap:6px">${leaveBadge(r)}<button class="an-del" title="Bu cəhdi sil" data-exam="${esc(r._exam)}" data-attempt="${esc(r.attemptId)}" onclick="deleteAttempt(this.dataset.exam,this.dataset.attempt)">✕</button></div>
+            <div style="display:flex;align-items:center;gap:6px">${leaveBadge(r)}${r.released?'<span title="Nəticəsi elan olunub" style="font-size:12px">📢</span>':''}<button class="an-del" title="Bu cəhdi sil" data-exam="${esc(r._exam)}" data-attempt="${esc(r.attemptId)}" onclick="deleteAttempt(this.dataset.exam,this.dataset.attempt)">✕</button></div>
           </div>`;
         }).join('')}
       </div>
@@ -592,10 +596,38 @@ function questionStatsHtml(records){
   </div>`;
 }
 
+// Publishing results: the student gets a code (their attempt id) and sees only their own counts.
+function releaseButtonsHtml(records){
+  const pending = resultsToRelease(records, lastReleased).length;
+  const releasedCount = records.filter(r=>r.released).length;
+  return `<button class="btn btn-sm ${pending?'btn-accent3':'btn-ghost'}" ${pending?'':'disabled'} onclick="releaseResults()" title="Tələbələr öz kodları ilə nəticəsini görəcək">📢 Elan et${pending?` (${pending})`:''}</button>`
+    + (releasedCount ? `<button class="btn btn-sm btn-ghost" onclick="retractResults()" title="Elan olunmuş nəticələri gizlət">↩ Geri götür (${releasedCount})</button>` : '');
+}
+
+function releaseResults(){
+  const list = resultsToRelease(lastRecords, lastReleased);
+  if(!list.length) return;
+  if(!confirm(`${list.length} tələbənin nəticəsi elan edilsin? Tələbə öz kodu ilə yalnız öz xalını görəcək.`)) return;
+  const now = Date.now();
+  const updates = {};
+  list.forEach(r=>{ updates['results/'+r.attemptId] = buildResult(r, now); });
+  db.ref().update(updates).then(renderAnalytics).catch(err=>alert('Xəta: '+err.message));
+}
+
+function retractResults(){
+  const list = lastRecords.filter(r=>r.released);
+  if(!list.length) return;
+  if(!confirm(`${list.length} nəticə geri götürülsün? Tələbələr onları artıq görə bilməyəcək.`)) return;
+  const updates = {};
+  list.forEach(r=>{ updates['results/'+r.attemptId] = null; });
+  db.ref().update(updates).then(renderAnalytics).catch(err=>alert('Xəta: '+err.message));
+}
+
 function deleteAttempt(exam, id){
   if(!exam || !id) return;
   if(!confirm('Bu cəhd silinsin?')) return;
-  db.ref('analytics/'+exam+'/'+id).remove()
+  // The released result goes with it, so a deleted attempt cannot still be looked up.
+  db.ref().update({['analytics/'+exam+'/'+id]: null, ['results/'+id]: null})
     .then(renderAnalytics)
     .catch(err=>alert('Xəta: '+err.message));
 }
@@ -635,8 +667,12 @@ function fmtTime(secs){
 function clearAnalytics(){
   const label = analyticsFilter==='all' ? 'Bütün tələbə nəticələri' : `Bu testin nəticələri`;
   if(!confirm(`${label} silinsin?`)) return;
-  const ref = analyticsFilter==='all' ? db.ref('analytics') : db.ref('analytics/'+analyticsFilter);
-  ref.remove().then(()=>{ analyticsFilter='all'; renderAnalytics(); });
+  // Released results for those attempts go too, so a cleared attempt cannot still be looked up by its code.
+  const updates = { [analyticsFilter==='all' ? 'analytics' : 'analytics/'+analyticsFilter]: null };
+  lastRecords.forEach(r=>{ if(r.attemptId) updates['results/'+r.attemptId] = null; });
+  db.ref().update(updates)
+    .then(()=>{ analyticsFilter='all'; renderAnalytics(); })
+    .catch(err=>alert('Xəta: '+err.message));
 }
 
 function renderEditor(){

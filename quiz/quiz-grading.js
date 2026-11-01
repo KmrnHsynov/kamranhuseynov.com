@@ -90,4 +90,21 @@ function markRepeatAttempts(records){
   return records;
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, markRepeatAttempts };
+// Releasing results: only counts are published (never answers or the key), one small record per attempt.
+// Attempts still in progress, and ones that could not be graded, are not released.
+function resultsToRelease(records, released){
+  return records.filter(r => r.status !== 'in_progress' && !r.ungraded && r.attemptId && !(released && released[r.attemptId]));
+}
+
+function buildResult(r, now){
+  return {
+    exam: String(r._exam || '').slice(0, 200),
+    topic: String(r.topic || '').slice(0, 200),
+    studentName: String(r.studentName || 'Anonim').slice(0, 60) || 'Anonim',
+    correct: r.correct, wrong: r.wrong, unanswered: r.unanswered,
+    score: r.score, maxScore: r.maxScore, pct: r.pct,
+    releasedAt: now
+  };
+}
+
+if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, markRepeatAttempts, resultsToRelease, buildResult };

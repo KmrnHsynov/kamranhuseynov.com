@@ -16,6 +16,25 @@
         }
       }
     },
+    "results": {
+      ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      "$id": {
+        ".read": true,
+        ".validate": "newData.hasChildren(['exam', 'topic', 'studentName', 'correct', 'wrong', 'unanswered', 'score', 'maxScore', 'pct', 'releasedAt'])",
+        "exam":        { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "topic":       { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "studentName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+        "correct":     { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+        "wrong":       { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+        "unanswered":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+        "score":       { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+        "maxScore":    { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+        "pct":         { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+        "releasedAt":  { ".validate": "newData.isNumber()" },
+        "$other":      { ".validate": false }
+      }
+    },
     "answer_keys": {
       ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
       ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'"

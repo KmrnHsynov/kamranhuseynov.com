@@ -111,3 +111,25 @@ test('repeat attempts are counted per exam and ignore case, spacing and dotless 
   ]);
   assert.deepStrictEqual(rs.map(r => r.repeatCount), [2, 2, 2, 1, 2, 2, 2]);
 });
+
+const { resultsToRelease, buildResult } = require('./quiz-grading.js');
+
+const done = (id, extra) => ({ attemptId: id, status: 'done', _exam: 'ex', topic: 'T', studentName: 'Ali', correct: 3, wrong: 1, unanswered: 0, score: 5, maxScore: 6, pct: 83, ...extra });
+
+test('only finished, graded, not-yet-released attempts are released', () => {
+  const list = [done('a'), done('b', { status: 'in_progress' }), done('c', { ungraded: true }), done('d', { status: 'exited' }), done('e')];
+  assert.deepStrictEqual(resultsToRelease(list, { e: true }).map(r => r.attemptId), ['a', 'd']);
+});
+
+test('a released result carries counts and names, never answers', () => {
+  const res = buildResult({ ...done('a'), answers: { 1: 2 }, qids: ['1'], uid: 'secret-uid' }, 1700);
+  assert.deepStrictEqual(Object.keys(res).sort(),
+    ['correct', 'exam', 'maxScore', 'pct', 'releasedAt', 'score', 'studentName', 'topic', 'unanswered', 'wrong']);
+  assert.strictEqual(res.releasedAt, 1700);
+});
+
+test('a released result keeps to the sizes the database rules allow', () => {
+  const res = buildResult(done('a', { studentName: 'x'.repeat(200), topic: 'y'.repeat(500), _exam: 'z'.repeat(500) }), 1);
+  assert.ok(res.studentName.length <= 60 && res.topic.length <= 200 && res.exam.length <= 200);
+  assert.strictEqual(buildResult(done('a', { studentName: '' }), 1).studentName, 'Anonim');
+});

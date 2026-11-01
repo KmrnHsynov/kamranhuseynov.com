@@ -23,6 +23,53 @@ let examVersion = 0, attemptCreated = false;
 let sourceQs = [], examOpensAt = 0, examClosesAt = 0, serverOffset = 0, lobbyTimer = null;
 function serverNow(){ return Date.now() + serverOffset; }
 
+// ── MY RESULT ─────────────────────────────────────────
+// The teacher releases counts under results/<attempt id>. The attempt id is the student's result code:
+// long and random, so it can be read by whoever holds it but the list of results cannot be browsed.
+const STORAGE_KEY_LAST = 'qc_last_attempt';
+const RESULT_CODE_RE = /^[-_A-Za-z0-9]{15,40}$/;
+
+function rememberLastAttempt(){
+  if(!attemptId) return;
+  try{ localStorage.setItem(STORAGE_KEY_LAST, JSON.stringify({ attemptId, topic: topicName, at: Date.now() })); }catch(e){}
+}
+function lastAttemptCode(){
+  try{ return (JSON.parse(localStorage.getItem(STORAGE_KEY_LAST) || 'null') || {}).attemptId || ''; }catch(e){ return ''; }
+}
+
+function lookupHtml(){
+  return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);text-align:left">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Nəticəmə bax</div>
+    <input type="text" class="result-code-inp" placeholder="Nəticə kodu…" value="${esc(lastAttemptCode())}" maxlength="40" style="margin-bottom:8px;font-size:12px" onkeydown="if(event.key==='Enter')checkMyResult(this)"/>
+    <button class="btn btn-ghost btn-full btn-sm" onclick="checkMyResult(this.previousElementSibling)">Yoxla</button>
+    <div class="result-lookup-out" style="margin-top:10px;font-size:13px;line-height:1.6"></div>
+  </div>`;
+}
+
+function resultCardHtml(r){
+  const n = v => Number(v) || 0;
+  return `<div style="padding:12px 14px;border-radius:12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25)">
+    <div style="font-size:26px;font-weight:800;color:var(--correct)">${n(r.pct)}%</div>
+    <div style="font-weight:600">${esc(r.studentName)}</div>
+    <div style="color:var(--text2)">${esc(r.topic)}</div>
+    <div style="margin-top:6px">${n(r.score)} / ${n(r.maxScore)} xal · ${n(r.correct)} doğru · ${n(r.wrong)} yanlış · ${n(r.unanswered)} cavabsız</div>
+  </div>`;
+}
+
+async function checkMyResult(input){
+  const out = input.closest('div').querySelector('.result-lookup-out');
+  const code = (input.value || '').trim();
+  if(!RESULT_CODE_RE.test(code)){ out.innerHTML = '<span style="color:var(--wrong)">Kod düzgün deyil.</span>'; return; }
+  out.textContent = '⏳ Yoxlanır…';
+  try{
+    const snap = await db.ref('results/' + code).once('value');
+    const r = snap.val();
+    out.innerHTML = r ? resultCardHtml(r) : '<span style="color:var(--text2)">Nəticə hələ elan olunmayıb. Daha sonra yenidən yoxlayın.</span>';
+  }catch(e){
+    out.innerHTML = '<span style="color:var(--wrong)">Yoxlamaq mümkün olmadı. İnternet bağlantısını yoxlayın.</span>';
+  }
+}
+
 // Fisher–Yates; sorting with a random comparator does not shuffle evenly.
 function shuffle(arr){
   for(let i = arr.length - 1; i > 0; i--){
@@ -117,6 +164,7 @@ function showNoQuiz(){
       <h2>Aktiv Test Yoxdur</h2>
       <p>Hazırda aktiv test yoxdur. Müəllim test göndərdikdə bu səhifədə görünəcək.</p>
       <button class="btn btn-ghost btn-full" onclick="location.reload()">↻ Yenilə</button>
+      ${lookupHtml()}
     </div>`;
   showView('lobby-view');
 }
@@ -145,6 +193,7 @@ function showExamList(exams){
           <div style="font-size:11px;color:var(--muted)">${e.questions.length} sual${examScheduleLabel(e)?' · '+esc(examScheduleLabel(e)):''}</div>
         </button>
       `).join('')}
+      ${lookupHtml()}
     </div>`;
   showView('lobby-view');
 }
@@ -169,6 +218,7 @@ function showClosedLobby(state){
         : 'Başlamaq üçün son vaxt <strong>' + esc(formatWhen(examClosesAt)) + '</strong> idi.'}</p>
       <button class="btn btn-ghost btn-full" onclick="showLobby()">↻ Yenilə</button>
       ${_examList.length > 1 ? '<button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="showExamList(_examList)">← Siyahıya qayıt</button>' : ''}
+      ${lookupHtml()}
     </div>`;
   showView('lobby-view');
   // Opens by itself when the time comes. The delay is capped because setTimeout cannot take more than ~24 days.
@@ -201,6 +251,7 @@ function showLobby(){
       <input type="text" id="student-name-inp" placeholder="Adınızı daxil edin…" style="margin-bottom:14px" maxlength="60"/>
       <p id="name-error" style="display:none;font-size:12px;color:var(--wrong);margin:-6px 0 12px;text-align:left">Zəhmət olmasa adınızı daxil edin.</p>
       <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana Başla</button>
+      ${lookupHtml()}
     </div>`;
   showView('lobby-view');
 }
@@ -447,6 +498,14 @@ function finishQuiz(){
   autoEl.style.display = autoReason === 'leaves' ? 'block' : 'none';
   autoEl.textContent = 'İmtahan səhifəsini çox dəfə tərk etdiyiniz üçün avtomatik göndərildi.';
   saveAttempt('done');
+
+  rememberLastAttempt();
+  const extra = document.getElementById('result-extra');
+  if(extra) extra.innerHTML = `<div class="lock-card" style="max-width:460px;margin:0 auto">
+    <h2 style="font-size:18px">Nəticə kodunuz</h2>
+    <p style="font-size:12px;margin-bottom:0">Bu kodu saxlayın. Müəllim nəticələri elan edəndə onunla xalınızı görə bilərsiniz.</p>
+    ${lookupHtml()}
+  </div>`;
 
   showView('results-view');
 }
