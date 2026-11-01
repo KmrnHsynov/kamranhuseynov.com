@@ -325,6 +325,10 @@ function renderTopics(){
       <div>
         <div style="font-size:13px;font-weight:600;color:${isActive?'var(--accent3)':'var(--text)'}">${esc(topic)}${isActive?' ✓':''}</div>
         <div style="font-size:11px;color:var(--muted)">${count} sual${isActive&&topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
+        ${isActive?`<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Serverdəki versiyanı redaktora yüklə">⟳ Serverdən yüklə</button>
+          <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" data-topic="${esc(topic)}" onclick="removeTopicFromEditor(this.dataset.topic)" title="Göndərilmiş test dəyişməz qalır">⌫ Redaktordan çıxar</button>
+        </div>`:''}
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" data-topic="${esc(topic)}" onclick="publishTopic(this.dataset.topic)">
@@ -345,14 +349,72 @@ function renderTopics(){
       return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <div>
           <div style="font-size:13px;font-weight:600;color:var(--accent3)">${esc(topic)} ✓</div>
-          <div style="font-size:11px;color:var(--muted)">${info.count||'?'} sual · yalnız Firebase</div>
+          <div style="font-size:11px;color:var(--muted)">${info.count||'?'} sual · yalnız serverdə${topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
         </div>
-        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-accent3" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Sualları serverdən bu redaktora yüklə">✎ Redaktə et</button>
+          <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
+        </div>
       </div>`;
     }).join('')
   : '';
 
   el.innerHTML = bulkHtml + localListHtml + remoteOnlyHtml;
+}
+
+// A published topic lives on the server, together with its answer key, so its questions can always be
+// brought back into the editor: to edit them from another browser, or after taking them out of this one.
+async function loadTopicFromServer(topic){
+  const info = publishedTopics[topic];
+  if(!info) return;
+  try{
+    let keyDoc = null;
+    const version = (await db.ref('student_quiz/'+info.key+'/publishedAt').once('value')).val();
+    if(version) keyDoc = (await db.ref('answer_keys/'+info.key+'/'+version).once('value')).val();
+    if(!keyDoc){
+      // No key for the version in use: fall back to the newest one that was saved.
+      const all = (await db.ref('answer_keys/'+info.key).once('value')).val() || {};
+      const newest = Object.keys(all).sort((a,b)=>Number(b)-Number(a))[0];
+      keyDoc = newest ? all[newest] : null;
+    }
+    const raw = keyDoc && keyDoc.questions;
+    const list = !raw ? [] : (Array.isArray(raw) ? raw : Object.keys(raw).sort((a,b)=>a-b).map(k=>raw[k])).filter(Boolean);
+    const loaded = list.map(normalizeImportedQuestion).filter(Boolean).map(q=>({...q, topic}));
+    if(!loaded.length) throw new Error('Bu mövzunun saxlanmış sualları serverdə tapılmadı.');
+
+    const have = questions.filter(q=>q.topic?.trim()===topic).length;
+    const msg = have
+      ? `Redaktordakı "${topic}" mövzusunun ${have} sualı serverdəki ${loaded.length} sualla əvəz olunsun?\nGöndərmədiyiniz dəyişikliklər itəcək.`
+      : `"${topic}" mövzusunun ${loaded.length} sualı redaktora yüklənsin?`;
+    if(!confirm(msg)) return;
+
+    questions = questions.filter(q=>q.topic?.trim()!==topic);
+    loaded.forEach(q=>{ q.id = ++qId; questions.push(q); });
+    activeQId = loaded[0].id;
+    saveQs(); renderSidebar(); renderEditor();
+    switchTab('questions');
+  } catch(e){
+    alert(e.message);
+  }
+}
+
+// Takes a topic's questions out of this browser only. The published test is not touched.
+function dropTopicFromEditor(topic){
+  questions = questions.filter(q=>q.topic?.trim()!==topic);
+  if(activeQId && !questions.find(q=>q.id===activeQId)) activeQId = questions[0]?.id || null;
+  saveQs(); renderSidebar(); renderEditor();
+}
+
+function removeTopicFromEditor(topic){
+  if(!publishedTopics[topic]) return;   // never remove the only copy of an unpublished topic
+  const n = questions.filter(q=>q.topic?.trim()===topic).length;
+  if(!confirm(`"${topic}" mövzusunun ${n} sualı bu brauzerin redaktorundan çıxarılsın?\nGöndərilmiş test dəyişməz qalır, sualları sonra "✎ Redaktə et" ilə geri yükləyə bilərsiniz. Göndərmədiyiniz dəyişikliklər itəcək.`)) return;
+  dropTopicFromEditor(topic);
+  renderTopics();
+}
+
+function setClearAfterPublish(on){
+  try{ localStorage.setItem('qc_clear_after_publish', on ? '1' : '0'); }catch(e){}
 }
 
 function assignBulkTopic(){
@@ -430,8 +492,12 @@ function publishTopic(topicName){
   db.ref().update(updates)
     .then(()=>{
       publishedTopics[topicName] = { count: filtered.length, key: toKey(topicName), opensAt, closesAt };
+      // Optional, chosen in Settings: do not leave the questions behind in this browser once they are published.
+      const dropped = !!document.getElementById('clear-after-publish')?.checked;
+      if(dropped) dropTopicFromEditor(topicName);
       renderTopics();
-      banner.textContent=`✓ "${topicName}" bütün cihazlara göndərildi`;
+      el.prepend(banner);   // renderTopics rebuilt the list, which removed the "sending…" banner; show the result in it
+      banner.textContent=`✓ "${topicName}" bütün cihazlara göndərildi` + (dropped ? ' və bu brauzerdən çıxarıldı (✎ ilə geri yüklənə bilər)' : '');
       setTimeout(()=>banner.remove(), 3000);
     })
     .catch(err=>{
@@ -1079,6 +1145,8 @@ function showView(id){
 
   const saved = localStorage.getItem('qc_questions');
   if(saved){ loadSaved(); }
+  const clearBox = document.getElementById('clear-after-publish');
+  if(clearBox) clearBox.checked = localStorage.getItem('qc_clear_after_publish') === '1';
   renderSidebar();
   renderEditor();
 })();
