@@ -175,7 +175,7 @@ textarea{resize:vertical;line-height:1.6;}
 #editor-view{flex-direction:row;}
 
 .sidebar{
-  width:320px;min-width:320px;
+  width:384px;min-width:384px;
   background:var(--surface);
   border-right:1px solid var(--border);
   display:flex;flex-direction:column;
@@ -570,7 +570,7 @@ textarea{resize:vertical;line-height:1.6;}
 ══════════════════════════════════ */
 @media(max-width:768px){
   #editor-view{flex-direction:column;}
-  .sidebar{width:100%;height:auto;position:static;max-height:none;}
+  .sidebar{width:100%;min-width:0;height:auto;position:static;max-height:none;}
   .sidebar-panel.active{max-height:320px;}
   .q-list{max-height:200px;}
   .editor-main{max-height:none;}

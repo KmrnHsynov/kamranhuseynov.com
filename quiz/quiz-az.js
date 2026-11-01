@@ -11,6 +11,7 @@ let activeQId = null;
 let publishedTopics = {};   // {topicName: true} — loaded fresh from Firebase
 let analyticsFilter = 'all'; // 'all' or a Firebase exam key
 let analyticsSortLeaves = false;
+let analyticsShown = false;   // the results are currently drawn where the question editor normally is
 let lastReleased = {};
 let lastRecords = [], lastAnswerKeys = {};   // what the Analytics tab is showing, for CSV export and question stats
 
@@ -232,9 +233,13 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='topics') refreshPublishedTopics(renderTopics);
   if(name==='analytics') renderAnalytics();
-  // Restore editor when leaving analytics
+  // The results are drawn into the same box as the question editor, so leaving the Analytics tab has
+  // to draw the editor back; otherwise the results stay on screen and picking a question shows nothing.
   const main = document.getElementById('questions-container');
-  if(name !== 'analytics') main.classList.remove('hidden');
+  if(name !== 'analytics'){
+    main.classList.remove('hidden');
+    if(analyticsShown){ analyticsShown = false; renderEditor(); }
+  }
 }
 
 function addQuestion(type='mc'){
@@ -472,6 +477,7 @@ function unpublishTopic(topicName){
 function renderAnalytics(){
   const main = document.getElementById('questions-container');
   const sidebar = document.getElementById('analytics-sidebar');
+  analyticsShown = true;
   main.classList.remove('hidden');
   main.innerHTML='<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Yüklənir…</p></div>';
   sidebar.innerHTML='';
