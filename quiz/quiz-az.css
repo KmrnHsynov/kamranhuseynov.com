@@ -585,3 +585,9 @@ textarea{resize:vertical;line-height:1.6;}
   .stats-row{grid-template-columns:1fr 1fr 1fr;gap:8px;}
   .stat-val{font-size:18px;}
 }
+
+/* Analytics table: scroll sideways on narrow screens instead of squeezing nine columns */
+@media(max-width:900px){
+  .an-table{overflow-x:auto;}
+  .an-thead,.an-row{min-width:880px;}
+}

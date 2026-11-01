@@ -47,7 +47,12 @@
     <!-- Questions panel -->
     <div class="sidebar-panel active" id="tab-questions">
       <div class="q-list" id="q-list"></div>
-      <div style="padding:10px 12px;border-top:1px solid var(--border)">
+      <div style="padding:10px 12px 0;border-top:1px solid var(--border);display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:12px" onclick="exportQuestions()" title="Sualları fayla saxla">⬇ Ehtiyat nüsxə</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:12px" onclick="document.getElementById('import-file').click()" title="Fayldan sualları əlavə et">⬆ Yüklə</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importQuestions(this.files[0])"/>
+      </div>
+      <div style="padding:10px 12px">
         <button class="btn btn-ghost btn-full btn-sm" onclick="deleteAllQuestions()" style="color:var(--wrong);font-size:12px">🗑 Bütün Sualları Sil</button>
       </div>
     </div>
@@ -195,6 +200,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="quiz-grading.js"></script>
+<script src="quiz-pdf-parse.js"></script>
+<script src="quiz-backup.js"></script>
 <script src="quiz-az.js"></script>
 </body>
 </html>

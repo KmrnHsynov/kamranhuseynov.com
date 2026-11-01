@@ -71,6 +71,36 @@ function goStudentMode(){
 }
 
 // ══════════════════════════════════════════════════════
+//  BACKUP — questions live only in this browser, so keep a copy in a file
+// ══════════════════════════════════════════════════════
+function exportQuestions(){
+  if(!questions.length){ alert('Saxlamaq üçün sual yoxdur.'); return; }
+  const blob = new Blob([backupToJson(questions)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `suallar-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+async function importQuestions(file){
+  if(!file) return;
+  try{
+    const imported = parseBackup(await file.text());
+    if(!confirm(`${imported.length} sual mövcud suallara əlavə edilsin?`)) return;
+    imported.forEach(q=>{ q.id = ++qId; questions.push(q); });
+    if(!activeQId) activeQId = questions[0].id;
+    saveQs(); renderSidebar(); renderEditor();
+  } catch(e){
+    alert(e.message);
+  } finally {
+    document.getElementById('import-file').value = '';
+  }
+}
+
+// ══════════════════════════════════════════════════════
 //  PERSISTENCE (non-pdf questions)
 // ══════════════════════════════════════════════════════
 function saveQs(){
@@ -147,92 +177,6 @@ async function handlePdfFile(file){
   }
 }
 
-function parsePdfText(text){
-  const results=[];
-  text = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-
-  // Split on lines that start with a question number (e.g. "1." or "1)")
-  const qRegex = /(?:^|\n)[ \t]*(\d+)[.)]\s+(.+?)(?=\n[ \t]*\d+[.)]\s|\s*$)/gs;
-
-  // Option / answer line patterns
-  const reLetterOpt = /^([A-Ea-e])[.)]\s+(.+)/;                 // "A) text"  or  "A. text"  (A–E)
-  const reCorrect   = /^[\u221A\u2713]\s*(.+)/;                 // √ or ✓  = correct option
-  const reBullet    = /^[\u2022\u25CF\u25E6\u2023\u25AA\u00B7]\s*(.+)/; // • ● ◦ ‣ ▪ · = distractor
-  const reAnsLine   = /^(?:d[\u00FCu]zg[\u00FCu]n\s*)?(?:cavab|answer)\s*[:\-]?\s*([A-Ea-e])\b/i; // "Cavab: B"
-
-  let m;
-  while((m=qRegex.exec(text))!==null){
-    const block = m[2].trim();
-    const lines = block.split('\n').map(l=>l.trim()).filter(l=>l);
-    if(!lines.length) continue;
-
-    const opts=[];
-    let correctIdx=-1;       // index of correct option (√ format)
-    let correctLetter=null;  // A/B/C/D/E (Cavab format)
-    let lastOptIdx=-1;
-    let seenOption=false;
-    const qTextParts=[];
-
-    for(const line of lines){
-      // "A) ..." lettered option
-      let mm = line.match(reLetterOpt);
-      if(mm){ opts.push(mm[2].trim()); lastOptIdx=opts.length-1; seenOption=true; continue; }
-
-      // √ correct option
-      mm = line.match(reCorrect);
-      if(mm){ correctIdx=opts.length; opts.push(mm[1].trim()); lastOptIdx=opts.length-1; seenOption=true; continue; }
-
-      // • distractor option
-      mm = line.match(reBullet);
-      if(mm){ opts.push(mm[1].trim()); lastOptIdx=opts.length-1; seenOption=true; continue; }
-
-      // "Cavab: B" explicit answer line
-      mm = line.match(reAnsLine);
-      if(mm){ if(!correctLetter) correctLetter=mm[1].toUpperCase(); continue; }
-
-      // Continuation line: extend the question (before options) or the last option (after)
-      if(!seenOption) qTextParts.push(line);
-      else if(lastOptIdx>=0) opts[lastOptIdx]+=' '+line;
-    }
-
-    const questionText=(qTextParts.join(' ')||lines[0]).trim();
-
-    // Resolve the correct index from whichever marker was found
-    if(correctIdx<0 && correctLetter) correctIdx='ABCDE'.indexOf(correctLetter);
-    if(correctIdx<0) correctIdx=0;
-
-    // Trim to 5 options, always keeping the correct one
-    if(opts.length>5){
-      if(correctIdx>=5){
-        const c=opts[correctIdx];
-        const rest=opts.filter((_,i)=>i!==correctIdx).slice(0,4);
-        opts.length=0; opts.push(c,...rest); correctIdx=0;
-      } else {
-        opts.splice(5);
-      }
-    }
-
-    let q;
-    if(opts.length>=2){
-      while(opts.length<5) opts.push('');
-      q={ type:'mc', text:questionText, options:opts.slice(0,5), correctOption:correctIdx>=0?correctIdx:0, tfAnswer:true, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
-    } else if(/\b(doğru|yanlış|true|false|T\/F)\b/i.test(block)){
-      const ans=/\b(doğru|true)\b/i.test(block);
-      q={ type:'tf', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:ans, shortAnswer:'', fillText:'', fillAnswers:[], points:1 };
-    } else if(/\[blank\]/i.test(block)){
-      const ans=(block.match(/cavab[:\s]+(.+)/i)||[])[1]||'';
-      q={ type:'fill', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:true, shortAnswer:'', fillText:questionText, fillAnswers:[ans], points:1 };
-    } else {
-      const ans=(block.match(/(?:cavab|answer)[:\s]+(.+)/i)||[])[1]||'';
-      q={ type:'short', text:questionText, options:['','','','',''], correctOption:0, tfAnswer:true, shortAnswer:ans, fillText:'', fillAnswers:[], points:1 };
-    }
-    results.push(q);
-  }
-  return results;
-}
-
-
-
 function clearPdfQuestions(){
   questions = questions.filter(q=>!q._fromPdf);
   saveQs();
@@ -289,6 +233,7 @@ function renderSidebar(){
     <div class="q-item ${q.id===activeQId?'active':''}" data-id="${q.id}" onclick="setActiveQ(${q.id})">
       <span class="q-num">${i+1}</span>
       <span class="q-preview">${esc(q.text)||'(sual mətni yoxdur)'}</span>
+      ${q.needsReview?'<span class="q-warn" title="Düzgün cavabı yoxlayın" style="color:var(--warn)">⚠</span>':''}
       <span class="q-type-badge">${tlbl(q.type)}</span>
       <button class="q-del" onclick="event.stopPropagation();deleteQ(${q.id})">✕</button>
     </div>`).join('');
@@ -345,11 +290,11 @@ function renderTopics(){
         <div style="font-size:11px;color:var(--muted)">${count} sual</div>
       </div>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" onclick="publishTopic('${esc(topic).replace(/'/g,"\\'")}')">
+        <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" data-topic="${esc(topic)}" onclick="publishTopic(this.dataset.topic)">
           ${isActive?'✓ Göndərilib':'📤 Göndər'}
         </button>
-        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishTopic('${esc(topic).replace(/'/g,"\\'")}')">📤 Geri Al</button>`:''}
-        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="deleteTopic('${esc(topic).replace(/'/g,"\\'")}')">🗑</button>
+        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>`:''}
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="deleteTopic(this.dataset.topic)">🗑</button>
       </div>
     </div>`;
   }).join('') : (!remoteOnlyTopics.length ? '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>' : '');
@@ -365,7 +310,7 @@ function renderTopics(){
           <div style="font-size:13px;font-weight:600;color:var(--accent3)">${esc(topic)} ✓</div>
           <div style="font-size:11px;color:var(--muted)">${info.count||'?'} sual · yalnız Firebase</div>
         </div>
-        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" onclick="unpublishTopic('${esc(topic).replace(/'/g,"\\'")}')">📤 Geri Al</button>
+        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
       </div>`;
     }).join('')
   : '';
@@ -412,6 +357,8 @@ function answerKeyEntry(q){
 function publishTopic(topicName){
   const filtered = questions.filter(q=>q.topic?.trim()===topicName);
   if(!filtered.length) return;
+  const unchecked = filtered.filter(q=>q.needsReview).length;
+  if(unchecked && !confirm(`${unchecked} sualın düzgün cavabı PDF-dən müəyyən edilməyib və təsdiqlənməyib. Yenə də göndərilsin?`)) return;
 
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
@@ -658,6 +605,7 @@ function buildQCard(q,i){
         <option value="fill" ${q.type==='fill'?'selected':''}>Boşluq Doldurun</option>
       </select>
       ${q._fromPdf?'<span style="font-size:10px;color:var(--accent4);padding:2px 7px;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.2);border-radius:5px">PDF</span>':''}
+      ${q.needsReview?`<button class="review-tag btn btn-ghost btn-sm" style="font-size:11px;color:var(--warn)" onclick="confirmReview(${q.id})">⚠ Düzgün cavab müəyyən edilməyib — təsdiq et</button>`:''}
     </div>
     <div style="margin-bottom:12px">
       <div class="field-lbl">Mövzu</div>
@@ -709,9 +657,16 @@ function buildFill(q){
 }
 
 function chgType(id,type){const q=getQ(id);if(q){q.type=type;saveQs();renderEditor();setActiveQ(id);}}
-function updF(id,f,v){const q=getQ(id);if(q){q[f]=v;if(f==='text'){const el=document.querySelector(`.q-item[data-id="${id}"] .q-preview`);if(el)el.textContent=v||'(sual mətni yoxdur)';}saveQs();}}
+function clearReview(id){
+  const q=getQ(id);
+  if(!q||!q.needsReview) return;
+  q.needsReview=false; saveQs();
+  document.querySelectorAll(`.q-card[data-id="${id}"] .review-tag, .q-item[data-id="${id}"] .q-warn`).forEach(el=>el.remove());
+}
+const confirmReview = clearReview;
+function updF(id,f,v){const q=getQ(id);if(q){q[f]=v;if(f==='correctOption'||f==='tfAnswer'||f==='shortAnswer')clearReview(id);if(f==='text'){const el=document.querySelector(`.q-item[data-id="${id}"] .q-preview`);if(el)el.textContent=v||'(sual mətni yoxdur)';}saveQs();}}
 function updOpt(id,i,v){const q=getQ(id);if(q){q.options[i]=v;saveQs();}}
-function updFill(id,v){const q=getQ(id);if(q){q.fillAnswers=v.split(';').map(s=>s.trim());saveQs();}}
+function updFill(id,v){const q=getQ(id);if(q){q.fillAnswers=v.split(';').map(s=>s.trim());saveQs();clearReview(id);}}
 function getQ(id){return questions.find(q=>q.id===id);}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
