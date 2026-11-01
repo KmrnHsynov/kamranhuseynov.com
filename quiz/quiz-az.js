@@ -27,7 +27,11 @@ let answered = false;
 //  TEACHER SIGN-IN (Firebase Auth)
 // ══════════════════════════════════════════════════════
 const AUTH_ERRORS = {
-  'auth/too-many-requests':     '❌ Çox cəhd edildi. Bir az gözləyib yenidən cəhd edin.',
+  'auth/invalid-credential':     '❌ E-poçt və ya şifrə yanlışdır.',
+  'auth/wrong-password':         '❌ E-poçt və ya şifrə yanlışdır.',
+  'auth/user-not-found':         '❌ E-poçt və ya şifrə yanlışdır.',
+  'auth/invalid-email':          '❌ E-poçt formatı yanlışdır.',
+  'auth/too-many-requests':      '❌ Çox cəhd edildi. Bir az gözləyib yenidən cəhd edin.',
   'auth/network-request-failed': '❌ Şəbəkə xətası. İnternet bağlantısını yoxlayın.'
 };
 
@@ -41,7 +45,7 @@ async function signInTeacher(){
     document.getElementById('pw-input').value = '';
   } catch(e){
     document.getElementById('pw-input').value = '';
-    err.textContent = AUTH_ERRORS[e.code] || '❌ E-poçt və ya şifrə yanlışdır.';
+    err.textContent = AUTH_ERRORS[e.code] || `❌ Giriş alınmadı (${e.code || e.message})`;
     err.style.display = 'block';
   }
 }

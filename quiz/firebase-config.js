@@ -1,7 +1,7 @@
 'use strict';
 
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyB_wsJu9BF5FBPkR9tMC0dT8pPPsvXgdxw",
+  apiKey:            "AIzaSyC22rjC_joSXgueBxl-MvNwO3DHtkgR7n4",
   authDomain:        "quiz-az-73c96.firebaseapp.com",
   databaseURL:       "https://quiz-az-73c96-default-rtdb.europe-west1.firebasedatabase.app",
   projectId:         "quiz-az-73c96",
