@@ -78,6 +78,14 @@
         </div>
       </div>
       <div class="sidebar-section">
+        <label>Testin Açılış Vaxtı</label>
+        <input type="datetime-local" id="opens-at"/>
+        <p class="hint-text">Boş buraxsanız, göndərilən kimi açıq olur.</p>
+        <label style="margin-top:10px;display:block">Başlamaq üçün Son Vaxt</label>
+        <input type="datetime-local" id="closes-at"/>
+        <p class="hint-text">Bu vaxtdan sonra yeni tələbə başlaya bilməz. Artıq başlayanlar öz vaxtlarını tamamlayır.</p>
+      </div>
+      <div class="sidebar-section">
         <label>Hər Suala Vaxt (san)</label>
         <div class="timer-row">
           <input type="number" id="timer-sec" min="0" max="600" value="0"/>
@@ -203,6 +211,7 @@
 <script src="quiz-pdf-parse.js"></script>
 <script src="quiz-backup.js"></script>
 <script src="quiz-export.js"></script>
+<script src="quiz-schedule.js"></script>
 <script src="quiz-az.js"></script>
 </body>
 </html>

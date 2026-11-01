@@ -4,8 +4,6 @@
 // ══════════════════════════════════════════════════════
 const STORAGE_KEY_QS  = 'qc_questions';
 const STORAGE_KEY_CFG  = 'qc_cfg';
-const STORAGE_KEY_STUDENT   = 'qc_student_qs';
-const STORAGE_KEY_ANALYTICS = 'qc_analytics';
 
 let questions = [];
 let qId = 0;
@@ -65,11 +63,6 @@ auth.onAuthStateChanged(user=>{
     showView('lock-view');
   }
 });
-
-function goStudentMode(){
-  if(!questions.length){alert('Müəllim hələ test əlavə etməyib.');return;}
-  startQuiz();
-}
 
 // ══════════════════════════════════════════════════════
 //  BACKUP — questions live only in this browser, so keep a copy in a file
@@ -253,7 +246,7 @@ function refreshPublishedTopics(cb){
     Object.entries(val).forEach(([key,exam])=>{
       if(exam&&exam.questions){
         const label = exam.topic || key;
-        publishedTopics[label]={ count: exam.questions.length||0, key };
+        publishedTopics[label]={ count: exam.questions.length||0, key, opensAt: exam.opensAt||0, closesAt: exam.closesAt||0 };
       }
     });
     cb && cb();
@@ -288,7 +281,7 @@ function renderTopics(){
     return`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <div>
         <div style="font-size:13px;font-weight:600;color:${isActive?'var(--accent3)':'var(--text)'}">${esc(topic)}${isActive?' ✓':''}</div>
-        <div style="font-size:11px;color:var(--muted)">${count} sual</div>
+        <div style="font-size:11px;color:var(--muted)">${count} sual${isActive&&topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
       </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" data-topic="${esc(topic)}" onclick="publishTopic(this.dataset.topic)">
@@ -355,11 +348,22 @@ function answerKeyEntry(q){
   return k;
 }
 
+function topicScheduleLabel(topic){
+  const info = publishedTopics[topic];
+  return info ? scheduleLabel(Date.now(), info.opensAt, info.closesAt) : '';
+}
+
 function publishTopic(topicName){
   const filtered = questions.filter(q=>q.topic?.trim()===topicName);
   if(!filtered.length) return;
   const unchecked = filtered.filter(q=>q.needsReview).length;
   if(unchecked && !confirm(`${unchecked} sualın düzgün cavabı PDF-dən müəyyən edilməyib və təsdiqlənməyib. Yenə də göndərilsin?`)) return;
+
+  const opensAt = parseLocalDateTime(document.getElementById('opens-at')?.value);
+  const closesAt = parseLocalDateTime(document.getElementById('closes-at')?.value);
+  const scheduleError = checkSchedule(opensAt, closesAt);
+  if(scheduleError){ alert(scheduleError); return; }
+  if(closesAt && closesAt < Date.now() && !confirm('Son başlama vaxtı artıq keçib, tələbələr başlaya bilməyəcək. Yenə də göndərilsin?')) return;
 
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
@@ -375,11 +379,14 @@ function publishTopic(topicName){
   const publishedAt = Date.now();
   const key = toKey(topicName);
   const updates = {};
-  updates['student_quiz/'+key] = {questions: filtered.map(publicQuestion), topic: topicName, examMinutes, leaveLimit, publishedAt};
+  const exam = {questions: filtered.map(publicQuestion), topic: topicName, examMinutes, leaveLimit, publishedAt};
+  if(opensAt) exam.opensAt = opensAt;      // left out when empty: Firebase rejects undefined values
+  if(closesAt) exam.closesAt = closesAt;
+  updates['student_quiz/'+key] = exam;
   updates['answer_keys/'+key+'/'+publishedAt] = {questions: Object.fromEntries(filtered.map(q=>[q.id, answerKeyEntry(q)]))};
   db.ref().update(updates)
     .then(()=>{
-      publishedTopics[topicName] = { count: filtered.length, key: toKey(topicName) };
+      publishedTopics[topicName] = { count: filtered.length, key: toKey(topicName), opensAt, closesAt };
       renderTopics();
       banner.textContent=`✓ "${topicName}" bütün cihazlara göndərildi`;
       setTimeout(()=>banner.remove(), 3000);
@@ -494,24 +501,28 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
     return;
   }
 
-  const avgPct  = Math.round(records.reduce((s,r)=>s+r.pct,0)/records.length);
-  const avgTime = fmtTime(Math.round(records.reduce((s,r)=>s+r.timeUsed,0)/records.length));
+  // Averages use finished, graded attempts only: someone still taking the exam would drag them down.
+  const finished = records.filter(r=>r.status!=='in_progress' && !r.ungraded);
+  const average = (list, f) => list.length ? Math.round(list.reduce((s,r)=>s+f(r),0)/list.length) : null;
+  const avgPct  = average(finished, r=>r.pct)==null ? '—' : average(finished, r=>r.pct)+'%';
+  const avgTime = average(finished, r=>r.timeUsed)==null ? '—' : fmtTime(average(finished, r=>r.timeUsed));
   const topics  = [...new Set(records.map(r=>r.topic).filter(Boolean))];
 
   sidebar.innerHTML=`
     <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
       <div class="an-stat"><span>${records.length}</span><small>Toplam Cəhd</small></div>
-      <div class="an-stat"><span>${avgPct}%</span><small>Orta Nəticə</small></div>
+      <div class="an-stat"><span>${avgPct}</span><small>Orta Nəticə</small></div>
       <div class="an-stat"><span>${avgTime}</span><small>Orta Vaxt</small></div>
     </div>
     <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Mövzular</div>
       ${topics.map(t=>{
         const cnt=records.filter(r=>r.topic===t).length;
-        const avg=Math.round(records.filter(r=>r.topic===t).reduce((s,r)=>s+r.pct,0)/cnt);
+        const topicAvg=average(finished.filter(r=>r.topic===t), r=>r.pct);
+        const avg=topicAvg==null?'—':topicAvg+'%';
         return`<div style="font-size:12px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)">
           <span style="color:var(--text2)">${esc(t)||'—'}</span>
-          <span style="color:var(--accent4)">${cnt} cəhd · ${avg}%</span>
+          <span style="color:var(--accent4)">${cnt} cəhd · ${avg}</span>
         </div>`;
       }).join('')}
     </div>
@@ -526,6 +537,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
           <span style="display:flex;align-items:center;gap:10px">
+            <button class="btn btn-sm btn-ghost" onclick="renderAnalytics()" title="Yeni nəticələri yüklə">↻</button>
             <button class="btn btn-sm btn-ghost" onclick="exportAnalyticsCsv()" title="Nəticələri CSV faylı kimi yüklə">⬇ CSV</button>
             <button class="btn btn-sm ${analyticsSortLeaves?'btn-accent3':'btn-ghost'}" onclick="toggleLeaveSort()">Çıxışa görə sırala</button>
             <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
@@ -988,8 +1000,6 @@ function showView(id){
 
   const saved = localStorage.getItem('qc_questions');
   if(saved){ loadSaved(); }
-  const badge = document.getElementById('lock-q-count');
-  if(badge) badge.textContent = questions.length;
   renderSidebar();
   renderEditor();
 })();

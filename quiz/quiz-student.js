@@ -20,6 +20,8 @@ const authReady = new Promise(resolve => {
 });
 let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null, startedAt = 0;
 let examVersion = 0, attemptCreated = false;
+let sourceQs = [], examOpensAt = 0, examClosesAt = 0, serverOffset = 0, lobbyTimer = null;
+function serverNow(){ return Date.now() + serverOffset; }
 
 // Fisher–Yates; sorting with a random comparator does not shuffle evenly.
 function shuffle(arr){
@@ -73,8 +75,13 @@ function analyticsKey(){
     </div>`;
   showView('lobby-view');
 
-  db.ref('student_quiz').once('value')
-    .then(snapshot=>{
+  Promise.all([
+    db.ref('student_quiz').once('value'),
+    // How far this device's clock is from the server's, so the open/close times cannot be dodged by changing it.
+    db.ref('.info/serverTimeOffset').once('value').then(s => Number(s.val()), () => 0)
+  ])
+    .then(([snapshot, offset])=>{
+      serverOffset = Number.isFinite(offset) ? offset : 0;
       const val = snapshot.val();
       if(!val){ showNoQuiz(); return; }
       const exams = Object.entries(val)
@@ -82,12 +89,7 @@ function analyticsKey(){
         .filter(e=>e.questions&&e.questions.length);
       if(!exams.length){ showNoQuiz(); return; }
       if(exams.length===1){
-        examKey      = exams[0].key;
-        quizQs       = exams[0].questions;
-        topicName    = exams[0].topic||'';
-        EXAM_SECONDS = (exams[0].examMinutes||30)*60;
-        leaveLimit   = readLeaveLimit(exams[0]);
-        examVersion  = exams[0].publishedAt || 0;
+        useExam(exams[0]);
         showLobby();
       } else {
         showExamList(exams);
@@ -95,6 +97,18 @@ function analyticsKey(){
     })
     .catch(showLoadError);
 })();
+
+function useExam(e){
+  examKey      = e.key;
+  sourceQs     = e.questions;      // never changed; every attempt shuffles a fresh copy of it
+  quizQs       = e.questions;
+  topicName    = e.topic||e.key;
+  EXAM_SECONDS = (e.examMinutes||30)*60;
+  leaveLimit   = readLeaveLimit(e);
+  examVersion  = e.publishedAt || 0;
+  examOpensAt  = Number(e.opensAt) || 0;
+  examClosesAt = Number(e.closesAt) || 0;
+}
 
 function showNoQuiz(){
   document.getElementById('lobby-view').innerHTML = `
@@ -128,7 +142,7 @@ function showExamList(exams){
       ${exams.map((e,i)=>`
         <button class="btn btn-ghost btn-full" style="margin-bottom:8px;text-align:left;padding:12px 16px;display:block" onclick="selectExam(${i})">
           <div style="font-weight:700;margin-bottom:2px">${esc(e.topic||e.key)}</div>
-          <div style="font-size:11px;color:var(--muted)">${e.questions.length} sual</div>
+          <div style="font-size:11px;color:var(--muted)">${e.questions.length} sual${examScheduleLabel(e)?' · '+esc(examScheduleLabel(e)):''}</div>
         </button>
       `).join('')}
     </div>`;
@@ -136,18 +150,37 @@ function showExamList(exams){
 }
 
 function selectExam(idx){
-  const e = _examList[idx];
-  examKey      = e.key;
-  quizQs       = e.questions;
-  topicName    = e.topic||e.key;
-  EXAM_SECONDS = (e.examMinutes||30)*60;
-  leaveLimit   = readLeaveLimit(e);
-  examVersion  = e.publishedAt || 0;
+  useExam(_examList[idx]);
   showLobby();
 }
 
+function examScheduleLabel(e){
+  return scheduleLabel(serverNow(), Number(e.opensAt) || 0, Number(e.closesAt) || 0);
+}
+
+function showClosedLobby(state){
+  const before = state === 'before';
+  document.getElementById('lobby-view').innerHTML = `
+    <div class="lock-card">
+      <div class="lock-icon">${before ? '⏳' : '🔒'}</div>
+      <h2>${before ? 'Test Hələ Açılmayıb' : 'Test Bağlanıb'}</h2>
+      <p>${esc(topicName||'İmtahan')}<br/>${before
+        ? 'Açılış vaxtı: <strong>' + esc(formatWhen(examOpensAt)) + '</strong>'
+        : 'Başlamaq üçün son vaxt <strong>' + esc(formatWhen(examClosesAt)) + '</strong> idi.'}</p>
+      <button class="btn btn-ghost btn-full" onclick="showLobby()">↻ Yenilə</button>
+      ${_examList.length > 1 ? '<button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="showExamList(_examList)">← Siyahıya qayıt</button>' : ''}
+    </div>`;
+  showView('lobby-view');
+  // Opens by itself when the time comes. The delay is capped because setTimeout cannot take more than ~24 days.
+  if(before) lobbyTimer = setTimeout(showLobby, Math.min(examOpensAt - serverNow() + 500, 2147483647));
+}
+
 function showLobby(){
+  clearTimeout(lobbyTimer);
+  const state = scheduleState(serverNow(), examOpensAt, examClosesAt);
+  if(state !== 'open'){ showClosedLobby(state); return; }
   const count = Math.min(quizQs.length, MAX_QUESTIONS);
+  const closing = examClosesAt ? `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
   const notice = leaveLimit > 0 ? `
       <p style="font-size:12px;color:var(--wrong);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:10px 12px;margin-bottom:16px;line-height:1.6;text-align:left">
         ⚠ Diqqət: Bu səhifədən çıxmaq (başqa tab və ya pəncərə) qeydə alınır. ${leaveLimit} dəfə çıxsanız və ya brauzeri bağlasanız, imtahan avtomatik göndəriləcək.
@@ -163,8 +196,10 @@ function showLobby(){
         Suallar və cavablar avtomatik qarışdırılacaq.<br/>
         Vaxt bitdikdə test avtomatik göndəriləcək.
       </p>
+      ${closing}
       ${notice}
       <input type="text" id="student-name-inp" placeholder="Adınızı daxil edin…" style="margin-bottom:14px" maxlength="60"/>
+      <p id="name-error" style="display:none;font-size:12px;color:var(--wrong);margin:-6px 0 12px;text-align:left">Zəhmət olmasa adınızı daxil edin.</p>
       <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana Başla</button>
     </div>`;
   showView('lobby-view');
@@ -172,9 +207,19 @@ function showLobby(){
 
 // ── START ─────────────────────────────────────────────
 function startExam(){
-  studentName = (document.getElementById('student-name-inp')?.value || '').trim() || 'Anonim';
-  // Shuffle all questions, pick up to 30
-  let pool = shuffle(JSON.parse(JSON.stringify(quizQs))).slice(0, MAX_QUESTIONS);
+  // Checked again here: the page may have been open since before the exam closed.
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open'){ showLobby(); return; }
+  const typedName = (document.getElementById('student-name-inp')?.value || '').trim();
+  if(!typedName){
+    const err = document.getElementById('name-error');
+    if(err) err.style.display = 'block';
+    document.getElementById('student-name-inp')?.focus();
+    return;
+  }
+  studentName = typedName;
+  // Shuffle all questions, pick up to 30. Always from the untouched source, so starting again
+  // after leaving does not shuffle already-shuffled options and break the answer positions.
+  let pool = shuffle(JSON.parse(JSON.stringify(sourceQs))).slice(0, MAX_QUESTIONS);
 
   // Randomize MC answer order. `order[i]` is the original position of the option now shown at i;
   // answers are stored by original position, so the teacher panel can grade them.
