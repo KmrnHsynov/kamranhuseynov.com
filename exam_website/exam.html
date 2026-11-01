@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a73e8">
+  <title>İmtahan Platforması</title>
+  <link rel="stylesheet" href="exam.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">📝 İmtahan Platforması</h1>
+    <div class="header-right">
+      <button class="profile-btn" id="profileBtn"><span id="profileName"></span></button>
+      <div class="profile-dropdown hidden" id="profileDropdown">
+        <div class="profile-dropdown-name" id="dropdownName"></div>
+        <button class="profile-dropdown-btn" id="historyBtn">📊 Nəticələrim</button>
+        <hr class="profile-dropdown-divider">
+        <button class="profile-dropdown-signout" id="btnSignOut">Çıxış et</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="exam-list-container">
+    <h2 class="exam-list-heading">Mövcud imtahanlar</h2>
+    <div class="exam-grid" id="examGrid"></div>
+    <div class="empty-state hidden" id="examListEmpty">
+      <div class="empty-state-icon">📭</div>
+      Hələ heç bir imtahan əlavə edilməyib.
+    </div>
+  </main>
+
+  <!-- Profil / Auth -->
+  <div class="profile-overlay hidden" id="profileOverlay">
+    <div class="profile-modal">
+      <h2>👋 Xoş gəldiniz!</h2>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignup">Yeni hesab</button>
+        <button class="auth-tab" id="tabSignin">Daxil ol</button>
+      </div>
+
+      <!-- Sign Up -->
+      <div id="formSignup">
+        <input type="text" id="signupName" class="profile-input" placeholder="Adınız..." maxlength="24" />
+        <div class="profile-pwd-wrap">
+          <input type="password" id="signupPassword" class="profile-input" placeholder="Şifrə (8+, böyük hərf, simvol)" />
+          <button type="button" class="profile-pwd-toggle" data-target="signupPassword" aria-label="Şifrəni göstər">👁️</button>
+        </div>
+        <div class="profile-pwd-wrap">
+          <input type="password" id="signupConfirm" class="profile-input" placeholder="Şifrəni təsdiqləyin" />
+          <button type="button" class="profile-pwd-toggle" data-target="signupConfirm" aria-label="Şifrəni göstər">👁️</button>
+        </div>
+        <div class="auth-error hidden" id="signupError" role="alert" aria-live="polite"></div>
+        <button class="btn-primary auth-btn" id="btnSignup">Hesab yarat</button>
+      </div>
+
+      <!-- Sign In -->
+      <div id="formSignin" class="hidden">
+        <input type="text" id="signinName" class="profile-input" placeholder="Adınız..." />
+        <div class="profile-pwd-wrap">
+          <input type="password" id="signinPassword" class="profile-input" placeholder="Şifrəniz..." />
+          <button type="button" class="profile-pwd-toggle" data-target="signinPassword" aria-label="Şifrəni göstər">👁️</button>
+        </div>
+        <div class="auth-error hidden" id="signinError" role="alert" aria-live="polite"></div>
+        <button class="btn-primary auth-btn" id="btnSignin">Daxil ol</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exam start confirm -->
+  <div class="modal-overlay hidden" id="examStartOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="examStartTitle"></h2>
+        <button class="modal-close" data-close="examStartOverlay">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="examStartDesc" style="color:var(--text-muted);margin-bottom:16px"></p>
+        <div class="exam-start-meta">
+          <div class="exam-start-meta-row"><span>Sual sayı</span><span id="examStartQCount"></span></div>
+          <div class="exam-start-meta-row"><span>Müddət</span><span id="examStartDuration"></span></div>
+        </div>
+        <div class="exam-start-warning">⚠️ İmtahan başladıqdan sonra vaxt geri sayılacaq. Başlamazdan əvvəl hazır olduğunuzdan əmin olun.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" data-close="examStartOverlay">Ləğv et</button>
+        <button class="btn-primary" id="examStartBeginBtn">Başla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exam-taking screen -->
+  <div class="exam-run-screen hidden" id="examRunScreen">
+    <div class="exam-run-header">
+      <span class="exam-run-progress" id="examRunProgress"></span>
+      <span class="exam-run-timer" id="examRunTimer"></span>
+      <button class="exam-run-finish-btn" id="examRunFinishBtn">Təhvil ver</button>
+    </div>
+    <div class="exam-run-body">
+      <div class="exam-run-question-wrap">
+        <div class="exam-jump-grid" id="examJumpGrid"></div>
+        <div id="examRunBody"></div>
+      </div>
+    </div>
+    <div class="exam-run-footer">
+      <button class="btn-outline" id="examRunPrevBtn">← Əvvəlki</button>
+      <button class="btn-primary" id="examRunNextBtn">Növbəti →</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="modal-overlay hidden" id="resultOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="resultTitle"></h2>
+      </div>
+      <div class="modal-body celebration-modal">
+        <div class="celebration-icon" id="resultIcon"></div>
+        <div class="results-score-big" id="resultScoreBig"></div>
+        <div class="results-pct" id="resultPct"></div>
+        <div class="review-list" id="resultReviewList"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="resultCloseBtn" style="width:100%">Bağla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="modal-overlay hidden" id="historyOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">📊 Nəticələrim</h2>
+        <button class="modal-close" data-close="historyOverlay">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"
+          integrity="sha384-3wY11tldQ5+yWqAvmTN4XtQvnjoTva0cV15O/O/O5NTtp0ivVopSzLOzsVXWZse9"
+          crossorigin="anonymous"></script>
+  <script src="config.js"></script>
+  <script src="exam.js"></script>
+</body>
+</html>
