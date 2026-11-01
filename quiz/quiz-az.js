@@ -13,6 +13,7 @@ let activeQId = null;
 let publishedTopics = {};   // {topicName: true} — loaded fresh from Firebase
 let analyticsFilter = 'all'; // 'all' or a Firebase exam key
 let analyticsSortLeaves = false;
+let lastRecords = [], lastAnswerKeys = {};   // what the Analytics tab is showing, for CSV export and question stats
 
 // quiz runtime
 let quizQs = [];
@@ -445,6 +446,8 @@ function renderAnalytics(){
     }
     records.forEach(r=>applyGrade(r, answerKeys));
     records.sort((a,b)=>a.timestamp-b.timestamp);
+    markRepeatAttempts(records);
+    lastRecords = records; lastAnswerKeys = answerKeys;
 
     // Exam selector shown when more than one exam has data
     let selectorHtml = '';
@@ -523,6 +526,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
           <span style="display:flex;align-items:center;gap:10px">
+            <button class="btn btn-sm btn-ghost" onclick="exportAnalyticsCsv()" title="Nəticələri CSV faylı kimi yüklə">⬇ CSV</button>
             <button class="btn btn-sm ${analyticsSortLeaves?'btn-accent3':'btn-ghost'}" onclick="toggleLeaveSort()">Çıxışa görə sırala</button>
             <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
           </span>
@@ -544,7 +548,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
           const dateStr = date.toLocaleDateString('az-AZ',{day:'2-digit',month:'2-digit',year:'numeric'});
           const timeStr = date.toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
           return`<div class="an-row">
-            <div class="an-name">${esc(r.studentName||'Anonim')}</div>
+            <div class="an-name">${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var" style="padding:1px 7px;font-size:10px">×${r.repeatCount}</span>`:''}</div>
             <div style="font-size:12px;color:var(--text2)">${esc(r.topic||'—')}</div>
             <div style="font-size:11px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
             <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
@@ -552,11 +556,50 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
             <div style="text-align:center;color:var(--muted);font-weight:700">${r.unanswered??r.totalQuestions-r.correct-r.wrong}</div>
             <div style="text-align:center">${r.ungraded?'<span class="an-badge an-grey" title="Cavab açarı tapılmadı">—</span>':`<span class="an-badge ${cls}">${r.pct}%</span>`}</div>
             <div style="text-align:center;font-size:12px;color:var(--text2)">${r.tabSwitches||0} · ${fmtTime(r.timeAway||0)}${r.pastes?`<br/><span style="color:var(--wrong)">📋 ${r.pastes}</span>`:''}</div>
-            <div>${leaveBadge(r)}</div>
+            <div style="display:flex;align-items:center;gap:6px">${leaveBadge(r)}<button class="an-del" title="Bu cəhdi sil" data-exam="${esc(r._exam)}" data-attempt="${esc(r.attemptId)}" onclick="deleteAttempt(this.dataset.exam,this.dataset.attempt)">✕</button></div>
           </div>`;
         }).join('')}
       </div>
+      ${questionStatsHtml(records)}
     </div>`;
+}
+
+function questionStatsHtml(records){
+  const stats = questionStats(records, lastAnswerKeys);
+  if(!stats.length) return '';
+  return `<div class="an-qstats">
+    <h3>Sualların təhlili</h3>
+    <p class="hint-text">Ən çətin suallar yuxarıdadır. Yalnız bitmiş cəhdlər sayılır, cavabsız sual düzgün sayılmır.</p>
+    ${stats.map(s=>{
+      const cls = s.pctCorrect>=70?'an-good':s.pctCorrect>=50?'an-mid':'an-low';
+      return `<div class="an-qrow">
+        <span class="an-badge ${cls}">${s.pctCorrect}%</span>
+        <div class="an-qtext">${esc(s.text||'(mətn yoxdur)')}<small>${analyticsFilter==='all'?esc(s.exam)+' · ':''}${tlbl(s.type)} · ${s.correct}/${s.shown} düzgün</small></div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function deleteAttempt(exam, id){
+  if(!exam || !id) return;
+  if(!confirm('Bu cəhd silinsin?')) return;
+  db.ref('analytics/'+exam+'/'+id).remove()
+    .then(renderAnalytics)
+    .catch(err=>alert('Xəta: '+err.message));
+}
+
+function exportAnalyticsCsv(){
+  if(!lastRecords.length){ alert('Yükləmək üçün nəticə yoxdur.'); return; }
+  // The leading mark makes Excel read the file as UTF-8, so Azerbaijani letters survive.
+  const blob = new Blob(['﻿'+recordsToCsv(lastRecords)], {type:'text/csv;charset=utf-8'});
+  const exam = analyticsFilter==='all' ? 'hamisi' : analyticsFilter.replace(/[\\/:*?"<>|]/g,'_');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `neticeler-${exam}-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
 function toggleLeaveSort(){

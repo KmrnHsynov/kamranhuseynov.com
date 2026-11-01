@@ -74,3 +74,40 @@ test('no answers at all is 0 percent with everything unanswered', () => {
   const g = gradeAttempt({ qids: [1, 2] }, key);
   assert.deepStrictEqual([g.unanswered, g.pct], [2, 0]);
 });
+
+const { questionStats, markRepeatAttempts } = require('./quiz-grading.js');
+
+const keys = { ex: { 'v1': { questions: {
+  1: { type: 'tf', text: 'Easy', points: 1, tfAnswer: true },
+  2: { type: 'tf', text: 'Hard', points: 1, tfAnswer: true }
+} } } };
+const rec = (status, answers) => ({ _exam: 'ex', examVersion: 'v1', status, qids: ['1', '2'], answers });
+
+test('question stats count correct answers and sort the hardest first', () => {
+  const stats = questionStats([
+    rec('done', { 1: true, 2: false }),
+    rec('done', { 1: true, 2: false }),
+    rec('exited', { 1: false })
+  ], keys);
+  assert.deepStrictEqual(stats.map(s => [s.text, s.shown, s.answered, s.correct, s.pctCorrect]),
+    [['Hard', 3, 2, 0, 0], ['Easy', 3, 3, 2, 67]]);
+});
+
+test('attempts still in progress are not counted in question stats', () => {
+  const stats = questionStats([rec('in_progress', { 1: true }), rec('done', { 1: true, 2: true })], keys);
+  assert.strictEqual(stats[0].shown, 1);
+  assert.strictEqual(stats.every(s => s.pctCorrect === 100), true);
+});
+
+test('question stats skip attempts whose key is missing', () => {
+  assert.deepStrictEqual(questionStats([{ ...rec('done', {}), examVersion: 'other' }], keys), []);
+});
+
+test('repeat attempts are counted per exam and ignore case, spacing and dotless i', () => {
+  const rs = markRepeatAttempts([
+    { _exam: 'a', studentName: 'Əli  Vəliyev' }, { _exam: 'a', studentName: ' əli vəliyev ' },
+    { _exam: 'a', studentName: 'Kamran' }, { _exam: 'b', studentName: 'Kamran' },
+    { _exam: 'a', studentName: 'KAMRAN' }, { _exam: 'a', studentName: 'Salıh' }, { _exam: 'a', studentName: 'salih' }
+  ]);
+  assert.deepStrictEqual(rs.map(r => r.repeatCount), [2, 2, 2, 1, 2, 2, 2]);
+});

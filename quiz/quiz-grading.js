@@ -54,4 +54,40 @@ function gradeAttempt(rec, key){
   };
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered };
+// How each question did across the finished attempts. Unanswered counts as not correct.
+// Attempts still in progress are left out: their blanks just mean the student has not got there yet.
+function questionStats(records, answerKeys){
+  const map = new Map();
+  records.forEach(r => {
+    if(r.status === 'in_progress') return;
+    const key = (answerKeys[r._exam] || {})[r.examVersion];
+    if(!key || !key.questions) return;
+    const answers = r.answers || {};
+    gradeList(r.qids).forEach(id => {
+      const q = key.questions[id];
+      if(!q) return;
+      const gid = r._exam + '|' + r.examVersion + '|' + id;
+      let s = map.get(gid);
+      if(!s){ s = { exam: r._exam, version: r.examVersion, id, text: q.text || '', type: q.type, shown: 0, answered: 0, correct: 0 }; map.set(gid, s); }
+      s.shown++;
+      if(isAnswered(q, answers[id])){
+        s.answered++;
+        if(isCorrectAnswer(q, answers[id])) s.correct++;
+      }
+    });
+  });
+  return [...map.values()]
+    .map(s => ({ ...s, pctCorrect: s.shown ? Math.round(s.correct / s.shown * 100) : 0 }))
+    .sort((a, b) => a.pctCorrect - b.pctCorrect || b.shown - a.shown);
+}
+
+// Students type their own name, so the same name twice in one exam is worth a second look.
+function nameKey(name){ return String(name || '').trim().toLowerCase().replace(/ı/g, 'i').replace(/\s+/g, ' '); }
+function markRepeatAttempts(records){
+  const counts = {};
+  records.forEach(r => { const k = r._exam + '|' + nameKey(r.studentName); counts[k] = (counts[k] || 0) + 1; });
+  records.forEach(r => { r.repeatCount = counts[r._exam + '|' + nameKey(r.studentName)]; });
+  return records;
+}
+
+if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, markRepeatAttempts };
