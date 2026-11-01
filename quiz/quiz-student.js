@@ -19,13 +19,23 @@ const authReady = new Promise(resolve => {
   });
 });
 let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null, startedAt = 0;
+let examVersion = 0, attemptCreated = false;
+
+// Fisher–Yates; sorting with a random comparator does not shuffle evenly.
+function shuffle(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
 
 // The running exam is kept in localStorage so a refresh resumes it instead of restarting it.
 function persistState(){
   if(!examActive || !attemptId) return;
   try{
     localStorage.setItem(STORAGE_KEY_ATTEMPT, JSON.stringify({
-      attemptId, examKey, topicName, studentName, quizQs, quizAns, quizIdx,
+      v: 2, attemptId, attemptCreated, examKey, examVersion, topicName, studentName, quizQs, quizAns, quizIdx,
       startedAt, examSeconds: EXAM_SECONDS, leaveLimit,
       monitor: monitor ? { ...monitor.stats(), elapsed: Math.floor((Date.now() - startedAt) / 1000) } : null
     }));
@@ -35,7 +45,7 @@ function clearSavedAttempt(){ try{ localStorage.removeItem(STORAGE_KEY_ATTEMPT);
 function loadSavedAttempt(){
   try{
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY_ATTEMPT)||'null');
-    return s && s.attemptId && Array.isArray(s.quizQs) && s.quizQs.length ? s : null;
+    return s && s.v === 2 && s.attemptId && Array.isArray(s.quizQs) && s.quizQs.length ? s : null;
   }catch(e){ return null; }
 }
 
@@ -77,6 +87,7 @@ function analyticsKey(){
         topicName    = exams[0].topic||'';
         EXAM_SECONDS = (exams[0].examMinutes||30)*60;
         leaveLimit   = readLeaveLimit(exams[0]);
+        examVersion  = exams[0].publishedAt || 0;
         showLobby();
       } else {
         showExamList(exams);
@@ -131,6 +142,7 @@ function selectExam(idx){
   topicName    = e.topic||e.key;
   EXAM_SECONDS = (e.examMinutes||30)*60;
   leaveLimit   = readLeaveLimit(e);
+  examVersion  = e.publishedAt || 0;
   showLobby();
 }
 
@@ -162,24 +174,21 @@ function showLobby(){
 function startExam(){
   studentName = (document.getElementById('student-name-inp')?.value || '').trim() || 'Anonim';
   // Shuffle all questions, pick up to 30
-  let pool = JSON.parse(JSON.stringify(quizQs))
-    .sort(() => Math.random() - .5)
-    .slice(0, MAX_QUESTIONS);
+  let pool = shuffle(JSON.parse(JSON.stringify(quizQs))).slice(0, MAX_QUESTIONS);
 
-  // Randomize MC answer order
+  // Randomize MC answer order. `order[i]` is the original position of the option now shown at i;
+  // answers are stored by original position, so the teacher panel can grade them.
   pool = pool.map(q => {
     if(q.type !== 'mc') return q;
-    const correctText = q.options[q.correctOption];
-    const shuffled = q.options.filter(o => o).sort(() => Math.random() - .5);
-    while(shuffled.length < OPT_LETTERS.length) shuffled.push('');
-    const newIdx = shuffled.indexOf(correctText);
-    return { ...q, options: shuffled, correctOption: newIdx >= 0 ? newIdx : 0 };
+    const order = shuffle(q.options.map((o, i) => i).filter(i => q.options[i]));
+    return { ...q, order, options: order.map(i => q.options[i]) };
   });
 
   quizQs = pool;
   quizIdx = 0; quizAns = {};
   timeLeft = EXAM_SECONDS;
   startedAt = Date.now();
+  attemptCreated = false;
   attemptId = db.ref('analytics/'+analyticsKey()).push().key;
   monitor = leaveLimit > 0 ? createMonitor(leaveLimit) : null;
   autoReason = null;
@@ -224,7 +233,7 @@ function renderQuizQ(){
   document.getElementById('quiz-pts-lbl').textContent = `${q.points} xal`;
   document.getElementById('quiz-card-container').innerHTML = buildQuizCard(q);
   const saved = quizAns[q.id];
-  if(saved !== undefined){ restoreAns(q, saved); showFbFromSaved(q, saved); }
+  if(saved !== undefined) restoreAns(q, saved);
   persistState();
 }
 
@@ -233,13 +242,13 @@ function buildQuizCard(q){
   let body = '';
   if(q.type === 'mc'){
     body = `<div class="quiz-mc-opts">${q.options.filter(o=>o).map((o,i)=>`
-      <div class="quiz-mc-opt" id="mc${i}" onclick="pickMC(${q.id},${i},${q.correctOption})">
+      <div class="quiz-mc-opt" id="mc${i}" onclick="pickMC(${q.id},${i})">
         <div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div>
       </div>`).join('')}</div>`;
   } else if(q.type === 'tf'){
     body = `<div class="quiz-tf-opts">
-      <div class="quiz-tf-btn" id="tf-t" onclick="pickTF(${q.id},true,${q.tfAnswer})">✓ Doğru</div>
-      <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false,${q.tfAnswer})">✗ Yanlış</div>
+      <div class="quiz-tf-btn" id="tf-t" onclick="pickTF(${q.id},true)">✓ Doğru</div>
+      <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false)">✗ Yanlış</div>
     </div>`;
   } else if(q.type === 'short'){
     body = `<textarea class="quiz-short-input" id="short-inp" placeholder="Cavabınızı buraya yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px;transition:border-color .2s"></textarea>
@@ -253,36 +262,43 @@ function buildQuizCard(q){
     <div class="quiz-q-label">Sual ${quizIdx+1} / ${quizQs.length}</div>
     <div class="quiz-q-text">${esc(q.text)}</div>
     ${body}
-    <div class="feedback-bar" id="fb-bar"></div>
   </div>`;
 }
 
-function pickMC(qid, idx, correct){
-  if(answered) return;
-  answered = true;
-  quizAns[qid] = idx;
+// Answers are stored exactly as the student gave them. This page never knows which answer is
+// correct: the key lives in a teacher-only database node and the teacher panel does the grading.
+function markMC(idx){
   document.querySelectorAll('.quiz-mc-opt').forEach((el,i)=>{
     el.classList.add('locked'); el.onclick = null;
-    if(i === idx) el.classList.add(idx === correct ? 'ok' : 'bad');
-    if(i === correct && i !== idx) el.classList.add('reveal');
+    if(i === idx) el.classList.add('sel');
   });
-  showFb(idx===correct, idx===correct ? '✓ Düzdür!' : '✗ Yanlış — Düzgün: '+OPT_LETTERS[correct]);
+}
+
+function pickMC(qid, idx){
+  if(answered) return;
+  const q = quizQs.find(q=>q.id===qid);
+  answered = true;
+  quizAns[qid] = q.order[idx];   // stored as the option's position in the teacher's original list
+  markMC(idx);
   onAnswered();
 }
 
-function pickTF(qid, val, correct){
-  if(answered) return;
-  answered = true;
-  quizAns[qid] = val;
-  const ok = val === correct;
+function markTF(val){
   const tEl = document.getElementById('tf-t'), fEl = document.getElementById('tf-f');
   tEl.classList.add('locked'); fEl.classList.add('locked');
   tEl.onclick = null; fEl.onclick = null;
-  (val ? tEl : fEl).classList.add(ok ? 'ok' : 'bad');
-  if(!ok)(correct ? tEl : fEl).classList.add('reveal');
-  showFb(ok, ok ? '✓ Düzdür!' : '✗ Yanlış — Düzgün: '+(correct?'Doğru':'Yanlış'));
+  (val ? tEl : fEl).classList.add('sel');
+}
+
+function pickTF(qid, val){
+  if(answered) return;
+  answered = true;
+  quizAns[qid] = val;
+  markTF(val);
   onAnswered();
 }
+
+function lockShort(inp){ if(inp){ inp.style.borderColor = 'var(--accent)'; inp.readOnly = true; } }
 
 function submitShort(qid){
   if(answered) return;
@@ -290,14 +306,12 @@ function submitShort(qid){
   const val = (inp?.value||'').trim();
   if(!val) return;
   answered = true;
-  quizAns[qid] = val;
-  const q = quizQs.find(q=>q.id===qid);
-  const acc = (q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());
-  const ok = acc.includes(val.toLowerCase());
-  if(inp){ inp.style.borderColor = ok?'var(--correct)':'var(--wrong)'; inp.readOnly = true; }
-  showFb(ok, ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer);
+  quizAns[qid] = val.slice(0, 500);
+  lockShort(inp);
   onAnswered();
 }
+
+function lockFill(inps){ inps.forEach(i=>{ i.classList.add('sel'); i.readOnly = true; }); }
 
 function submitFill(qid){
   if(answered) return;
@@ -305,58 +319,28 @@ function submitFill(qid){
   const vals = inps.map(i=>i.value.trim());
   if(vals.some(v=>!v)) return;
   answered = true;
-  quizAns[qid] = vals;
-  const q = quizQs.find(q=>q.id===qid);
-  let allOk = true;
-  vals.forEach((v,i)=>{
-    const acc = ((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());
-    const ok = acc.includes(v.toLowerCase());
-    if(!ok) allOk = false;
-    inps[i].classList.add(ok?'ok':'bad'); inps[i].readOnly = true;
-  });
-  showFb(allOk, allOk?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır — Düzgün: '+(q.fillAnswers||[]).join(', '));
+  quizAns[qid] = vals.map(v=>v.slice(0, 200));
+  lockFill(inps);
   onAnswered();
 }
 
 function onAnswered(){ saveAttempt('in_progress'); }
 
-function showFb(ok, msg){
-  const el = document.getElementById('fb-bar');
-  if(!el) return;
-  el.className = `feedback-bar show ${ok?'fb-ok':'fb-bad'}`;
-  el.textContent = msg;
-}
-
 function restoreAns(q, saved){
   answered = true;
-  if(q.type==='mc'&&saved!=null){
-    const opts=document.querySelectorAll('.quiz-mc-opt');
-    if(opts[saved])opts[saved].classList.add(saved===q.correctOption?'ok':'bad');
-    if(saved!==q.correctOption&&opts[q.correctOption])opts[q.correctOption].classList.add('reveal');
-    opts.forEach(o=>{o.classList.add('locked');o.onclick=null;});
-  } else if(q.type==='tf'&&saved!=null){
-    const tEl=document.getElementById('tf-t'),fEl=document.getElementById('tf-f');
-    const ok=saved===q.tfAnswer;
-    (saved?tEl:fEl)?.classList.add(ok?'ok':'bad');
-    if(!ok)(q.tfAnswer?tEl:fEl)?.classList.add('reveal');
-    tEl?.classList.add('locked');fEl?.classList.add('locked');
-    if(tEl)tEl.onclick=null;if(fEl)fEl.onclick=null;
+  if(q.type==='mc'){
+    markMC((q.order||[]).indexOf(saved));
+  } else if(q.type==='tf'){
+    markTF(saved);
   } else if(q.type==='short'){
     const inp=document.getElementById('short-inp');
-    if(inp){inp.value=saved||'';const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());inp.style.borderColor=acc.includes((saved||'').toLowerCase())?'var(--correct)':'var(--wrong)';inp.readOnly=true;}
+    if(inp) inp.value=saved||'';
+    lockShort(inp);
   } else if(q.type==='fill'&&Array.isArray(saved)){
     const inps=[...document.querySelectorAll('.blank-inp')];
-    saved.forEach((v,i)=>{if(inps[i]){inps[i].value=v;const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());inps[i].classList.add(acc.includes(v.toLowerCase())?'ok':'bad');inps[i].readOnly=true;}});
+    saved.forEach((v,i)=>{ if(inps[i]) inps[i].value=v; });
+    lockFill(inps);
   }
-}
-
-function showFbFromSaved(q, saved){
-  let ok=false, msg='';
-  if(q.type==='mc'){ok=saved===q.correctOption;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+OPT_LETTERS[q.correctOption];}
-  else if(q.type==='tf'){ok=saved===q.tfAnswer;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+(q.tfAnswer?'Doğru':'Yanlış');}
-  else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((saved||'').toLowerCase());msg=ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer;}
-  else if(q.type==='fill'){const vals=Array.isArray(saved)?saved:[];ok=vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});msg=ok?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır';}
-  if(msg) showFb(ok, msg);
 }
 
 function nextQ(){
@@ -366,52 +350,44 @@ function nextQ(){
 function prevQ(){ if(quizIdx > 0){ quizIdx--; renderQuizQ(); } }
 
 // ── RESULTS ───────────────────────────────────────────
-function gradeAll(){
-  let ok=0, bad=0, earned=0, total=0;
-  quizQs.forEach(q=>{
-    total += q.points;
-    const ans = quizAns[q.id];
-    let correct = false;
-    if(q.type==='mc') correct=ans===q.correctOption;
-    else if(q.type==='tf') correct=ans===q.tfAnswer;
-    else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());correct=acc.includes((ans||'').toLowerCase());}
-    else if(q.type==='fill'){const vals=Array.isArray(ans)?ans:[];correct=vals.length>0&&vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});}
-    if(correct){ok++;earned+=q.points;}else bad++;
-  });
-  const pct = total ? Math.round((earned/total)*100) : 0;
-  return { ok, bad, earned, total, pct };
-}
+function answeredCount(){ return quizQs.filter(q => quizAns[q.id] !== undefined).length; }
 
+// Writes only raw answers and server-stamped times. Scores are worked out in the teacher panel.
+// The first save creates the record (with startedAt); later saves update it without touching startedAt.
 function saveAttempt(status){
   if(!attemptId) return;
+  const first = !attemptCreated;
+  attemptCreated = true;
   if(status === 'in_progress') persistState();
   try{
-    const g = gradeAll();
     const m = monitor ? monitor.stats() : { tabSwitches:0, timeAway:0, pastes:0, events:[] };
+    const SERVER_TIME = firebase.database.ServerValue.TIMESTAMP;
     const path = 'analytics/'+analyticsKey()+'/'+attemptId;
-    const record = {
+    const data = {
       attemptId, status,
       studentName,
       topic: topicName,
-      timestamp: Date.now(),
-      totalQuestions: quizQs.length,
-      correct: g.ok,
-      wrong: g.bad,
-      unanswered: quizQs.length - g.ok - g.bad,
-      score: g.earned,
-      maxScore: g.total,
-      pct: g.pct,
-      timeUsed: Math.max(0, EXAM_SECONDS - timeLeft),
+      examVersion: String(examVersion),
+      qids: quizQs.map(q => String(q.id)),
+      answers: { ...quizAns },
       tabSwitches: m.tabSwitches,
       timeAway: m.timeAway,
       pastes: m.pastes,
       autoSubmitted: autoReason === 'leaves',
       autoReason: autoReason || null,
-      events: m.events
+      events: m.events,
+      updatedAt: SERVER_TIME
     };
+    if(status !== 'in_progress') data.finishedAt = SERVER_TIME;
     authReady
-      .then(u => db.ref(path).set({ ...record, uid: u.uid }))
-      .catch(e => console.warn('saving attempt failed', e.code || e));
+      .then(u => {
+        data.uid = u.uid;
+        return first ? db.ref(path).set({ ...data, startedAt: SERVER_TIME }) : db.ref(path).update(data);
+      })
+      .catch(e => {
+        if(first) attemptCreated = false;
+        console.warn('saving attempt failed', e.code || e);
+      });
   }catch(e){}
 }
 
@@ -420,17 +396,8 @@ function finishQuiz(){
   examActive = false;
   clearSavedAttempt();
   document.getElementById('leave-warning')?.remove();
-  const { ok, bad, earned, total, pct } = gradeAll();
-  document.getElementById('score-ring').style.setProperty('--pct',`${pct}%`);
-  document.getElementById('score-pct').textContent=`${pct}%`;
-  document.getElementById('stat-ok').textContent=ok;
-  document.getElementById('stat-bad').textContent=bad;
-  document.getElementById('stat-pts').textContent=`${earned}/${total}`;
-  const hdg=pct>=90?'🏆 Əla nəticə!':pct>=70?'👍 Yaxşı iş!':pct>=50?'📚 Daha çox çalışın':pct>0?'💪 Tərəddüd etmə!':'';
-  document.getElementById('result-heading').textContent=hdg;
-  document.getElementById('result-sub').textContent=`${ok} doğru, ${bad} yanlış — ${earned} / ${total} xal`;
-  document.getElementById('review-sec').innerHTML=`<h3>Cavabların İcmalı</h3>`+quizQs.map(buildReview).join('');
-
+  document.getElementById('result-sub').textContent =
+    `${answeredCount()} / ${quizQs.length} suala cavab verdiniz. Nəticələr müəllim tərəfindən elan olunacaq.`;
   const autoEl = document.getElementById('result-auto');
   autoEl.style.display = autoReason === 'leaves' ? 'block' : 'none';
   autoEl.textContent = 'İmtahan səhifəsini çox dəfə tərk etdiyiniz üçün avtomatik göndərildi.';
@@ -439,26 +406,9 @@ function finishQuiz(){
   showView('results-view');
 }
 
-function buildReview(q){
-  const ans=quizAns[q.id];
-  let ok=false, yourA='(cavablanmadı)', corA='';
-  const L=OPT_LETTERS;
-  if(q.type==='mc'){ok=ans===q.correctOption;yourA=ans!=null?L[ans]+' '+q.options[ans]:'(cavablanmadı)';corA=L[q.correctOption]+' '+q.options[q.correctOption];}
-  else if(q.type==='tf'){ok=ans===q.tfAnswer;yourA=ans!=null?(ans?'Doğru':'Yanlış'):'(cavablanmadı)';corA=q.tfAnswer?'Doğru':'Yanlış';}
-  else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((ans||'').toLowerCase());yourA=ans||'(cavablanmadı)';corA=q.shortAnswer;}
-  else if(q.type==='fill'){const vals=Array.isArray(ans)?ans:[];ok=vals.length>0&&vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});yourA=vals.join(', ')||'(cavablanmadı)';corA=(q.fillAnswers||[]).join(', ');}
-  return`<div class="review-item ${ok?'r-ok':'r-bad'}">
-    <div class="review-q">${esc(q.text)}</div>
-    <div class="review-ans-row">
-      <span class="r-badge your">Siz: ${esc(yourA)}</span>
-      <span class="r-badge ${ok?'ok':'bad'}">${ok?'✓':'✗'} Düzgün: ${esc(corA)}</span>
-    </div>
-  </div>`;
-}
-
 function exitQuiz(){
   examActive = false;
-  if(!confirm('İmtahandan çıxmaq istəyirsiniz? Cavablarınız yadda saxlanmayacaq.')){ examActive = true; return; }
+  if(!confirm('İmtahandan çıxmaq istəyirsiniz? İmtahan bitmiş sayılacaq.')){ examActive = true; return; }
   clearInterval(totalTimer);
   saveAttempt('exited');
   clearSavedAttempt();
@@ -467,17 +417,11 @@ function exitQuiz(){
   showLobby();
 }
 
-function retakeExam(){
-  clearInterval(totalTimer);
-  showLobby();
-}
-
-function printResults(){ window.print(); }
-
 // ── RESUME AFTER REFRESH ──────────────────────────────
 // A refresh counts as one page leave, so it cannot be used to dodge the limit.
 function resumeExam(s){
-  examKey = s.examKey; topicName = s.topicName; studentName = s.studentName;
+  examKey = s.examKey; examVersion = s.examVersion || 0; attemptCreated = !!s.attemptCreated;
+  topicName = s.topicName; studentName = s.studentName;
   quizQs = s.quizQs; quizAns = s.quizAns || {}; quizIdx = s.quizIdx || 0;
   EXAM_SECONDS = s.examSeconds; leaveLimit = s.leaveLimit;
   attemptId = s.attemptId; startedAt = s.startedAt; autoReason = null;

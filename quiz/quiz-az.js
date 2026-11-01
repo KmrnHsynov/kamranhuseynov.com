@@ -393,6 +393,22 @@ function assignBulkTopic(){
   setTimeout(()=>banner.remove(), 3000);
 }
 
+function publicQuestion(q){
+  const p = {id: q.id, type: q.type, text: q.text, points: q.points};
+  if(q.type==='mc') p.options = q.options.map(o=>o||'');
+  if(q.type==='fill') p.fillText = q.fillText||'';
+  return p;
+}
+
+function answerKeyEntry(q){
+  const k = {type: q.type, text: q.text, points: q.points};
+  if(q.type==='mc'){ k.options = q.options.map(o=>o||''); k.correctOption = q.correctOption; }
+  if(q.type==='tf') k.tfAnswer = !!q.tfAnswer;
+  if(q.type==='short') k.shortAnswer = q.shortAnswer||'';
+  if(q.type==='fill'){ k.fillText = q.fillText||''; k.fillAnswers = (q.fillAnswers||[]).map(a=>a||''); }
+  return k;
+}
+
 function publishTopic(topicName){
   const filtered = questions.filter(q=>q.topic?.trim()===topicName);
   if(!filtered.length) return;
@@ -406,7 +422,14 @@ function publishTopic(topicName){
   const examMinutes = Math.max(1, parseInt(document.getElementById('exam-minutes')?.value)||30);
   const lv = parseInt(document.getElementById('leave-limit')?.value, 10);
   const leaveLimit = Number.isNaN(lv) ? 3 : Math.min(20, Math.max(0, lv));
-  db.ref('student_quiz/'+toKey(topicName)).set({questions: filtered, topic: topicName, examMinutes, leaveLimit, publishedAt: Date.now()})
+  // The public exam carries no answers. The key is saved under this version of the exam and is
+  // never removed on unpublish, so attempts can still be graded later. Both are written together.
+  const publishedAt = Date.now();
+  const key = toKey(topicName);
+  const updates = {};
+  updates['student_quiz/'+key] = {questions: filtered.map(publicQuestion), topic: topicName, examMinutes, leaveLimit, publishedAt};
+  updates['answer_keys/'+key+'/'+publishedAt] = {questions: Object.fromEntries(filtered.map(q=>[q.id, answerKeyEntry(q)]))};
+  db.ref().update(updates)
     .then(()=>{
       publishedTopics[topicName] = { count: filtered.length, key: toKey(topicName) };
       renderTopics();
@@ -460,17 +483,20 @@ function renderAnalytics(){
   main.innerHTML='<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Yüklənir…</p></div>';
   sidebar.innerHTML='';
 
-  db.ref('analytics').once('value').then(snapshot=>{
+  Promise.all([db.ref('analytics').once('value'), db.ref('answer_keys').once('value')]).then(([snapshot, keySnap])=>{
     const val = snapshot.val()||{};
+    const answerKeys = keySnap.val()||{};
     const examKeys = Object.keys(val);
 
     // Build records for current filter
+    const withExam = k => Object.values(val[k]||{}).map(r=>({...r, _exam:k}));
     let records;
     if(analyticsFilter==='all' || !val[analyticsFilter]){
-      records = examKeys.flatMap(k=>val[k]?Object.values(val[k]):[]);
+      records = examKeys.flatMap(withExam);
     } else {
-      records = val[analyticsFilter] ? Object.values(val[analyticsFilter]) : [];
+      records = withExam(analyticsFilter);
     }
+    records.forEach(r=>applyGrade(r, answerKeys));
     records.sort((a,b)=>a.timestamp-b.timestamp);
 
     // Exam selector shown when more than one exam has data
@@ -494,6 +520,16 @@ function renderAnalytics(){
   }).catch(err=>{
     main.innerHTML=`<div class="analytics-empty"><p style="color:var(--wrong)">❌ Yüklənmə xətası: ${err.message}</p></div>`;
   });
+}
+
+// Students only store raw answers and server times; the score is worked out here from the saved key.
+function applyGrade(r, answerKeys){
+  const g = gradeAttempt(r, (answerKeys[r._exam]||{})[r.examVersion]);
+  const end = r.finishedAt || r.updatedAt || r.startedAt || 0;
+  r.timestamp = r.startedAt || 0;
+  r.timeUsed = r.startedAt ? Math.max(0, Math.round((end - r.startedAt)/1000)) : 0;
+  r.ungraded = !g;
+  Object.assign(r, g || {correct:0, wrong:0, unanswered:0, score:0, maxScore:0, totalQuestions:0, pct:0});
 }
 
 function switchAnalyticsExam(val){
@@ -567,7 +603,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
             <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
             <div style="text-align:center;color:var(--wrong);font-weight:700">${r.wrong}</div>
             <div style="text-align:center;color:var(--muted);font-weight:700">${r.unanswered??r.totalQuestions-r.correct-r.wrong}</div>
-            <div style="text-align:center"><span class="an-badge ${cls}">${r.pct}%</span></div>
+            <div style="text-align:center">${r.ungraded?'<span class="an-badge an-grey" title="Cavab açarı tapılmadı">—</span>':`<span class="an-badge ${cls}">${r.pct}%</span>`}</div>
             <div style="text-align:center;font-size:12px;color:var(--text2)">${r.tabSwitches||0} · ${fmtTime(r.timeAway||0)}${r.pastes?`<br/><span style="color:var(--wrong)">📋 ${r.pastes}</span>`:''}</div>
             <div>${leaveBadge(r)}</div>
           </div>`;

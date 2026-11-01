@@ -435,6 +435,7 @@ textarea{resize:vertical;line-height:1.6;}
   transition:border-color .2s;vertical-align:middle;
 }
 .blank-inp:focus{border-color:var(--accent2);}
+.blank-inp.sel{border-color:var(--accent);}
 .blank-inp.ok{border-color:var(--correct);color:var(--correct);}
 .blank-inp.bad{border-color:var(--wrong);color:var(--wrong);}
 

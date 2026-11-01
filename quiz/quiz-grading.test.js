@@ -1,0 +1,76 @@
+const test = require('node:test');
+const assert = require('node:assert');
+const { gradeAttempt, isCorrectAnswer, isAnswered } = require('./quiz-grading.js');
+
+const key = { questions: {
+  1: { type: 'mc',    points: 2, correctOption: 3 },
+  2: { type: 'tf',    points: 1, tfAnswer: false },
+  3: { type: 'short', points: 3, shortAnswer: 'Paris, paris ,PARİS' },
+  4: { type: 'fill',  points: 4, fillAnswers: ['Bakı', 'Kür,Kura'] }
+} };
+
+test('mc compares the original option index', () => {
+  assert.strictEqual(isCorrectAnswer(key.questions[1], 3), true);
+  assert.strictEqual(isCorrectAnswer(key.questions[1], 0), false);
+});
+
+test('mc option index 0 counts as an answer', () => {
+  assert.strictEqual(isAnswered(key.questions[1], 0), true);
+});
+
+test('tf false is an answer and is compared strictly', () => {
+  assert.strictEqual(isAnswered(key.questions[2], false), true);
+  assert.strictEqual(isCorrectAnswer(key.questions[2], false), true);
+  assert.strictEqual(isCorrectAnswer(key.questions[2], true), false);
+});
+
+test('short answers ignore case and spaces and accept comma-separated alternatives', () => {
+  assert.strictEqual(isCorrectAnswer(key.questions[3], '  PARIS '), true);
+  assert.strictEqual(isCorrectAnswer(key.questions[3], 'london'), false);
+});
+
+test('blank short answer is unanswered', () => {
+  assert.strictEqual(isAnswered(key.questions[3], '   '), false);
+});
+
+test('fill needs every blank right', () => {
+  assert.strictEqual(isCorrectAnswer(key.questions[4], ['bakı', 'kura']), true);
+  assert.strictEqual(isCorrectAnswer(key.questions[4], ['bakı', 'x']), false);
+});
+
+test('fill accepts the object form Firebase uses for arrays', () => {
+  assert.strictEqual(isCorrectAnswer(key.questions[4], { 0: 'Bakı', 1: 'Kür' }), true);
+});
+
+test('fill with fewer answers than blanks is not correct even if the first matches', () => {
+  assert.strictEqual(isCorrectAnswer(key.questions[4], ['Bakı']), false);
+});
+
+test('whole attempt: counts, points and percent', () => {
+  const rec = { qids: [1, 2, 3, 4], answers: { 1: 3, 2: true, 3: 'paris' } };
+  assert.deepStrictEqual(gradeAttempt(rec, key), {
+    correct: 2, wrong: 1, unanswered: 1, score: 5, maxScore: 10, totalQuestions: 4, pct: 50
+  });
+});
+
+test('questions the student never got are not counted', () => {
+  const rec = { qids: [1], answers: { 1: 3, 3: 'paris' } };
+  const g = gradeAttempt(rec, key);
+  assert.strictEqual(g.maxScore, 2);
+  assert.strictEqual(g.pct, 100);
+});
+
+test('qids stored as an object are read too', () => {
+  const rec = { qids: { 0: 1, 1: 2 }, answers: { 1: 3, 2: false } };
+  assert.strictEqual(gradeAttempt(rec, key).pct, 100);
+});
+
+test('unknown question ids are skipped, a missing key gives null', () => {
+  assert.strictEqual(gradeAttempt({ qids: [99], answers: { 99: 1 } }, key).totalQuestions, 0);
+  assert.strictEqual(gradeAttempt({ qids: [1] }, null), null);
+});
+
+test('no answers at all is 0 percent with everything unanswered', () => {
+  const g = gradeAttempt({ qids: [1, 2] }, key);
+  assert.deepStrictEqual([g.unanswered, g.pct], [2, 0]);
+});

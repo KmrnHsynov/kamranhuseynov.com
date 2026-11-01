@@ -2,6 +2,20 @@
   "rules": {
     "student_quiz": {
       ".read": true,
+      ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      "$exam": {
+        "questions": {
+          "$i": {
+            "correctOption": { ".validate": false },
+            "tfAnswer":      { ".validate": false },
+            "shortAnswer":   { ".validate": false },
+            "fillAnswers":   { ".validate": false }
+          }
+        }
+      }
+    },
+    "answer_keys": {
+      ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
       ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'"
     },
     "analytics": {
@@ -10,26 +24,30 @@
       "$exam": {
         "$attempt": {
           ".write": "auth != null && newData.child('uid').val() === auth.uid && (!data.exists() || (data.child('uid').val() === auth.uid && data.child('status').val() === 'in_progress'))",
-          ".validate": "newData.hasChildren(['attemptId', 'uid', 'status', 'studentName', 'topic', 'timestamp', 'totalQuestions', 'correct', 'wrong', 'unanswered', 'score', 'maxScore', 'pct', 'timeUsed', 'tabSwitches', 'timeAway', 'pastes', 'autoSubmitted'])",
-          "attemptId":      { ".validate": "newData.isString() && newData.val() === $attempt" },
-          "uid":            { ".validate": "newData.isString()" },
-          "status":         { ".validate": "newData.isString() && (newData.val() === 'in_progress' || newData.val() === 'done' || newData.val() === 'exited')" },
-          "studentName":    { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
-          "topic":          { ".validate": "newData.isString() && newData.val().length <= 200" },
-          "timestamp":      { ".validate": "newData.isNumber()" },
-          "totalQuestions": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
-          "correct":        { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
-          "wrong":          { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
-          "unanswered":     { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
-          "score":          { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
-          "maxScore":       { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
-          "pct":            { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
-          "timeUsed":       { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 86400" },
-          "tabSwitches":    { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
-          "timeAway":       { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
-          "pastes":         { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
-          "autoSubmitted":  { ".validate": "newData.isBoolean()" },
-          "autoReason":     { ".validate": "newData.isString() && newData.val() === 'leaves'" },
+          ".validate": "newData.hasChildren(['attemptId', 'uid', 'status', 'studentName', 'topic', 'examVersion', 'startedAt', 'updatedAt', 'qids', 'tabSwitches', 'timeAway', 'pastes', 'autoSubmitted']) && (newData.child('status').val() === 'in_progress') === !newData.child('finishedAt').exists() && (!root.child('student_quiz').child($exam).child('examMinutes').exists() || now <= newData.child('startedAt').val() + root.child('student_quiz').child($exam).child('examMinutes').val() * 60000 + 120000)",
+          "attemptId":     { ".validate": "newData.isString() && newData.val() === $attempt" },
+          "uid":           { ".validate": "newData.val() === auth.uid" },
+          "status":        { ".validate": "newData.isString() && (newData.val() === 'in_progress' || newData.val() === 'done' || newData.val() === 'exited')" },
+          "studentName":   { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+          "topic":         { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "examVersion":   { ".validate": "newData.isString() && newData.val().matches(/^[0-9]{1,16}$/)" },
+          "startedAt":     { ".validate": "newData.isNumber() && (data.exists() ? newData.val() === data.val() : newData.val() === now)" },
+          "updatedAt":     { ".validate": "newData.isNumber() && newData.val() === now" },
+          "finishedAt":    { ".validate": "newData.isNumber() && newData.val() === now" },
+          "qids": {
+            "$i": { ".validate": "$i.matches(/^([0-9]|[12][0-9])$/) && newData.isString() && root.child('answer_keys').child($exam).child(newData.parent().parent().child('examVersion').val()).child('questions').child(newData.val()).exists()" }
+          },
+          "answers": {
+            "$qid": {
+              ".validate": "root.child('answer_keys').child($exam).child(newData.parent().parent().child('examVersion').val()).child('questions').child($qid).exists() && ((newData.isNumber() && newData.val() >= 0 && newData.val() <= 4) || newData.isBoolean() || (newData.isString() && newData.val().length <= 500) || newData.hasChildren())",
+              "$k": { ".validate": "$k.matches(/^([0-9]|[1-9][0-9])$/) && newData.isString() && newData.val().length <= 200" }
+            }
+          },
+          "tabSwitches":   { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+          "timeAway":      { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
+          "pastes":        { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+          "autoSubmitted": { ".validate": "newData.isBoolean()" },
+          "autoReason":    { ".validate": "newData.isString() && newData.val() === 'leaves'" },
           "events": {
             "$i": {
               ".validate": "$i.matches(/^([0-9]|[1-9][0-9])$/) && newData.hasChildren(['type', 't'])",
