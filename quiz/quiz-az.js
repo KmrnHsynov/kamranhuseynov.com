@@ -88,10 +88,18 @@ function downloadCsvTemplate(){
   downloadText('sual-sablonu.csv', '﻿'+csvTemplate(), 'text/csv;charset=utf-8');
 }
 
+// A CSV or an Excel (.xlsx) file in the same column layout. Old binary .xls files cannot be read.
+async function readQuestionFile(file){
+  const name = String(file.name || '');
+  if(/\.xls$/i.test(name)) throw new Error('Köhnə .xls formatı oxuna bilmir. Faylı .xlsx və ya CSV UTF-8 kimi yenidən saxlayın.');
+  if(/\.xlsx$/i.test(name)) return parseQuestionsSheets(await xlsxReadSheets(await file.arrayBuffer()));
+  return parseQuestionsCsv(await file.text());
+}
+
 async function importCsvFile(file){
   if(!file) return;
   try{
-    const { questions: parsed, skipped, warnings, encodingProblem } = parseQuestionsCsv(await file.text());
+    const { questions: parsed, skipped, warnings, encodingProblem } = await readQuestionFile(file);
     const clean = parsed.map(normalizeImportedQuestion).filter(Boolean);
     const flagged = clean.filter(q=>q.needsReview).length;
     let msg = `${clean.length} sual mövcud suallara əlavə edilsin?`;

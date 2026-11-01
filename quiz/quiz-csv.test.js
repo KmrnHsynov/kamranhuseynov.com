@@ -129,3 +129,10 @@ test('a file that was not saved as UTF-8 is reported', () => {
   assert.strictEqual(parseQuestionsCsv(bad).encodingProblem, true);
   assert.strictEqual(parseQuestionsCsv(csvTemplate()).encodingProblem, false);
 });
+
+test('a Yes/No multiple-choice question stays multiple choice; only an explicit type makes it true/false', () => {
+  const csv = 'Question,Answer 1,Answer 2,Correct answer(s),Type\nIs this fine?,Yes,No,1,\nIs this fine?,Bəli,Xeyr,Bəli,tf\n';
+  const [a, b] = parseQuestionsCsv(csv).questions;
+  assert.strictEqual(a.type, 'mc');
+  assert.deepStrictEqual([b.type, b.tfAnswer], ['tf', true]);
+});

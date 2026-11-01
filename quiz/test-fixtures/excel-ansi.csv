@@ -1,0 +1,9 @@
+Quiz template,,,,,,
+"Add questions, at least 2 answer alternatives, time limit and choose at least one correct answer",,,,,,
+,,,,,,
+Question - max 120 characters,Answer 1 - max 75 characters,Answer 2 - max 75 characters,Answer 3 - max 75 characters,Answer 4 - max 75 characters,"Time limit (sec) – 5, 10, 20, 30, 60, 90, 120, or 240 secs",Correct answer(s) - choose at least one
+What is 2+2?,3,4,5,6,20,2
+Hans? ?d?dl?r sad?dir? (? ? ? ? ç ö ü),2,4,"7, yeddi",9,30,"1,3"
+Capital of France?,Paris,Rome,,,20,1
+Bold part and R&D <b>,Yes,No,,,,1
+Sky is blue,TRUE,FALSE,,,,1

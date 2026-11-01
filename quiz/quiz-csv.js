@@ -68,23 +68,29 @@ function csvMapHeader(cells){
 function csvFindTable(text){
   let best = null;
   for(const delim of [',', ';', '\t']){
-    const rows = csvParseRows(text, delim);
-    for(let r = 0; r < Math.min(rows.length, 25); r++){
-      const map = csvMapHeader(rows[r]);
-      if(map){
-        const width = rows[r].length;
-        if(!best || width > best.width) best = { rows, headerRow: r, map, width };
-        break;
-      }
-    }
+    const table = csvFindTableInRows(csvParseRows(text, delim));
+    if(table && (!best || table.width > best.width)) best = table;
   }
   return best;
 }
 
+// The header is somewhere in the first rows (Kahoot puts instructions above it).
+function csvFindTableInRows(rows){
+  for(let r = 0; r < Math.min(rows.length, 25); r++){
+    const map = csvMapHeader(rows[r]);
+    if(map) return { rows, headerRow: r, map, width: rows[r].length };
+  }
+  return null;
+}
+
 // ── turning rows into questions ───────────────────────
 
-const CSV_TRUE = /^(true|dogru|beli|yes|bəli)$/;
+// Reading a true/false answer cell is generous (Bəli/Xeyr, Yes/No are fine when the type says true/false).
+const CSV_TRUE = /^(true|dogru|beli|yes)$/;
 const CSV_FALSE = /^(false|yanlis|xeyr|no)$/;
+// Deciding that a question IS true/false from its two answers is strict.
+const CSV_TRUE_WORD = /^(true|dogru)$/;
+const CSV_FALSE_WORD = /^(false|yanlis)$/;
 
 function csvType(raw){
   const t = csvFold(raw);
@@ -112,7 +118,9 @@ function csvRowToQuestion(cells, map){
   if(!type){
     if(filled.length >= 2){
       const words = filled.map(x => csvFold(x.a));
-      type = filled.length === 2 && words.some(w => CSV_TRUE.test(w)) && words.some(w => CSV_FALSE.test(w)) ? 'tf' : 'mc';
+      // Strict on purpose: only True/False or Doğru/Yanlış make it a true/false question,
+      // so a Yes/No multiple-choice question is not turned into Doğru/Yanlış.
+      type = filled.length === 2 && words.some(w => CSV_TRUE_WORD.test(w)) && words.some(w => CSV_FALSE_WORD.test(w)) ? 'tf' : 'mc';
     } else type = /\[blank\]/i.test(text) ? 'fill' : 'short';
   }
 
@@ -167,23 +175,48 @@ function csvRowToQuestion(cells, map){
   return { question: q, warnings };
 }
 
-// text -> { questions, skipped, warnings:[ "Sual 3: ..." ] }, or throws an Error with a message for the teacher.
-function parseQuestionsCsv(text){
-  const clean = String(text || '').replace(/^﻿/, '');
-  const table = csvFindTable(clean);
-  if(!table) throw new Error('Başlıq sətri tapılmadı. Faylda "Question" (və ya "Sual") və "Answer 1" (və ya "Cavab 1") sütunları olmalıdır. Şablonu yükləyib istifadə edə bilərsiniz.');
+const CSV_HEADER_ERROR = 'Başlıq sətri tapılmadı. Faylda "Question" (və ya "Sual") və "Answer 1" (və ya "Cavab 1") sütunları olmalıdır. Şablonu yükləyib istifadə edə bilərsiniz.';
+const CSV_BOM = String.fromCharCode(0xFEFF);
+// What the browser puts in for bytes it could not read as UTF-8 (a file saved in an old encoding).
+const CSV_BAD_CHAR = String.fromCharCode(0xFFFD);
+
+// A file saved in an old encoding shows up as U+FFFD, or, for letters like ə ş ı ğ that the old
+// encoding has no code for, as a "?" in the middle of a word. A few of those in a row is not a URL.
+function csvLooksDamaged(text){
+  return text.includes(CSV_BAD_CHAR) || (text.match(/\p{L}\?\p{L}/gu) || []).length >= 3;
+}
+
+// A table (header position + column map) -> questions. Shared by the CSV and the .xlsx readers.
+function csvTableToQuestions(table, encodingProblem){
   const questions = [], warnings = [];
   let skipped = 0;
   const body = table.rows.slice(table.headerRow + 1, table.headerRow + 1 + CSV_MAX_ROWS);
-  body.forEach((cells, n) => {
+  body.forEach(cells => {
     const res = csvRowToQuestion(cells, table.map);
     if(!res.question){ if(res.hadContent) skipped++; return; }
     questions.push(res.question);
     if(res.warnings.length) warnings.push(`Sual ${questions.length}: ${res.warnings.join('; ')}`);
   });
   if(!questions.length) throw new Error('Faylda sual tapılmadı.');
-  // U+FFFD is what the browser puts in for bytes it could not read as UTF-8 (a file saved in an old encoding).
-  return { questions, skipped, warnings, encodingProblem: clean.includes('\uFFFD') };
+  return { questions, skipped, warnings, encodingProblem };
+}
+
+// text -> { questions, skipped, warnings:[ "Sual 3: ..." ], encodingProblem }, or throws an Error with a message for the teacher.
+function parseQuestionsCsv(text){
+  const clean = String(text || '').split(CSV_BOM).join('');
+  const table = csvFindTable(clean);
+  if(!table) throw new Error(CSV_HEADER_ERROR);
+  return csvTableToQuestions(table, csvLooksDamaged(clean));
+}
+
+// [{ name, rows }] from a workbook -> the same result, using the first sheet that has a header row.
+function parseQuestionsSheets(sheets){
+  for(const sheet of sheets){
+    const rows = sheet.rows.filter(r => r.some(c => String(c).trim() !== ''));
+    const table = csvFindTableInRows(rows);
+    if(table) return csvTableToQuestions(table, false);
+  }
+  throw new Error(CSV_HEADER_ERROR);
 }
 
 // A starting file for the teacher. ';' because Excel set to an Azerbaijani region splits columns on it.
@@ -197,4 +230,4 @@ function csvTemplate(){
   ].join('\r\n') + '\r\n';
 }
 
-if(typeof module !== 'undefined') module.exports = { parseQuestionsCsv, csvParseRows, csvTemplate, csvMapHeader };
+if(typeof module !== 'undefined') module.exports = { parseQuestionsCsv, parseQuestionsSheets, csvParseRows, csvTemplate, csvMapHeader };
