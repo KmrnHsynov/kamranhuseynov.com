@@ -63,3 +63,15 @@ test('events are capped at 100 but counters keep counting', () => {
   assert.strictEqual(s.events.length, 100);
   assert.strictEqual(s.pastes, 150);
 });
+
+test('a saved session is restored and keeps counting from where it was', () => {
+  const now = clock();
+  now.set(100000);
+  const m = createMonitor(3, now, { tabSwitches: 2, timeAway: 30, pastes: 1, events: [{ type: 'leave', t: 5 }], elapsed: 60 });
+  assert.strictEqual(m.stats().tabSwitches, 2);
+  assert.deepStrictEqual(m.leave(), { count: 3, reached: true });
+  const s = m.stats();
+  assert.strictEqual(s.timeAway, 30);
+  assert.strictEqual(s.pastes, 1);
+  assert.deepStrictEqual(s.events, [{ type: 'leave', t: 5 }, { type: 'leave', t: 60 }]);
+});

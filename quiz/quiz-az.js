@@ -288,7 +288,7 @@ function renderSidebar(){
   list.innerHTML=questions.map((q,i)=>`
     <div class="q-item ${q.id===activeQId?'active':''}" data-id="${q.id}" onclick="setActiveQ(${q.id})">
       <span class="q-num">${i+1}</span>
-      <span class="q-preview">${q.text||'(sual mətni yoxdur)'}</span>
+      <span class="q-preview">${esc(q.text)||'(sual mətni yoxdur)'}</span>
       <span class="q-type-badge">${tlbl(q.type)}</span>
       <button class="q-del" onclick="event.stopPropagation();deleteQ(${q.id})">✕</button>
     </div>`).join('');
@@ -485,7 +485,7 @@ function renderAnalytics(){
             const examData = val[k]||{};
             const examName = (Object.values(examData)[0]?.topic)||k;
             const cnt = Object.keys(examData).length;
-            return`<option value="${k}" ${analyticsFilter===k?'selected':''}>${esc(examName)} (${cnt})</option>`;
+            return`<option value="${esc(k)}" ${analyticsFilter===k?'selected':''}>${esc(examName)} (${cnt})</option>`;
           }).join('')}
         </select>
       </div>`;

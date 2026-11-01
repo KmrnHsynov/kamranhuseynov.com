@@ -9,7 +9,28 @@ let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
 let _examList = [];
 
 const DEFAULT_LEAVE_LIMIT   = 3;
-let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null;
+const STORAGE_KEY_ATTEMPT   = 'qc_student_attempt';
+const OPT_LETTERS           = ['A','B','C','D','E'];
+let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null, startedAt = 0;
+
+// The running exam is kept in localStorage so a refresh resumes it instead of restarting it.
+function persistState(){
+  if(!examActive || !attemptId) return;
+  try{
+    localStorage.setItem(STORAGE_KEY_ATTEMPT, JSON.stringify({
+      attemptId, examKey, topicName, studentName, quizQs, quizAns, quizIdx,
+      startedAt, examSeconds: EXAM_SECONDS, leaveLimit,
+      monitor: monitor ? { ...monitor.stats(), elapsed: Math.floor((Date.now() - startedAt) / 1000) } : null
+    }));
+  }catch(e){}
+}
+function clearSavedAttempt(){ try{ localStorage.removeItem(STORAGE_KEY_ATTEMPT); }catch(e){} }
+function loadSavedAttempt(){
+  try{
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY_ATTEMPT)||'null');
+    return s && s.attemptId && Array.isArray(s.quizQs) && s.quizQs.length ? s : null;
+  }catch(e){ return null; }
+}
 
 function readLeaveLimit(exam){
   const n = parseInt(exam && exam.leaveLimit, 10);
@@ -21,6 +42,9 @@ function analyticsKey(){
 
 // ── INIT ──────────────────────────────────────────────
 (function init(){
+  const saved = loadSavedAttempt();
+  if(saved){ resumeExam(saved); return; }
+
   // Show loading state while fetching from Firebase
   document.getElementById('lobby-view').innerHTML=`
     <div class="lock-card" style="max-width:460px">
@@ -138,7 +162,7 @@ function startExam(){
     if(q.type !== 'mc') return q;
     const correctText = q.options[q.correctOption];
     const shuffled = q.options.filter(o => o).sort(() => Math.random() - .5);
-    while(shuffled.length < 4) shuffled.push('');
+    while(shuffled.length < OPT_LETTERS.length) shuffled.push('');
     const newIdx = shuffled.indexOf(correctText);
     return { ...q, options: shuffled, correctOption: newIdx >= 0 ? newIdx : 0 };
   });
@@ -146,6 +170,7 @@ function startExam(){
   quizQs = pool;
   quizIdx = 0; quizAns = {};
   timeLeft = EXAM_SECONDS;
+  startedAt = Date.now();
   attemptId = db.ref('analytics/'+analyticsKey()).push().key;
   monitor = leaveLimit > 0 ? createMonitor(leaveLimit) : null;
   autoReason = null;
@@ -163,7 +188,7 @@ function startTotalTimer(){
   clearInterval(totalTimer);
   updateTimerDisplay();
   totalTimer = setInterval(() => {
-    timeLeft--;
+    timeLeft = EXAM_SECONDS - Math.floor((Date.now() - startedAt) / 1000);
     updateTimerDisplay();
     if(timeLeft <= 0){ clearInterval(totalTimer); finishQuiz(); }
   }, 1000);
@@ -191,10 +216,11 @@ function renderQuizQ(){
   document.getElementById('quiz-card-container').innerHTML = buildQuizCard(q);
   const saved = quizAns[q.id];
   if(saved !== undefined){ restoreAns(q, saved); showFbFromSaved(q, saved); }
+  persistState();
 }
 
 function buildQuizCard(q){
-  const L = ['A','B','C','D'];
+  const L = OPT_LETTERS;
   let body = '';
   if(q.type === 'mc'){
     body = `<div class="quiz-mc-opts">${q.options.filter(o=>o).map((o,i)=>`
@@ -231,7 +257,7 @@ function pickMC(qid, idx, correct){
     if(i === idx) el.classList.add(idx === correct ? 'ok' : 'bad');
     if(i === correct && i !== idx) el.classList.add('reveal');
   });
-  showFb(idx===correct, idx===correct ? '✓ Düzdür!' : '✗ Yanlış — Düzgün: '+['A','B','C','D'][correct]);
+  showFb(idx===correct, idx===correct ? '✓ Düzdür!' : '✗ Yanlış — Düzgün: '+OPT_LETTERS[correct]);
   onAnswered();
 }
 
@@ -317,7 +343,7 @@ function restoreAns(q, saved){
 
 function showFbFromSaved(q, saved){
   let ok=false, msg='';
-  if(q.type==='mc'){ok=saved===q.correctOption;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+['A','B','C','D'][q.correctOption];}
+  if(q.type==='mc'){ok=saved===q.correctOption;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+OPT_LETTERS[q.correctOption];}
   else if(q.type==='tf'){ok=saved===q.tfAnswer;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+(q.tfAnswer?'Doğru':'Yanlış');}
   else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((saved||'').toLowerCase());msg=ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer;}
   else if(q.type==='fill'){const vals=Array.isArray(saved)?saved:[];ok=vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});msg=ok?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır';}
@@ -349,6 +375,7 @@ function gradeAll(){
 
 function saveAttempt(status){
   if(!attemptId) return;
+  if(status === 'in_progress') persistState();
   try{
     const g = gradeAll();
     const m = monitor ? monitor.stats() : { tabSwitches:0, timeAway:0, pastes:0, events:[] };
@@ -378,6 +405,7 @@ function saveAttempt(status){
 function finishQuiz(){
   clearInterval(totalTimer);
   examActive = false;
+  clearSavedAttempt();
   document.getElementById('leave-warning')?.remove();
   const { ok, bad, earned, total, pct } = gradeAll();
   document.getElementById('score-ring').style.setProperty('--pct',`${pct}%`);
@@ -401,7 +429,7 @@ function finishQuiz(){
 function buildReview(q){
   const ans=quizAns[q.id];
   let ok=false, yourA='(cavablanmadı)', corA='';
-  const L=['A','B','C','D'];
+  const L=OPT_LETTERS;
   if(q.type==='mc'){ok=ans===q.correctOption;yourA=ans!=null?L[ans]+' '+q.options[ans]:'(cavablanmadı)';corA=L[q.correctOption]+' '+q.options[q.correctOption];}
   else if(q.type==='tf'){ok=ans===q.tfAnswer;yourA=ans!=null?(ans?'Doğru':'Yanlış'):'(cavablanmadı)';corA=q.tfAnswer?'Doğru':'Yanlış';}
   else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((ans||'').toLowerCase());yourA=ans||'(cavablanmadı)';corA=q.shortAnswer;}
@@ -420,6 +448,7 @@ function exitQuiz(){
   if(!confirm('İmtahandan çıxmaq istəyirsiniz? Cavablarınız yadda saxlanmayacaq.')){ examActive = true; return; }
   clearInterval(totalTimer);
   saveAttempt('exited');
+  clearSavedAttempt();
   attemptId = '';
   quizAns = {};
   showLobby();
@@ -431,6 +460,31 @@ function retakeExam(){
 }
 
 function printResults(){ window.print(); }
+
+// ── RESUME AFTER REFRESH ──────────────────────────────
+// A refresh counts as one page leave, so it cannot be used to dodge the limit.
+function resumeExam(s){
+  examKey = s.examKey; topicName = s.topicName; studentName = s.studentName;
+  quizQs = s.quizQs; quizAns = s.quizAns || {}; quizIdx = s.quizIdx || 0;
+  EXAM_SECONDS = s.examSeconds; leaveLimit = s.leaveLimit;
+  attemptId = s.attemptId; startedAt = s.startedAt; autoReason = null;
+  timeLeft = EXAM_SECONDS - Math.floor((Date.now() - startedAt) / 1000);
+  monitor = leaveLimit > 0 ? createMonitor(leaveLimit, null, s.monitor || undefined) : null;
+  examActive = true;
+
+  if(timeLeft <= 0){ finishQuiz(); return; }
+  document.getElementById('quiz-disp-title').textContent = 'İmtahan';
+  showView('quiz-view');
+  renderQuizQ();
+  if(monitor){
+    const r = monitor.leave();
+    if(r.reached){ autoReason = 'leaves'; finishQuiz(); return; }
+    monitor.back();
+    showLeaveWarning(r.count);
+  }
+  startTotalTimer();
+  saveAttempt('in_progress');
+}
 
 // ── MONITORING ────────────────────────────────────────
 function onLeave(){

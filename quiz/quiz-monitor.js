@@ -2,11 +2,18 @@
 
 const MONITOR_MAX_EVENTS = 100;
 
-function createMonitor(limit, nowFn){
+// `initial` restores a saved session: {tabSwitches, timeAway, pastes, events, elapsed (seconds)}
+function createMonitor(limit, nowFn, initial){
   const now = nowFn || (() => Date.now());
-  const startedAt = now();
+  const init = initial || {};
+  const startedAt = now() - (init.elapsed || 0) * 1000;
   let awaySince = null;
-  const s = { tabSwitches: 0, timeAway: 0, pastes: 0, events: [] };
+  const s = {
+    tabSwitches: init.tabSwitches || 0,
+    timeAway: init.timeAway || 0,
+    pastes: init.pastes || 0,
+    events: (init.events || []).slice(0, MONITOR_MAX_EVENTS)
+  };
 
   function secs(ms){ return Math.round(ms / 1000); }
   function log(type){
