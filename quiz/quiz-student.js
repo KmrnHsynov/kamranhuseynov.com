@@ -5,7 +5,7 @@ const MAX_QUESTIONS         = 30;
 let EXAM_SECONDS            = 30 * 60;
 
 let quizQs = [], quizIdx = 0, quizAns = {}, topicName = '', studentName = '', examKey = '';
-let totalTimer = null, timeLeft = EXAM_SECONDS, answered = false;
+let totalTimer = null, timeLeft = EXAM_SECONDS;
 let _examList = [];
 
 const DEFAULT_LEAVE_LIMIT   = 3;
@@ -388,7 +388,6 @@ function updateTimerDisplay(){
 
 // ── QUIZ ENGINE ───────────────────────────────────────
 function renderQuizQ(){
-  answered = quizAns[quizQs[quizIdx]?.id] !== undefined;
   const q = quizQs[quizIdx];
   const total = quizQs.length;
   document.getElementById('q-progress').textContent = `${quizIdx+1} / ${total}`;
@@ -416,12 +415,12 @@ function buildQuizCard(q){
       <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false)">✗ Yanlış</div>
     </div>`;
   } else if(q.type === 'short'){
-    body = `<textarea class="quiz-short-input" id="short-inp" placeholder="Cavabınızı buraya yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px;transition:border-color .2s"></textarea>
-    <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="submitShort(${q.id})">Cavabı Göndər</button></div>`;
+    body = `<textarea class="quiz-short-input" id="short-inp" oninput="liveShort(${q.id})" placeholder="Cavabınızı buraya yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px;transition:border-color .2s"></textarea>
+    <div id="ans-status" style="margin-top:8px;min-height:18px;font-size:12px;color:var(--muted)"></div>`;
   } else if(q.type === 'fill'){
     const rendered = (q.fillText||'').replace(/\[blank\]/gi, () => `<input class="blank-inp" type="text"/>`);
-    body = `<div class="fill-text-render">${rendered}</div>
-    <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="submitFill(${q.id})">Cavabı Göndər</button></div>`;
+    body = `<div class="fill-text-render" oninput="liveFill(${q.id})">${rendered}</div>
+    <div id="ans-status" style="margin-top:12px;min-height:18px;font-size:12px;color:var(--muted)"></div>`;
   }
   return `<div class="quiz-card" id="quiz-card-main">
     <div class="quiz-q-label">Sual ${quizIdx+1} / ${quizQs.length}</div>
@@ -430,69 +429,62 @@ function buildQuizCard(q){
   </div>`;
 }
 
-// Answers are stored exactly as the student gave them. This page never knows which answer is
-// correct: the key lives in a teacher-only database node and the teacher panel does the grading.
+// Answers are stored exactly as the student gave them, and can be changed until the exam ends. This page
+// never knows which answer is correct: the key lives in a teacher-only database node and the teacher panel does the grading.
 function markMC(idx){
-  document.querySelectorAll('.quiz-mc-opt').forEach((el,i)=>{
-    el.classList.add('locked'); el.onclick = null;
-    if(i === idx) el.classList.add('sel');
-  });
+  document.querySelectorAll('.quiz-mc-opt').forEach((el,i)=>el.classList.toggle('sel', i === idx));
 }
 
 function pickMC(qid, idx){
-  if(answered) return;
   const q = quizQs.find(q=>q.id===qid);
-  answered = true;
   quizAns[qid] = q.order[idx];   // stored as the option's position in the teacher's original list
   markMC(idx);
   onAnswered();
 }
 
 function markTF(val){
-  const tEl = document.getElementById('tf-t'), fEl = document.getElementById('tf-f');
-  tEl.classList.add('locked'); fEl.classList.add('locked');
-  tEl.onclick = null; fEl.onclick = null;
-  (val ? tEl : fEl).classList.add('sel');
+  document.getElementById('tf-t').classList.toggle('sel', val === true);
+  document.getElementById('tf-f').classList.toggle('sel', val === false);
 }
 
 function pickTF(qid, val){
-  if(answered) return;
-  answered = true;
   quizAns[qid] = val;
   markTF(val);
   onAnswered();
 }
 
-function lockShort(inp){ if(inp){ inp.style.borderColor = 'var(--accent)'; inp.readOnly = true; } }
-
-function submitShort(qid){
-  if(answered) return;
-  const inp = document.getElementById('short-inp');
-  const val = (inp?.value||'').trim();
-  if(!val) return;
-  answered = true;
-  quizAns[qid] = val.slice(0, 500);
-  lockShort(inp);
-  onAnswered();
+// Written answers are kept as the student types. An empty one (or a fill-in with a blank left) counts as no answer.
+function showAnsStatus(has){
+  const el = document.getElementById('ans-status');
+  if(el) el.textContent = has ? '✓ Cavab yadda saxlanıldı' : '';
 }
 
-function lockFill(inps){ inps.forEach(i=>{ i.classList.add('sel'); i.readOnly = true; }); }
+function liveShort(qid){
+  const val = (document.getElementById('short-inp')?.value || '').trim();
+  if(val) quizAns[qid] = val.slice(0, 500); else delete quizAns[qid];
+  showAnsStatus(!!val);
+  onAnsweredSoon();
+}
 
-function submitFill(qid){
-  if(answered) return;
-  const inps = [...document.querySelectorAll('.blank-inp')];
-  const vals = inps.map(i=>i.value.trim());
-  if(vals.some(v=>!v)) return;
-  answered = true;
-  quizAns[qid] = vals.map(v=>v.slice(0, 200));
-  lockFill(inps);
-  onAnswered();
+function liveFill(qid){
+  const vals = [...document.querySelectorAll('.blank-inp')].map(i => i.value.trim());
+  const complete = vals.length > 0 && vals.every(Boolean);
+  if(complete) quizAns[qid] = vals.map(v => v.slice(0, 200)); else delete quizAns[qid];
+  showAnsStatus(complete);
+  onAnsweredSoon();
 }
 
 function onAnswered(){ saveAttempt('in_progress'); }
 
+// Typing saves to this device at once and to the database after a short pause.
+let answerSaveTimer = null;
+function onAnsweredSoon(){
+  persistState();
+  clearTimeout(answerSaveTimer);
+  answerSaveTimer = setTimeout(() => saveAttempt('in_progress'), 700);
+}
+
 function restoreAns(q, saved){
-  answered = true;
   if(q.type==='mc'){
     markMC((q.order||[]).indexOf(saved));
   } else if(q.type==='tf'){
@@ -500,19 +492,23 @@ function restoreAns(q, saved){
   } else if(q.type==='short'){
     const inp=document.getElementById('short-inp');
     if(inp) inp.value=saved||'';
-    lockShort(inp);
+    showAnsStatus(!!saved);
   } else if(q.type==='fill'&&Array.isArray(saved)){
     const inps=[...document.querySelectorAll('.blank-inp')];
     saved.forEach((v,i)=>{ if(inps[i]) inps[i].value=v; });
-    lockFill(inps);
+    showAnsStatus(true);
   }
 }
 
+function flushAnswer(){
+  if(answerSaveTimer){ clearTimeout(answerSaveTimer); answerSaveTimer = null; saveAttempt('in_progress'); }
+}
 function nextQ(){
+  flushAnswer();
   if(quizIdx < quizQs.length-1){ quizIdx++; renderQuizQ(); }
   else finishQuiz();
 }
-function prevQ(){ if(quizIdx > 0){ quizIdx--; renderQuizQ(); } }
+function prevQ(){ flushAnswer(); if(quizIdx > 0){ quizIdx--; renderQuizQ(); } }
 
 // ── RESULTS ───────────────────────────────────────────
 function answeredCount(){ return quizQs.filter(q => quizAns[q.id] !== undefined).length; }
@@ -594,6 +590,7 @@ window.addEventListener('online', () => { if(finalSaveState === 'failed' || fina
 
 function finishQuiz(){
   clearInterval(totalTimer);
+  clearTimeout(answerSaveTimer);
   examActive = false;
   leaveFullscreen();
   persistState(true);
