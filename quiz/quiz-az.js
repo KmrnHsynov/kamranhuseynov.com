@@ -309,7 +309,7 @@ function renderTopics(){
 
   // Bulk-assign section (always shown if there are any questions)
   const bulkHtml = questions.length ? `
-    <div style="padding:14px 16px;border-bottom:2px solid var(--border);background:rgba(255,255,255,.03)">
+    <div style="padding:14px 16px;border-bottom:2px solid var(--border);background:var(--surface2)">
       <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Boş Sualları Təyin Et</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${emptyCount} sualın mövzusu boşdur</div>
       <input type="text" id="bulk-topic-input" placeholder="Mövzu adı…" style="font-size:12px;padding:7px 11px;margin-bottom:8px"

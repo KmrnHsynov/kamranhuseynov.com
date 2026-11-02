@@ -4,23 +4,37 @@
 ══════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#07080f;
-  --surface:#0f1018;
-  --surface2:#181926;
-  --surface3:#1f2030;
-  --border:#272838;
-  --border2:#32334a;
-  --accent:#6c63ff;
-  --accent2:#ff6584;
-  --accent3:#43e8b0;
-  --accent4:#ffd166;
-  --text:#eeeef5;
-  --text2:#a0a0b8;
-  --muted:#5a5a78;
-  --correct:#22c55e;
-  --wrong:#ef4444;
-  --warn:#f59e0b;
+  color-scheme:light;
+  --bg:#f5f6fb;
+  --surface:#ffffff;
+  --surface2:#f1f2f9;
+  --surface3:#e7e9f4;
+  --border:#e0e2ee;
+  --border2:#cdd0e2;
+  --accent:#5a50e6;
+  --accent2:#e5486a;
+  --accent3:#0e9f6e;
+  --accent4:#b7791f;
+  --text:#1b1c2e;
+  --text2:#4a4c66;
+  --muted:#6f7190;
+  --correct:#15803d;
+  --wrong:#dc2626;
+  --warn:#b45309;
+  --overlay:rgba(27,28,46,.5);
+  --glow:rgba(90,80,230,.06);
   --radius:14px;
+}
+/* The original dark palette, kept for when a switch is added: <html data-theme="dark"> */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#07080f; --surface:#0f1018; --surface2:#181926; --surface3:#1f2030;
+  --border:#272838; --border2:#32334a;
+  --accent:#6c63ff; --accent2:#ff6584; --accent3:#43e8b0; --accent4:#ffd166;
+  --text:#eeeef5; --text2:#a0a0b8; --muted:#5a5a78;
+  --correct:#22c55e; --wrong:#ef4444; --warn:#f59e0b;
+  --overlay:rgba(7,8,15,.88);
+  --glow:rgba(108,99,255,.07);
 }
 html{font-size:16px;}
 body{
@@ -33,7 +47,7 @@ body{
 body::before{
   content:'';
   position:fixed;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(108,99,255,.07),transparent);
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,var(--glow),transparent);
   pointer-events:none;z-index:0;
 }
 
@@ -63,7 +77,7 @@ code,mono{font-family:'DM Mono',monospace;}
 ══════════════════════════════════ */
 .overlay{
   position:fixed;inset:0;
-  background:rgba(7,8,15,.88);
+  background:var(--overlay);
   backdrop-filter:blur(6px);
   z-index:1000;
   display:flex;align-items:center;justify-content:center;
@@ -101,7 +115,7 @@ code,mono{font-family:'DM Mono',monospace;}
 .btn-danger:hover{background:var(--wrong);color:#fff;}
 .btn-accent2{background:var(--accent2);color:#fff;}
 .btn-accent2:hover{filter:brightness(1.1);transform:translateY(-1px);}
-.btn-accent3{background:var(--accent3);color:#07080f;}
+.btn-accent3{background:var(--accent3);color:#fff;}
 .btn-accent3:hover{filter:brightness(1.1);transform:translateY(-1px);}
 .btn-sm{padding:7px 14px;font-size:12px;border-radius:8px;}
 .btn-full{width:100%;}
@@ -110,7 +124,7 @@ code,mono{font-family:'DM Mono',monospace;}
 /* ══════════════════════════════════
    FORM ELEMENTS
 ══════════════════════════════════ */
-input[type="text"],input[type="password"],input[type="number"],textarea,select{
+input[type="text"],input[type="email"],input[type="password"],input[type="number"],textarea,select{
   background:var(--surface2);
   border:1.5px solid var(--border);
   border-radius:10px;
@@ -122,7 +136,7 @@ input[type="text"],input[type="password"],input[type="number"],textarea,select{
   width:100%;
   transition:border-color .2s;
 }
-input[type="text"]:focus,input[type="password"]:focus,
+input[type="text"]:focus,input[type="email"]:focus,input[type="password"]:focus,
 input[type="number"]:focus,textarea:focus,select:focus{border-color:var(--accent);}
 select option{background:var(--surface2);}
 textarea{resize:vertical;line-height:1.6;}
@@ -544,7 +558,7 @@ textarea{resize:vertical;line-height:1.6;}
 .an-good{background:rgba(34,197,94,.14);color:var(--correct);border:1px solid rgba(34,197,94,.25);}
 .an-mid{background:rgba(245,158,11,.14);color:var(--warn);border:1px solid rgba(245,158,11,.25);}
 .an-low{background:rgba(239,68,68,.14);color:var(--wrong);border:1px solid rgba(239,68,68,.25);}
-.an-warn{background:rgba(234,179,8,.14);color:#eab308;border:1px solid rgba(234,179,8,.25);}
+.an-warn{background:rgba(234,179,8,.16);color:#a16207;border:1px solid rgba(234,179,8,.25);}
 .an-grey{background:rgba(148,163,184,.14);color:var(--muted);border:1px solid rgba(148,163,184,.25);}
 
 .analytics-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);font-size:14px;text-align:center;}
