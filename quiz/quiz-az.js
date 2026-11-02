@@ -62,6 +62,7 @@ auth.onAuthStateChanged(user=>{
     showView('editor-view');
     renderSidebar();
     renderEditor();
+    refreshPublishedTopics();
   } else {
     showView('lock-view');
   }
@@ -284,15 +285,21 @@ function toKey(str){ return str.replace(/[.#$[\]/]/g,'_'); }
 function refreshPublishedTopics(cb){
   const el = document.getElementById('topics-list');
   if(el) el.innerHTML='<div style="padding:16px;font-size:12px;color:var(--muted)">⏳ Yüklənir…</div>';
-  db.ref('student_quiz').once('value').then(snap=>{
+  Promise.all([db.ref('student_quiz').once('value'), db.ref('exam_index').once('value')]).then(([snap, indexSnap])=>{
     const val = snap.val()||{};
+    const index = indexSnap.val()||{};
     publishedTopics = {};
+    const missing = {};
     Object.entries(val).forEach(([key,exam])=>{
-      if(exam&&exam.questions){
+      if(exam&&(exam.questions||exam.payload)){
         const label = exam.topic || key;
-        publishedTopics[label]={ count: exam.questions.length||0, key, opensAt: exam.opensAt||0, closesAt: exam.closesAt||0 };
+        const count = exam.qCount || legacyQuestionCount(exam);
+        publishedTopics[label]={ count, key, opensAt: exam.opensAt||0, closesAt: exam.closesAt||0 };
+        // Exams published before the public list existed get an entry, so students keep seeing them.
+        if(!index[key] || index[key].publishedAt !== (exam.publishedAt||0)) missing['exam_index/'+key] = examMeta(exam, count);
       }
     });
+    if(Object.keys(missing).length) db.ref().update(missing).catch(()=>{});
     cb && cb();
   }).catch(()=>{ cb && cb(); });
 }
@@ -493,12 +500,17 @@ function publishTopic(topicName){
   const publishedAt = Date.now();
   const key = toKey(topicName);
   const updates = {};
-  const exam = {questions: filtered.map(publicQuestion), topic: topicName, examMinutes, leaveLimit, publishedAt};
+  const exam = {topic: topicName, examMinutes, leaveLimit, publishedAt};
   if(opensAt) exam.opensAt = opensAt;      // left out when empty: Firebase rejects undefined values
   if(closesAt) exam.closesAt = closesAt;
-  updates['student_quiz/'+key] = exam;
-  updates['answer_keys/'+key+'/'+publishedAt] = {questions: Object.fromEntries(filtered.map(q=>[q.id, answerKeyEntry(q)]))};
-  db.ref().update(updates)
+  const publicQs = filtered.map(publicQuestion);
+  const meta = examMeta(exam, publicQs.length);
+  encodeQuestions(publicQs, key, publishedAt).then(payload=>{
+    updates['student_quiz/'+key] = {...meta, payload};
+    updates['exam_index/'+key] = meta;
+    updates['answer_keys/'+key+'/'+publishedAt] = {questions: Object.fromEntries(filtered.map(q=>[q.id, answerKeyEntry(q)]))};
+    return db.ref().update(updates);
+  })
     .then(()=>{
       publishedTopics[topicName] = { count: filtered.length, key: toKey(topicName), opensAt, closesAt };
       // Optional, chosen in Settings: do not leave the questions behind in this browser once they are published.
@@ -517,13 +529,18 @@ function publishTopic(topicName){
     });
 }
 
+// The exam and its public list entry go together. Answer keys stay, so attempts can still be graded.
+function unpublishExam(key){
+  return db.ref().update({['student_quiz/'+key]: null, ['exam_index/'+key]: null});
+}
+
 function deleteTopic(topicName){
   const count = questions.filter(q=>q.topic?.trim()===topicName).length;
   const live = !!publishedTopics[topicName];
   if(!confirm(`"${topicName}" mövzusuna aid ${count} sual silinsin?${live ? '\n\nDiqqət: bu test tələbələr üçün də silinəcək. Tələbə nəticələri qalır.' : ''}`)) return;
   questions = questions.filter(q=>q.topic?.trim()!==topicName);
   saveQs(); renderSidebar(); renderEditor();
-  db.ref('student_quiz/'+toKey(topicName)).remove().then(()=>{
+  unpublishExam(toKey(topicName)).then(()=>{
     delete publishedTopics[topicName];
     renderTopics();
   }).catch(()=>renderTopics());
@@ -536,14 +553,14 @@ function deleteAllQuestions(){
   if(!confirm(`Bütün ${questions.length} sual silinsin?${warn}`)) return;
   questions = []; qId = 0; activeQId = null;
   saveQs(); renderSidebar(); renderEditor();
-  db.ref('student_quiz').remove()
+  db.ref().update({student_quiz: null, exam_index: null})
     .then(()=>{ publishedTopics = {}; })
     .catch(err=>alert('Göndərilmiş testlər serverdən silinmədi: '+err.message));
 }
 
 function unpublishTopic(topicName){
   if(!confirm(`"${topicName}" testini tələbələr üçün silmək istəyirsiniz?`)) return;
-  db.ref('student_quiz/'+toKey(topicName)).remove()
+  unpublishExam(toKey(topicName))
     .then(()=>{
       delete publishedTopics[topicName];
       renderTopics();

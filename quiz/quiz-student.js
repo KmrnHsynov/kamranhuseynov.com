@@ -20,7 +20,7 @@ const authReady = new Promise(resolve => {
 });
 let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null, startedAt = 0;
 let examVersion = 0, attemptCreated = false;
-let sourceQs = [], examOpensAt = 0, examClosesAt = 0, serverOffset = 0, lobbyTimer = null;
+let sourceQs = [], examQCount = 0, startingExam = false, examOpensAt = 0, examClosesAt = 0, serverOffset = 0, lobbyTimer = null;
 function serverNow(){ return Date.now() + serverOffset; }
 
 // ── MY RESULT ─────────────────────────────────────────
@@ -124,17 +124,13 @@ function analyticsKey(){
   showView('lobby-view');
 
   Promise.all([
-    db.ref('student_quiz').once('value'),
+    loadExamList(),
     // How far this device's clock is from the server's, so the open/close times cannot be dodged by changing it.
     db.ref('.info/serverTimeOffset').once('value').then(s => Number(s.val()), () => 0)
   ])
     .then(([snapshot, offset])=>{
       serverOffset = Number.isFinite(offset) ? offset : 0;
-      const val = snapshot.val();
-      if(!val){ showNoQuiz(); return; }
-      const exams = Object.entries(val)
-        .map(([key,data])=>({key,...data}))
-        .filter(e=>e.questions&&e.questions.length);
+      const exams = snapshot;
       if(!exams.length){ showNoQuiz(); return; }
       if(exams.length===1){
         useExam(exams[0]);
@@ -146,10 +142,25 @@ function analyticsKey(){
     .catch(showLoadError);
 })();
 
+// Questions are not part of the list: they are fetched when the student starts (see loadExamQuestions).
+// Exams published before the list existed are still read straight from student_quiz, as long as the rules allow it.
+async function loadExamList(){
+  const idx = (await db.ref('exam_index').once('value')).val() || {};
+  const listed = Object.entries(idx).map(([key,data])=>({key,...data})).filter(e=>e.qCount > 0);
+  if(listed.length) return listed;
+  const old = await db.ref('student_quiz').once('value').then(s => s.val() || {}, () => ({}));
+  return Object.entries(old).map(([key,data])=>({key,...data})).filter(e=>legacyQuestionCount(e) > 0);
+}
+
+function questionList(v){
+  return Array.isArray(v) ? v : Object.keys(v || {}).sort((a, b) => a - b).map(k => v[k]);
+}
+
 function useExam(e){
   examKey      = e.key;
-  sourceQs     = e.questions;      // never changed; every attempt shuffles a fresh copy of it
-  quizQs       = e.questions;
+  sourceQs     = e.questions ? questionList(e.questions) : [];   // never changed; every attempt shuffles a fresh copy of it
+  quizQs       = sourceQs;
+  examQCount   = e.qCount || sourceQs.length;
   topicName    = e.topic||e.key;
   EXAM_SECONDS = (e.examMinutes||30)*60;
   leaveLimit   = readLeaveLimit(e);
@@ -191,7 +202,7 @@ function showExamList(exams){
       ${exams.map((e,i)=>`
         <button class="btn btn-ghost btn-full" style="margin-bottom:8px;text-align:left;padding:12px 16px;display:block" onclick="selectExam(${i})">
           <div style="font-weight:700;margin-bottom:2px">${esc(e.topic||e.key)}</div>
-          <div style="font-size:11px;color:var(--muted)">${e.questions.length} sual${examScheduleLabel(e)?' · '+esc(examScheduleLabel(e)):''}</div>
+          <div style="font-size:11px;color:var(--muted)">${e.qCount || legacyQuestionCount(e)} sual${examScheduleLabel(e)?' · '+esc(examScheduleLabel(e)):''}</div>
         </button>
       `).join('')}
       ${lookupHtml()}
@@ -256,7 +267,7 @@ function showLobby(){
     showView('lobby-view');
     return;
   }
-  const count = Math.min(quizQs.length, MAX_QUESTIONS);
+  const count = Math.min(examQCount, MAX_QUESTIONS);
   const closing = examClosesAt ? `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
   const notice = leaveLimit > 0 ? `
       <p style="font-size:12px;color:var(--wrong);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:10px 12px;margin-bottom:16px;line-height:1.6;text-align:left">
@@ -285,7 +296,28 @@ function showLobby(){
 }
 
 // ── START ─────────────────────────────────────────────
-function startExam(){
+// The questions are only fetched when the student starts, so before the exam opens the database holds them back.
+async function loadExamQuestions(){
+  try{
+    const e = (await db.ref('student_quiz/'+examKey).once('value')).val();
+    if(!e) throw new Error('gone');
+    const list = e.payload ? await decodeQuestions(e.payload, examKey, e.publishedAt) : questionList(e.questions);
+    if(!list.length) throw new Error('empty');
+    // The teacher may have published it again since the list was read: take its version, time and limits.
+    sourceQs = list; quizQs = list; examQCount = list.length;
+    examVersion = e.publishedAt || 0; EXAM_SECONDS = (e.examMinutes || 30) * 60; leaveLimit = readLeaveLimit(e);
+    examOpensAt = Number(e.opensAt) || 0; examClosesAt = Number(e.closesAt) || 0;
+    return true;
+  }catch(err){
+    console.warn('loading the questions failed', err.code || err.message || err);
+    if(err && err.code === 'PERMISSION_DENIED') alert('Test hələ açılmayıb. Vaxtı gələndə yenidən cəhd edin.');
+    else alert('Suallar yüklənmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin.');
+    return false;
+  }
+}
+
+async function startExam(){
+  if(startingExam) return;
   // Checked again here: the page may have been open since before the exam closed.
   if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked()){ showLobby(); return; }
   const typedName = (document.getElementById('student-name-inp')?.value || '').trim();
@@ -296,6 +328,13 @@ function startExam(){
     return;
   }
   studentName = typedName;
+  startingExam = true;
+  const btn = document.querySelector('#lobby-view .btn-primary');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Suallar yüklənir…'; }
+  const loaded = sourceQs.length ? true : await loadExamQuestions();
+  startingExam = false;
+  if(!loaded){ showLobby(); return; }
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked()){ showLobby(); return; }
   // Shuffle all questions, pick up to 30. Always from the untouched source, so starting again
   // after leaving does not shuffle already-shuffled options and break the answer positions.
   let pool = shuffle(JSON.parse(JSON.stringify(sourceQs))).slice(0, MAX_QUESTIONS);
