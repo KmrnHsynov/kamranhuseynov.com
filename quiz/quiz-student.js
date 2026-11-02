@@ -145,7 +145,8 @@ function analyticsKey(){
 // Questions are not part of the list: they are fetched when the student starts (see loadExamQuestions).
 // Exams published before the list existed are still read straight from student_quiz, as long as the rules allow it.
 async function loadExamList(){
-  const idx = (await db.ref('exam_index').once('value')).val() || {};
+  // Rules that do not know the public list yet refuse this read: then fall back to the plain list below.
+  const idx = await db.ref('exam_index').once('value').then(s => s.val() || {}, () => ({}));
   const listed = Object.entries(idx).map(([key,data])=>({key,...data})).filter(e=>e.qCount > 0);
   if(listed.length) return listed;
   const old = await db.ref('student_quiz').once('value').then(s => s.val() || {}, () => ({}));
