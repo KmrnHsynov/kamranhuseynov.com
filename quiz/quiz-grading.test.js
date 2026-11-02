@@ -112,6 +112,45 @@ test('repeat attempts are counted per exam and ignore case, spacing and dotless 
   assert.deepStrictEqual(rs.map(r => r.repeatCount), [2, 2, 2, 1, 2, 2, 2]);
 });
 
+const { markDeviceFlags } = require('./quiz-grading.js');
+
+test('attempts from one device are numbered in start order, per exam', () => {
+  const rs = markDeviceFlags([
+    { _exam: 'a', uid: 'u1', studentName: 'Ali', timestamp: 1000 },
+    { _exam: 'a', uid: 'u2', studentName: 'Vali', timestamp: 2000 },
+    { _exam: 'a', uid: 'u1', studentName: 'Ali', timestamp: 3000 },
+    { _exam: 'b', uid: 'u1', studentName: 'Ali', timestamp: 4000 }
+  ]);
+  assert.deepStrictEqual(rs.map(r => [r.deviceAttempt, r.deviceTotal]), [[1, 2], [1, 1], [2, 2], [1, 1]]);
+});
+
+test('one device under several names lists them; one name on several devices is counted', () => {
+  const rs = markDeviceFlags([
+    { _exam: 'a', uid: 'u1', studentName: 'Ali', timestamp: 1 },
+    { _exam: 'a', uid: 'u1', studentName: ' ALI ', timestamp: 2 },
+    { _exam: 'a', uid: 'u1', studentName: 'Vali', timestamp: 3 },
+    { _exam: 'a', uid: 'u2', studentName: 'ali', timestamp: 4 }
+  ]);
+  assert.deepStrictEqual(rs[0].deviceNames, ['Ali', 'Vali']);
+  assert.strictEqual(rs[3].deviceNames.length, 1);
+  assert.deepStrictEqual(rs.map(r => r.nameDevices), [2, 2, 1, 2]);
+});
+
+test('a retry from the same device within ten minutes is marked quick', () => {
+  const rs = markDeviceFlags([
+    { _exam: 'a', uid: 'u1', studentName: 'Ali', timestamp: 0 },
+    { _exam: 'a', uid: 'u1', studentName: 'Ali', timestamp: 9 * 60000 },
+    { _exam: 'a', uid: 'u1', studentName: 'Ali', timestamp: 30 * 60000 }
+  ]);
+  assert.deepStrictEqual(rs.map(r => !!r.quickRetry), [false, true, false]);
+});
+
+test('records without a device id get no device flags', () => {
+  const rs = markDeviceFlags([{ _exam: 'a', studentName: 'Ali', timestamp: 1 }, { _exam: 'a', studentName: 'Ali', timestamp: 2 }]);
+  assert.strictEqual(rs[0].deviceTotal, undefined);
+  assert.strictEqual(rs[0].nameDevices, 1);
+});
+
 const { resultsToRelease, buildResult } = require('./quiz-grading.js');
 
 const done = (id, extra) => ({ attemptId: id, status: 'done', _exam: 'ex', topic: 'T', studentName: 'Ali', correct: 3, wrong: 1, unanswered: 0, score: 5, maxScore: 6, pct: 83, ...extra });

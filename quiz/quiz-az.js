@@ -565,6 +565,7 @@ function renderAnalytics(){
     records.forEach(r=>applyGrade(r, answerKeys));
     records.sort((a,b)=>a.timestamp-b.timestamp);
     markRepeatAttempts(records);
+    markDeviceFlags(records);
     records.forEach(r=>{ r.released = !!released[r.attemptId]; });
     lastRecords = records; lastAnswerKeys = answerKeys; lastReleased = released;
 
@@ -673,7 +674,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
           const dateStr = date.toLocaleDateString('az-AZ',{day:'2-digit',month:'2-digit',year:'numeric'});
           const timeStr = date.toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
           return`<div class="an-row">
-            <div class="an-name">${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var" style="padding:1px 7px;font-size:10px">×${r.repeatCount}</span>`:''}</div>
+            <div class="an-name">${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var" style="padding:1px 7px;font-size:10px">×${r.repeatCount}</span>`:''}${deviceBadgesHtml(r)}</div>
             <div style="font-size:12px;color:var(--text2)">${esc(r.topic||'—')}</div>
             <div style="font-size:11px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
             <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
@@ -758,6 +759,17 @@ function exportAnalyticsCsv(){
 function toggleLeaveSort(){
   analyticsSortLeaves = !analyticsSortLeaves;
   renderAnalytics();
+}
+
+// Hints about who sat the exam, from the device id saved with each attempt (see markDeviceFlags).
+function deviceBadgesHtml(r){
+  const badge = (text, title) => ` <span class="an-badge an-warn" title="${esc(title)}" style="padding:1px 7px;font-size:10px">${text}</span>`;
+  let html = '';
+  if(r.deviceTotal > 1) html += badge(`📱 ${r.deviceAttempt}/${r.deviceTotal}`, `Bu cihazdan bu testə ${r.deviceTotal} cəhd var, bu ${r.deviceAttempt}-cidir${r.quickRetry ? '. Əvvəlkindən 10 dəqiqədən az sonra başlayıb.' : '.'}`);
+  if(r.quickRetry) html += badge('⚡', 'Eyni cihazdan əvvəlki cəhdlə 10 dəqiqədən az fasilə ilə başlayıb');
+  if(r.deviceNames && r.deviceNames.length > 1) html += badge(`👤 ${r.deviceNames.length}`, `Bu cihazdan fərqli adlar yazılıb: ${r.deviceNames.join(', ')}`);
+  if(r.nameDevices > 1) html += badge(`📲 ${r.nameDevices}`, `Bu ad bu testdə ${r.nameDevices} fərqli cihazdan yazılıb`);
+  return html;
 }
 
 function leaveBadge(r){

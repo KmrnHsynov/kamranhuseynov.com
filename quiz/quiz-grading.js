@@ -90,6 +90,34 @@ function markRepeatAttempts(records){
   return records;
 }
 
+// The device is the anonymous sign-in id (`uid`) saved with each attempt. It is not proof of who sat the exam,
+// only a hint: clearing site data or using a private tab gives a new one. Expects records in start order.
+const QUICK_RETRY_MS = 10 * 60 * 1000;
+function markDeviceFlags(records){
+  const byDevice = {}, devicesOfName = {};
+  records.forEach(r => {
+    const nk = r._exam + '|' + nameKey(r.studentName);
+    (devicesOfName[nk] = devicesOfName[nk] || new Set()).add(r.uid || '');
+    if(!r.uid) return;
+    (byDevice[r._exam + '|' + r.uid] = byDevice[r._exam + '|' + r.uid] || []).push(r);
+  });
+  Object.values(byDevice).forEach(list => {
+    const names = [], seen = new Set();
+    list.forEach(r => {
+      const k = nameKey(r.studentName);
+      if(!seen.has(k)){ seen.add(k); names.push(String(r.studentName || 'Anonim').trim()); }
+    });
+    list.forEach((r, i) => {
+      r.deviceAttempt = i + 1;
+      r.deviceTotal = list.length;
+      r.deviceNames = names;
+      r.quickRetry = i > 0 && (r.timestamp || 0) - (list[i - 1].timestamp || 0) <= QUICK_RETRY_MS;
+    });
+  });
+  records.forEach(r => { r.nameDevices = devicesOfName[r._exam + '|' + nameKey(r.studentName)].size; });
+  return records;
+}
+
 // Releasing results: only counts are published (never answers or the key), one small record per attempt.
 // Attempts still in progress, and ones that could not be graded, are not released.
 function resultsToRelease(records, released){
@@ -107,4 +135,4 @@ function buildResult(r, now){
   };
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, markRepeatAttempts, resultsToRelease, buildResult };
+if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult };
