@@ -225,10 +225,28 @@ function showClosedLobby(state){
   if(before) lobbyTimer = setTimeout(showLobby, Math.min(examOpensAt - serverNow() + 500, 2147483647));
 }
 
+// Firefox on Android gives the page no signal when a phone assistant (Circle to Search, Gemini)
+// opens, so a monitored exam cannot be run there.
+function browserBlocked(){
+  const ua = navigator.userAgent || '';
+  return leaveLimit > 0 && /Android/i.test(ua) && /Firefox\//i.test(ua);
+}
+
 function showLobby(){
   clearTimeout(lobbyTimer);
   const state = scheduleState(serverNow(), examOpensAt, examClosesAt);
   if(state !== 'open'){ showClosedLobby(state); return; }
+  if(browserBlocked()){
+    document.getElementById('lobby-view').innerHTML = `
+    <div class="lock-card" style="max-width:460px">
+      <div class="lock-icon">🚫</div>
+      <h2>Bu brauzer dəstəklənmir</h2>
+      <p>${esc(topicName||'İmtahan')}<br/>Bu imtahanı Firefox-da açmaq olmur. Zəhmət olmasa linki <strong>Chrome</strong> brauzerində açın.</p>
+      ${lookupHtml()}
+    </div>`;
+    showView('lobby-view');
+    return;
+  }
   const count = Math.min(quizQs.length, MAX_QUESTIONS);
   const closing = examClosesAt ? `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
   const notice = leaveLimit > 0 ? `
@@ -259,7 +277,7 @@ function showLobby(){
 // ── START ─────────────────────────────────────────────
 function startExam(){
   // Checked again here: the page may have been open since before the exam closed.
-  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open'){ showLobby(); return; }
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked()){ showLobby(); return; }
   const typedName = (document.getElementById('student-name-inp')?.value || '').trim();
   if(!typedName){
     const err = document.getElementById('name-error');
