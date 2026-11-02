@@ -11,6 +11,7 @@ let activeQId = null;
 let publishedTopics = {};   // {topicName: true} — loaded fresh from Firebase
 let analyticsFilter = 'all'; // 'all' or a Firebase exam key
 let analyticsSortLeaves = false;
+let analyticsReviewId = '';   // attempt whose answers are open under the table
 let analyticsShown = false;   // the results are currently drawn where the question editor normally is
 let lastReleased = {};
 let lastRecords = [], lastAnswerKeys = {};   // what the Analytics tab is showing, for CSV export and question stats
@@ -674,7 +675,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
           const dateStr = date.toLocaleDateString('az-AZ',{day:'2-digit',month:'2-digit',year:'numeric'});
           const timeStr = date.toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
           return`<div class="an-row">
-            <div class="an-name">${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var" style="padding:1px 7px;font-size:10px">×${r.repeatCount}</span>`:''}${deviceBadgesHtml(r)}</div>
+            <div class="an-name"${reviewableRecords([r]).length?` style="cursor:pointer" title="Cavablarına bax" onclick="showAttemptReview(this.dataset.attempt,true)" data-attempt="${esc(r.attemptId)}"`:''}>${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var" style="padding:1px 7px;font-size:10px">×${r.repeatCount}</span>`:''}${deviceBadgesHtml(r)}</div>
             <div style="font-size:12px;color:var(--text2)">${esc(r.topic||'—')}</div>
             <div style="font-size:11px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
             <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
@@ -690,20 +691,51 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
     </div>`;
 }
 
+// Pick a finished student to read their answers next to the right ones.
+function reviewableRecords(records){ return records.filter(r=>r.status!=='in_progress' && !r.ungraded && r.attemptId); }
+
 function questionStatsHtml(records){
-  const stats = questionStats(records, lastAnswerKeys);
-  if(!stats.length) return '';
-  return `<div class="an-qstats">
-    <h3>Sualların təhlili</h3>
-    <p class="hint-text">Ən çətin suallar yuxarıdadır. Yalnız bitmiş cəhdlər sayılır, cavabsız sual düzgün sayılmır.</p>
-    ${stats.map(s=>{
-      const cls = s.pctCorrect>=70?'an-good':s.pctCorrect>=50?'an-mid':'an-low';
-      return `<div class="an-qrow">
-        <span class="an-badge ${cls}">${s.pctCorrect}%</span>
-        <div class="an-qtext">${esc(s.text||'(mətn yoxdur)')}<small>${analyticsFilter==='all'?esc(s.exam)+' · ':''}${tlbl(s.type)} · ${s.correct}/${s.shown} düzgün</small></div>
-      </div>`;
-    }).join('')}
+  const list = reviewableRecords(records);
+  if(!list.length) return '';
+  if(!list.some(r=>r.attemptId===analyticsReviewId)) analyticsReviewId = '';
+  const label = r => `${r.studentName||'Anonim'} · ${analyticsFilter==='all'?(r._exam)+' · ':''}${r.pct}%`;
+  return `<div class="an-qstats" id="an-review-box">
+    <h3>Tələbənin cavabları</h3>
+    <p class="hint-text">Bitmiş cəhdlərdən birini seçin (və ya cədvəldə adın üzərinə basın). Cavabsız sual düzgün sayılmır.</p>
+    <select id="an-review-pick" onchange="showAttemptReview(this.value)" style="width:100%;max-width:420px;margin:8px 0 4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px">
+      <option value="">Tələbə seçin…</option>
+      ${list.map(r=>`<option value="${esc(r.attemptId)}"${r.attemptId===analyticsReviewId?' selected':''}>${esc(label(r))}</option>`).join('')}
+    </select>
+    <div id="an-review">${attemptReviewHtml(analyticsReviewId)}</div>
   </div>`;
+}
+
+function attemptReviewHtml(id){
+  const r = lastRecords.find(x=>x.attemptId===id);
+  if(!r) return '';
+  const rows = attemptReview(r, (lastAnswerKeys[r._exam]||{})[r.examVersion]);
+  if(!rows.length) return '<p class="hint-text">Bu cəhd üçün cavab açarı tapılmadı.</p>';
+  const mark = {correct:['an-good','✓'], wrong:['an-low','✗'], blank:['an-grey','—']};
+  return `<p class="hint-text" style="margin-top:10px"><strong>${esc(r.studentName||'Anonim')}</strong> · ${r.correct} doğru · ${r.wrong} yanlış · ${r.unanswered} cavabsız</p>` + rows.map((q,i)=>{
+    const [cls,sym] = mark[q.status];
+    const text = q.type==='fill' ? (q.fillText||q.text).replace(/\[blank\]/gi,'____') : q.text;
+    const given = q.status==='blank' ? '<em>cavab verilməyib</em>' : esc(q.studentText);
+    return `<div class="an-qrow">
+      <span class="an-badge ${cls}">${sym}</span>
+      <div class="an-qtext">${i+1}. ${esc(text||'(mətn yoxdur)')}
+        <small>Cavabı: ${given}${q.status==='correct'?'':` · Düzgün: ${esc(q.correctText)}`}</small>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAttemptReview(id, scroll){
+  analyticsReviewId = id || '';
+  const pick = document.getElementById('an-review-pick');
+  if(pick) pick.value = analyticsReviewId;
+  const box = document.getElementById('an-review');
+  if(box) box.innerHTML = attemptReviewHtml(analyticsReviewId);
+  if(scroll) document.getElementById('an-review-box')?.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 // Publishing results: the student gets a code (their attempt id) and sees only their own counts.

@@ -81,6 +81,38 @@ function questionStats(records, answerKeys){
     .sort((a, b) => a.pctCorrect - b.pctCorrect || b.shown - a.shown);
 }
 
+// One attempt question by question, for the teacher: what the student answered next to the right answer.
+// MC answers are stored by the option's original position, which is how the key lists them.
+function optionLabel(q, i){
+  const opts = gradeList(q.options);
+  return typeof i === 'number' && i >= 0 && i < opts.length ? String.fromCharCode(65 + i) + '. ' + opts[i] : '';
+}
+function answerText(q, ans){
+  if(!isAnswered(q, ans)) return '';
+  if(q.type === 'mc') return optionLabel(q, ans) || String(ans);
+  if(q.type === 'tf') return ans ? 'Doğru' : 'Yanlış';
+  if(q.type === 'fill') return gradeList(ans).map(v => String(v == null ? '' : v).trim() || '—').join(' · ');
+  return String(ans).trim();
+}
+function correctAnswerText(q){
+  if(q.type === 'mc') return optionLabel(q, q.correctOption);
+  if(q.type === 'tf') return q.tfAnswer ? 'Doğru' : 'Yanlış';
+  if(q.type === 'short') return String(q.shortAnswer || '').split(',').map(s => s.trim()).filter(Boolean).join(' / ');
+  if(q.type === 'fill') return gradeList(q.fillAnswers).map(a => String(a || '').split(',').map(s => s.trim()).join(' / ')).join(' · ');
+  return '';
+}
+function attemptReview(rec, key){
+  if(!key || !key.questions) return [];
+  const answers = rec.answers || {};
+  return gradeList(rec.qids).map(id => {
+    const q = key.questions[id];
+    if(!q) return null;
+    const ans = answers[id];
+    const status = !isAnswered(q, ans) ? 'blank' : isCorrectAnswer(q, ans) ? 'correct' : 'wrong';
+    return { id, type: q.type, text: q.text || '', fillText: q.fillText || '', points: Number(q.points) || 0, status, studentText: answerText(q, ans), correctText: correctAnswerText(q) };
+  }).filter(Boolean);
+}
+
 // Students type their own name, so the same name twice in one exam is worth a second look.
 function nameKey(name){ return String(name || '').trim().toLowerCase().replace(/ı/g, 'i').replace(/\s+/g, ' '); }
 function markRepeatAttempts(records){
@@ -135,4 +167,4 @@ function buildResult(r, now){
   };
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult };
+if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult };

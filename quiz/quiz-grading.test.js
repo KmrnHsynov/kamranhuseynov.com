@@ -112,7 +112,31 @@ test('repeat attempts are counted per exam and ignore case, spacing and dotless 
   assert.deepStrictEqual(rs.map(r => r.repeatCount), [2, 2, 2, 1, 2, 2, 2]);
 });
 
-const { markDeviceFlags } = require('./quiz-grading.js');
+const { attemptReview, markDeviceFlags } = require('./quiz-grading.js');
+
+test('an attempt review shows each answer next to the right one, in the order the student saw them', () => {
+  const key = { questions: {
+    1: { type: 'mc', text: 'Q1', points: 1, options: ['x', 'y', 'z'], correctOption: 2 },
+    2: { type: 'tf', text: 'Q2', points: 1, tfAnswer: true },
+    3: { type: 'short', text: 'Q3', points: 1, shortAnswer: 'cat, kitten' },
+    4: { type: 'fill', text: 'Q4', points: 1, fillText: 'a [blank] b [blank]', fillAnswers: ['one', 'two'] },
+    5: { type: 'mc', text: 'Q5', points: 1, options: ['p', 'q'], correctOption: 0 }
+  } };
+  const rv = attemptReview({ qids: ['3', '1', '2', '4', '5', '9'], answers: { 1: 1, 2: true, 3: 'Dog', 4: ['one', 'x'] } }, key);
+  assert.deepStrictEqual(rv.map(r => r.id), ['3', '1', '2', '4', '5']);
+  assert.deepStrictEqual(rv.map(r => r.status), ['wrong', 'wrong', 'correct', 'wrong', 'blank']);
+  assert.strictEqual(rv[0].studentText, 'Dog');
+  assert.strictEqual(rv[0].correctText, 'cat / kitten');
+  assert.strictEqual(rv[1].studentText, 'B. y');
+  assert.strictEqual(rv[1].correctText, 'C. z');
+  assert.strictEqual(rv[2].studentText, 'Doğru');
+  assert.strictEqual(rv[3].studentText, 'one · x');
+  assert.strictEqual(rv[4].studentText, '');
+});
+
+test('an attempt review without a key is empty', () => {
+  assert.deepStrictEqual(attemptReview({ qids: ['1'], answers: {} }, null), []);
+});
 
 test('attempts from one device are numbered in start order, per exam', () => {
   const rs = markDeviceFlags([
