@@ -295,6 +295,7 @@ function startExam(){
   showView('quiz-view');
   renderQuizQ();
   startTotalTimer();
+  enterFullscreen();
 }
 
 // ── TOTAL TIMER ───────────────────────────────────────
@@ -490,6 +491,7 @@ function saveAttempt(status){
 function finishQuiz(){
   clearInterval(totalTimer);
   examActive = false;
+  leaveFullscreen();
   clearSavedAttempt();
   document.getElementById('leave-warning')?.remove();
   document.getElementById('result-sub').textContent =
@@ -514,6 +516,7 @@ function exitQuiz(){
   examActive = false;
   if(!confirm('İmtahandan çıxmaq istəyirsiniz? İmtahan bitmiş sayılacaq.')){ examActive = true; return; }
   clearInterval(totalTimer);
+  leaveFullscreen();
   saveAttempt('exited');
   clearSavedAttempt();
   attemptId = '';
@@ -573,7 +576,7 @@ function showLeaveWarning(count){
     <div style="font-size:40px;margin-bottom:8px">⚠️</div>
     <h2>Xəbərdarlıq ${count}/${leaveLimit}</h2>
     <p>İmtahan səhifəsini tərk etdiniz. Yenə ${leaveLimit-count} dəfə çıxsanız, imtahan avtomatik göndəriləcək.</p>
-    <button class="btn btn-primary btn-full" onclick="document.getElementById('leave-warning').remove()">Davam et</button>
+    <button class="btn btn-primary btn-full" onclick="document.getElementById('leave-warning').remove();enterFullscreen()">Davam et</button>
   </div>`;
   document.body.appendChild(el);
 }
@@ -595,6 +598,42 @@ document.addEventListener('paste', e => {
   e.preventDefault();
   monitor.copy();
 }, true));
+// Long-press selection and dragging on the exam, outside the answer fields.
+['selectstart','dragstart'].forEach(type => document.addEventListener(type, e => {
+  if(!examActive) return;
+  if(!(e.target instanceof Element) || !e.target.closest('#quiz-view') || e.target.closest('textarea,input')) return;
+  e.preventDefault();
+}, true));
+
+// Some phone assistants (Circle to Search, Gemini) take over the screen without a blur or
+// visibilitychange event, but the page usually still loses focus. Poll for that.
+setInterval(() => {
+  if(!examActive || !monitor) return;
+  document.hasFocus() ? onReturn() : onLeave();
+}, 500);
+
+// ── FULLSCREEN ────────────────────────────────────────
+// Needs a tap, so it is requested when the exam starts and again from the warning's button.
+// Browsers without it (iPhone Safari) simply skip this.
+function enterFullscreen(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if(!req || document.fullscreenElement || document.webkitFullscreenElement) return;
+  try{ Promise.resolve(req.call(el)).catch(() => {}); }catch(e){}
+}
+function leaveFullscreen(){
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if(!exit || !(document.fullscreenElement || document.webkitFullscreenElement)) return;
+  try{ Promise.resolve(exit.call(document)).catch(() => {}); }catch(e){}
+}
+function onFullscreenChange(){
+  if(!examActive || !monitor) return;
+  if(document.fullscreenElement || document.webkitFullscreenElement) return;
+  onLeave();
+  onReturn();
+}
+document.addEventListener('fullscreenchange', onFullscreenChange);
+document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
 // ── UTILS ─────────────────────────────────────────────
 function showView(id){
