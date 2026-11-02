@@ -112,7 +112,7 @@ test('repeat attempts are counted per exam and ignore case, spacing and dotless 
   assert.deepStrictEqual(rs.map(r => r.repeatCount), [2, 2, 2, 1, 2, 2, 2]);
 });
 
-const { attemptReview, markDeviceFlags } = require('./quiz-grading.js');
+const { attemptReview, markDeviceFlags, questionProblems } = require('./quiz-grading.js');
 
 test('an attempt review shows each answer next to the right one, in the order the student saw them', () => {
   const key = { questions: {
@@ -132,6 +132,23 @@ test('an attempt review shows each answer next to the right one, in the order th
   assert.strictEqual(rv[2].studentText, 'Doğru');
   assert.strictEqual(rv[3].studentText, 'one · x');
   assert.strictEqual(rv[4].studentText, '');
+});
+
+test('a good question of each type has no problems', () => {
+  assert.deepStrictEqual(questionProblems({ type: 'mc', text: 'Q', points: 1, options: ['a', 'b', '', '', ''], correctOption: 1 }), []);
+  assert.deepStrictEqual(questionProblems({ type: 'tf', text: 'Q', points: 2, tfAnswer: false }), []);
+  assert.deepStrictEqual(questionProblems({ type: 'short', text: 'Q', points: 1, shortAnswer: 'x' }), []);
+  assert.deepStrictEqual(questionProblems({ type: 'fill', text: 'Q', points: 1, fillText: 'a [blank] b [BLANK]', fillAnswers: ['x', 'y'] }), []);
+});
+
+test('questions that cannot be answered or marked are reported', () => {
+  assert.deepStrictEqual(questionProblems({ type: 'mc', text: ' ', points: 0, options: ['a', '', '', '', ''], correctOption: 2 }),
+    ['sual mətni boşdur', 'xal 0-dan böyük olmalıdır', 'ən azı 2 variant doldurulmalıdır', 'düzgün variant boşdur']);
+  assert.deepStrictEqual(questionProblems({ type: 'short', text: 'Q', points: 1, shortAnswer: '  ' }), ['düzgün cavab yazılmayıb']);
+  assert.deepStrictEqual(questionProblems({ type: 'fill', text: 'Q', points: 1, fillText: 'no blanks', fillAnswers: ['x'] }), ['mətndə [blank] yoxdur']);
+  assert.deepStrictEqual(questionProblems({ type: 'fill', text: 'Q', points: 1, fillText: '[blank] and [blank]', fillAnswers: ['x', ''] }),
+    ['2 boşluq üçün 2 düzgün cavab yazılmalıdır']);
+  assert.deepStrictEqual(questionProblems({ type: 'mc', text: 'Q', points: -1, options: ['a', 'b'], correctOption: 0 }), ['xal 0-dan böyük olmalıdır']);
 });
 
 test('an attempt review without a key is empty', () => {

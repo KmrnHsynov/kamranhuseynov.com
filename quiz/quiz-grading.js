@@ -81,6 +81,29 @@ function questionStats(records, answerKeys){
     .sort((a, b) => a.pctCorrect - b.pctCorrect || b.shown - a.shown);
 }
 
+// What would make a question impossible to answer (or to mark) once it reaches students. Used before publishing.
+// Returns a list of short Azerbaijani messages; empty means the question is fine.
+function questionProblems(q){
+  const out = [];
+  const filled = v => String(v == null ? '' : v).trim() !== '';
+  if(!filled(q.text)) out.push('sual mətni boşdur');
+  const pts = Number(q.points);
+  if(!(pts > 0)) out.push('xal 0-dan böyük olmalıdır');
+  if(q.type === 'mc'){
+    const opts = gradeList(q.options);
+    if(opts.filter(filled).length < 2) out.push('ən azı 2 variant doldurulmalıdır');
+    if(!filled(opts[q.correctOption])) out.push('düzgün variant boşdur');
+  }
+  if(q.type === 'short' && !filled(q.shortAnswer)) out.push('düzgün cavab yazılmayıb');
+  if(q.type === 'fill'){
+    const blanks = (String(q.fillText || '').match(/\[blank\]/gi) || []).length;
+    const answers = gradeList(q.fillAnswers);
+    if(!blanks) out.push('mətndə [blank] yoxdur');
+    else if(answers.slice(0, blanks).filter(filled).length < blanks) out.push(`${blanks} boşluq üçün ${blanks} düzgün cavab yazılmalıdır`);
+  }
+  return out;
+}
+
 // One attempt question by question, for the teacher: what the student answered next to the right answer.
 // MC answers are stored by the option's original position, which is how the key lists them.
 function optionLabel(q, i){
@@ -167,4 +190,4 @@ function buildResult(r, now){
   };
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult };
+if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, questionProblems, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult };

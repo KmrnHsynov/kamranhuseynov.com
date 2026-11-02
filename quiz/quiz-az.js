@@ -462,6 +462,14 @@ function topicScheduleLabel(topic){
 function publishTopic(topicName){
   const filtered = questions.filter(q=>q.topic?.trim()===topicName);
   if(!filtered.length) return;
+  // Questions students could not answer, or that could never be marked right, are stopped here.
+  const problems = filtered.map(q=>({n: questions.indexOf(q)+1, list: questionProblems(q)})).filter(p=>p.list.length);
+  if(problems.length){
+    alert(`"${topicName}" göndərilmədi. ${problems.length} sualı düzəltmək lazımdır:\n\n`
+      + problems.slice(0,8).map(p=>`S${p.n}: ${p.list.join(', ')}`).join('\n')
+      + (problems.length>8 ? `\n… və daha ${problems.length-8} sual` : ''));
+    return;
+  }
   const unchecked = filtered.filter(q=>q.needsReview).length;
   if(unchecked && !confirm(`${unchecked} sualın düzgün cavabı PDF-dən müəyyən edilməyib və təsdiqlənməyib. Yenə də göndərilsin?`)) return;
 
@@ -511,7 +519,8 @@ function publishTopic(topicName){
 
 function deleteTopic(topicName){
   const count = questions.filter(q=>q.topic?.trim()===topicName).length;
-  if(!confirm(`"${topicName}" mövzusuna aid ${count} sual silinsin?`)) return;
+  const live = !!publishedTopics[topicName];
+  if(!confirm(`"${topicName}" mövzusuna aid ${count} sual silinsin?${live ? '\n\nDiqqət: bu test tələbələr üçün də silinəcək. Tələbə nəticələri qalır.' : ''}`)) return;
   questions = questions.filter(q=>q.topic?.trim()!==topicName);
   saveQs(); renderSidebar(); renderEditor();
   db.ref('student_quiz/'+toKey(topicName)).remove().then(()=>{
@@ -522,10 +531,14 @@ function deleteTopic(topicName){
 
 function deleteAllQuestions(){
   if(!questions.length) return;
-  if(!confirm(`Bütün ${questions.length} sual silinsin?`)) return;
+  const live = Object.keys(publishedTopics);
+  const warn = live.length ? `\n\nDiqqət: tələbələr üçün göndərilmiş ${live.length} test də silinəcək (${live.slice(0,5).join(', ')}${live.length>5?', …':''}). Tələbə nəticələri qalır.` : '';
+  if(!confirm(`Bütün ${questions.length} sual silinsin?${warn}`)) return;
   questions = []; qId = 0; activeQId = null;
   saveQs(); renderSidebar(); renderEditor();
-  db.ref('student_quiz').remove().then(()=>{ publishedTopics = {}; });
+  db.ref('student_quiz').remove()
+    .then(()=>{ publishedTopics = {}; })
+    .catch(err=>alert('Göndərilmiş testlər serverdən silinmədi: '+err.message));
 }
 
 function unpublishTopic(topicName){
@@ -917,6 +930,12 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').repla
 // ══════════════════════════════════════════════════════
 //  QUIZ ENGINE
 // ══════════════════════════════════════════════════════
+// Fisher–Yates, in place; sorting with a random comparator does not shuffle evenly.
+function shuffleList(a){
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
 function startQuiz(){
   if(!questions.length){alert('Əvvəlcə ən azı bir sual əlavə edin.');return;}
   for(const q of questions){if(!q.text.trim()){alert('Bütün sual mətnlərini doldurun.');return;}}
@@ -928,7 +947,7 @@ function startQuiz(){
   };
   localStorage.setItem(STORAGE_KEY_CFG, JSON.stringify(quizCfg));
   quizQs=JSON.parse(JSON.stringify(questions));
-  if(quizCfg.shuffle) quizQs=quizQs.sort(()=>Math.random()-.5);
+  if(quizCfg.shuffle) shuffleList(quizQs);
   quizIdx=0;quizAns={};
   document.getElementById('quiz-disp-title').textContent=quizCfg.title;
   showView('quiz-view');
@@ -964,10 +983,11 @@ function buildQuizCard(q){
   let body='';
   if(q.type==='mc'){
     const L=['A','B','C','D','E'];
-    body=`<div class="quiz-mc-opts">${q.options.filter(o=>o).map((o,i)=>`
-      <div class="quiz-mc-opt" id="mc${i}" onclick="pickMC(${q.id},${i},${q.correctOption})">
+    // Each option keeps its position in the editor's list, so a gap in the list cannot shift the correct answer.
+    body=`<div class="quiz-mc-opts">${q.options.map((o,i)=>o?`
+      <div class="quiz-mc-opt" id="mc${i}" data-i="${i}" onclick="pickMC(${q.id},${i},${q.correctOption})">
         <div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div>
-      </div>`).join('')}</div>`;
+      </div>`:'').join('')}</div>`;
   } else if(q.type==='tf'){
     body=`<div class="quiz-tf-opts">
       <div class="quiz-tf-btn" id="tf-t" onclick="pickTF(${q.id},true,${q.tfAnswer})">✓ Doğru</div>
@@ -993,7 +1013,8 @@ function pickMC(qid,idx,correct){
   if(answered)return;
   answered=true;clearInterval(timerInt);
   quizAns[qid]=idx;
-  document.querySelectorAll('.quiz-mc-opt').forEach((el,i)=>{
+  document.querySelectorAll('.quiz-mc-opt').forEach(el=>{
+    const i=+el.dataset.i;
     el.classList.add('locked');el.onclick=null;
     if(i===idx)el.classList.add(idx===correct?'ok':'bad');
     if(quizCfg.showAnswers&&i===correct&&i!==idx)el.classList.add('reveal');
@@ -1059,8 +1080,9 @@ function showFb(ok,msg){
 function restoreAns(q,saved){
   if(q.type==='mc'&&saved!=null){
     const opts=document.querySelectorAll('.quiz-mc-opt');
-    if(opts[saved])opts[saved].classList.add(saved===q.correctOption?'ok':'bad');
-    if(quizCfg.showAnswers&&saved!==q.correctOption&&opts[q.correctOption])opts[q.correctOption].classList.add('reveal');
+    const at=i=>document.querySelector(`.quiz-mc-opt[data-i="${i}"]`);
+    if(at(saved))at(saved).classList.add(saved===q.correctOption?'ok':'bad');
+    if(quizCfg.showAnswers&&saved!==q.correctOption&&at(q.correctOption))at(q.correctOption).classList.add('reveal');
     opts.forEach(o=>{o.classList.add('locked');o.onclick=null;});
   } else if(q.type==='tf'&&saved!=null){
     const tEl=document.getElementById('tf-t'),fEl=document.getElementById('tf-f');
@@ -1154,7 +1176,7 @@ function buildReview(q){
 
 function retakeQuiz(){
   quizIdx=0;quizAns={};
-  if(quizCfg.shuffle) quizQs=quizQs.sort(()=>Math.random()-.5);
+  if(quizCfg.shuffle) shuffleList(quizQs);
   showView('quiz-view');renderQuizQ();
 }
 

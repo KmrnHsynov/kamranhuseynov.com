@@ -80,11 +80,12 @@ function shuffle(arr){
 }
 
 // The running exam is kept in localStorage so a refresh resumes it instead of restarting it.
-function persistState(){
-  if(!examActive || !attemptId) return;
+// `finishing` marks an attempt that was finished but whose final save is not confirmed yet, so a refresh sends it again.
+function persistState(finishing){
+  if((!examActive && !finishing) || !attemptId) return;
   try{
     localStorage.setItem(STORAGE_KEY_ATTEMPT, JSON.stringify({
-      v: 2, attemptId, attemptCreated, examKey, examVersion, topicName, studentName, quizQs, quizAns, quizIdx,
+      v: 2, finishing: !!finishing, autoReason, attemptId, attemptCreated, examKey, examVersion, topicName, studentName, quizQs, quizAns, quizIdx,
       startedAt, examSeconds: EXAM_SECONDS, leaveLimit,
       monitor: monitor ? { ...monitor.stats(), elapsed: Math.floor((Date.now() - startedAt) / 1000) } : null
     }));
@@ -225,6 +226,13 @@ function showClosedLobby(state){
   if(before) lobbyTimer = setTimeout(showLobby, Math.min(examOpensAt - serverNow() + 500, 2147483647));
 }
 
+// With several tests published, the student picks one first; this arrow goes back to that list if they picked wrong.
+function backToListHtml(){
+  return _examList.length > 1
+    ? '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="showExamList(_examList)" title="Test siyahısına qayıt">← Testlər</button></div>'
+    : '';
+}
+
 // Firefox on Android gives the page no signal when a phone assistant (Circle to Search, Gemini)
 // opens, so a monitored exam cannot be run there.
 function browserBlocked(){
@@ -239,6 +247,7 @@ function showLobby(){
   if(browserBlocked()){
     document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card" style="max-width:460px">
+      ${backToListHtml()}
       <div class="lock-icon">🚫</div>
       <h2>Bu brauzer dəstəklənmir</h2>
       <p>${esc(topicName||'İmtahan')}<br/>Bu imtahanı Firefox-da açmaq olmur. Zəhmət olmasa linki <strong>Chrome</strong> brauzerində açın.</p>
@@ -255,6 +264,7 @@ function showLobby(){
       </p>` : '';
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card" style="max-width:460px">
+      ${backToListHtml()}
       <div class="lock-icon">📝</div>
       <h2 id="lobby-topic">${esc(topicName||'İmtahan')}</h2>
       <p style="font-size:13px;color:var(--text2);margin-bottom:6px">
@@ -469,8 +479,9 @@ function answeredCount(){ return quizQs.filter(q => quizAns[q.id] !== undefined)
 
 // Writes only raw answers and server-stamped times. Scores are worked out in the teacher panel.
 // The first save creates the record (with startedAt); later saves update it without touching startedAt.
+// Resolves to true once the database has accepted the write, false if it was refused. Never rejects.
 function saveAttempt(status){
-  if(!attemptId) return;
+  if(!attemptId) return Promise.resolve(false);
   const first = !attemptCreated;
   attemptCreated = true;
   if(status === 'in_progress') persistState();
@@ -494,32 +505,65 @@ function saveAttempt(status){
       updatedAt: SERVER_TIME
     };
     if(status !== 'in_progress') data.finishedAt = SERVER_TIME;
-    authReady
+    return authReady
       .then(u => {
         data.uid = u.uid;
         return first ? db.ref(path).set({ ...data, startedAt: SERVER_TIME }) : db.ref(path).update(data);
       })
-      .catch(e => {
+      .then(() => true, e => {
         if(first) attemptCreated = false;
         console.warn('saving attempt failed', e.code || e);
+        return false;
       });
-  }catch(e){}
+  }catch(e){ return Promise.resolve(false); }
 }
+
+// The results screen only says "sent" once the database has accepted the final save. Until then the attempt
+// stays in localStorage (marked `finishing`), so a refresh or the connection coming back sends it again.
+let finalSaveState = '';
+function setSaveState(state){
+  finalSaveState = state;
+  const set = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  const retry = document.getElementById('result-retry');
+  const notes = {
+    pending: 'Səhifəni bağlamayın.',
+    slow: 'Göndərmə gecikir. İnternet bağlantısını yoxlayın və səhifəni bağlamayın.',
+    ok: '',
+    failed: 'Cavablarınız göndərilə bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin. Səhifəni bağlamayın.'
+  };
+  set('result-icon', { pending: '⏳', slow: '⏳', ok: '✅', failed: '⚠️' }[state]);
+  set('result-heading', { pending: 'İmtahan göndərilir…', slow: 'İmtahan göndərilir…', ok: 'İmtahan göndərildi', failed: 'İmtahan göndərilmədi' }[state]);
+  set('result-save', notes[state]);
+  if(retry) retry.style.display = state === 'failed' ? 'inline-flex' : 'none';
+  const extra = document.getElementById('result-extra');
+  if(extra) extra.style.display = state === 'ok' ? 'block' : 'none';
+}
+
+function sendFinal(){
+  setSaveState('pending');
+  const slow = setTimeout(() => { if(finalSaveState === 'pending') setSaveState('slow'); }, 8000);
+  saveAttempt('done').then(ok => {
+    clearTimeout(slow);
+    if(!ok){ setSaveState('failed'); return; }
+    clearSavedAttempt();
+    rememberLastAttempt();
+    setSaveState('ok');
+  });
+}
+window.addEventListener('online', () => { if(finalSaveState === 'failed' || finalSaveState === 'slow') sendFinal(); });
 
 function finishQuiz(){
   clearInterval(totalTimer);
   examActive = false;
   leaveFullscreen();
-  clearSavedAttempt();
+  persistState(true);
   document.getElementById('leave-warning')?.remove();
   document.getElementById('result-sub').textContent =
     `${answeredCount()} / ${quizQs.length} suala cavab verdiniz. Nəticələr müəllim tərəfindən elan olunacaq.`;
   const autoEl = document.getElementById('result-auto');
   autoEl.style.display = autoReason === 'leaves' ? 'block' : 'none';
   autoEl.textContent = 'İmtahan səhifəsini çox dəfə tərk etdiyiniz üçün avtomatik göndərildi.';
-  saveAttempt('done');
 
-  rememberLastAttempt();
   const extra = document.getElementById('result-extra');
   if(extra) extra.innerHTML = `<div class="lock-card" style="max-width:460px;margin:0 auto">
     <h2 style="font-size:18px">Nəticə kodunuz</h2>
@@ -528,18 +572,14 @@ function finishQuiz(){
   </div>`;
 
   showView('results-view');
+  sendFinal();
 }
 
+// Leaving counts as finishing: what was answered so far is sent, the rest stays unanswered.
 function exitQuiz(){
   examActive = false;
-  if(!confirm('İmtahandan çıxmaq istəyirsiniz? İmtahan bitmiş sayılacaq.')){ examActive = true; return; }
-  clearInterval(totalTimer);
-  leaveFullscreen();
-  saveAttempt('exited');
-  clearSavedAttempt();
-  attemptId = '';
-  quizAns = {};
-  showLobby();
+  if(!confirm('İmtahandan çıxmaq istəyirsiniz? İmtahan bitmiş sayılacaq və indiyə qədərki cavablarınız göndəriləcək.')){ examActive = true; return; }
+  finishQuiz();
 }
 
 // ── RESUME AFTER REFRESH ──────────────────────────────
@@ -549,12 +589,12 @@ function resumeExam(s){
   topicName = s.topicName; studentName = s.studentName;
   quizQs = s.quizQs; quizAns = s.quizAns || {}; quizIdx = s.quizIdx || 0;
   EXAM_SECONDS = s.examSeconds; leaveLimit = s.leaveLimit;
-  attemptId = s.attemptId; startedAt = s.startedAt; autoReason = null;
+  attemptId = s.attemptId; startedAt = s.startedAt; autoReason = s.finishing ? (s.autoReason || null) : null;
   timeLeft = EXAM_SECONDS - Math.floor((Date.now() - startedAt) / 1000);
   monitor = leaveLimit > 0 ? createMonitor(leaveLimit, null, s.monitor || undefined) : null;
   examActive = true;
 
-  if(timeLeft <= 0){ finishQuiz(); return; }
+  if(timeLeft <= 0 || s.finishing){ finishQuiz(); return; }
   document.getElementById('quiz-disp-title').textContent = 'İmtahan';
   showView('quiz-view');
   renderQuizQ();
@@ -625,9 +665,13 @@ document.addEventListener('paste', e => {
 
 // Some phone assistants (Circle to Search, Gemini) take over the screen without a blur or
 // visibilitychange event, but the page usually still loses focus. Poll for that.
+// Two polls in a row (about a second) must miss focus before it counts, so a brief system popup or
+// keyboard switch does not cost a warning; an assistant overlay stays up much longer than that.
+let unfocusedPolls = 0;
 setInterval(() => {
-  if(!examActive || !monitor) return;
-  document.hasFocus() ? onReturn() : onLeave();
+  if(!examActive || !monitor){ unfocusedPolls = 0; return; }
+  if(document.hasFocus()){ unfocusedPolls = 0; onReturn(); }
+  else if(++unfocusedPolls >= 2) onLeave();
 }, 500);
 
 // ── FULLSCREEN ────────────────────────────────────────

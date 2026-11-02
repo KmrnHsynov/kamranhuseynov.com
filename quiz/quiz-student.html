@@ -64,8 +64,10 @@
 <div id="results-view" class="view">
   <div class="results-wrap">
     <div class="results-hdr">
-      <div style="font-size:56px;margin-bottom:12px">✅</div>
-      <h2 class="results-title" id="result-heading">İmtahan göndərildi</h2>
+      <div style="font-size:56px;margin-bottom:12px" id="result-icon">⏳</div>
+      <h2 class="results-title" id="result-heading">İmtahan göndərilir…</h2>
+      <p class="results-sub" id="result-save"></p>
+      <button class="btn btn-primary" id="result-retry" style="display:none;margin-bottom:12px" onclick="sendFinal()">↻ Yenidən göndər</button>
       <p class="results-sub" id="result-sub"></p>
       <p class="results-sub" id="result-auto" style="display:none;color:var(--wrong);font-weight:700"></p>
     </div>
