@@ -314,6 +314,7 @@ function renderLiveQuestionActive(){
         <div class="timer-pill" id="live-timer-pill">${liveMeta.questionSeconds}</div>
       </div>
       <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="revealLiveQuestion()">Nəticəni Göstər →</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu İndi Bitir</button>
     </div>`;
   startLiveQuestionTimer();
   detachLiveAnswersListener();
@@ -402,6 +403,7 @@ function renderLiveReveal(){
         `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('')
         : '<div style="font-size:12px;color:var(--muted)">Heç kim cavab vermədi.</div>'}
       <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="${isLast ? 'finishLiveRoom()' : 'launchLiveQuestion(' + (i + 1) + ')'}">${isLast ? '🏁 Oyunu Bitir' : 'Növbəti Sual →'}</button>
+      ${isLast ? '' : '<button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu İndi Bitir</button>'}
     </div>`;
 }
 
@@ -412,6 +414,12 @@ function liveLeaderboard(){
 }
 
 // ── FINISH ────────────────────────────────────────────────────────────────
+// Lets the teacher stop a game early (mid-question or mid-reveal) instead of only at the last
+// question; players currently mid-answer just see the room jump to the final leaderboard.
+function confirmEndLiveRoom(){
+  if(confirm('Oyun indi bitsin? Qalan suallar göstərilməyəcək.')) finishLiveRoom();
+}
+
 function finishLiveRoom(){
   clearInterval(liveQuestionTimer);
   db.ref('live_rooms/' + liveRoomPin + '/meta').update({ status: 'FINISHED' }).catch(err => alert('Xəta: ' + err.message));

@@ -268,17 +268,18 @@ function backToListHtml(){
 }
 
 // Firefox on Android gives the page no signal when a phone assistant (Circle to Search, Gemini)
-// opens, so a monitored exam cannot be run there.
-function browserBlocked(){
+// opens, so a monitored exam (or live game) cannot be run there. Shared by exam and live mode,
+// each passing its own leave limit (0 = no monitoring, so nothing to protect).
+function browserBlocked(limit){
   const ua = navigator.userAgent || '';
-  return leaveLimit > 0 && /Android/i.test(ua) && /Firefox\//i.test(ua);
+  return limit > 0 && /Android/i.test(ua) && /Firefox\//i.test(ua);
 }
 
 function showLobby(){
   clearTimeout(lobbyTimer);
   const state = scheduleState(serverNow(), examOpensAt, examClosesAt);
   if(state !== 'open'){ showClosedLobby(state); return; }
-  if(browserBlocked()){
+  if(browserBlocked(leaveLimit)){
     document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card" style="max-width:460px">
       ${backToListHtml()}
@@ -342,7 +343,7 @@ async function loadExamQuestions(){
 async function startExam(){
   if(startingExam) return;
   // Checked again here: the page may have been open since before the exam closed.
-  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked()){ showLobby(); return; }
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked(leaveLimit)){ showLobby(); return; }
   const typedName = (document.getElementById('student-name-inp')?.value || '').trim();
   if(!typedName){
     const err = document.getElementById('name-error');
@@ -357,7 +358,7 @@ async function startExam(){
   const loaded = sourceQs.length ? true : await loadExamQuestions();
   startingExam = false;
   if(!loaded){ showLobby(); return; }
-  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked()){ showLobby(); return; }
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked(leaveLimit)){ showLobby(); return; }
   // Shuffle all questions, pick up to 30. Always from the untouched source, so starting again
   // after leaving does not shuffle already-shuffled options and break the answer positions.
   let pool = shuffle(JSON.parse(JSON.stringify(sourceQs))).slice(0, MAX_QUESTIONS);
@@ -795,6 +796,7 @@ async function joinLiveRoom(){
     if(!meta){ showLiveJoinError('Bu kodla oyun tapılmadı.'); return; }
     if(meta.status === 'FINISHED'){ showLiveJoinError('Bu oyun artıq bitib.'); return; }
     if(meta.status !== 'LOBBY'){ showLiveJoinError('Oyun artıq başlayıb. Müəllimdən yeni oyun gözləyin.'); return; }
+    if(browserBlocked(Number(meta.leaveLimit) || 0)){ showLiveJoinError('Bu oyunu Firefox-da (Android) açmaq olmur. Zəhmət olmasa Chrome brauzerində açın.'); return; }
 
     const user = await authReady;
     liveUid = user.uid; livePin = pinVal; liveDisplayName = nameVal; liveLeaveLimit = Number(meta.leaveLimit) || 0;
@@ -812,6 +814,7 @@ async function joinLiveRoom(){
 
     showView('live-game-view');
     attachLiveRoomListener();
+    enterFullscreen();
   }catch(e){
     showLiveJoinError('Qoşulmaq mümkün olmadı. İnternet bağlantısını yoxlayın.');
   }finally{
@@ -824,7 +827,7 @@ function attachLiveRoomListener(){
   liveRoomMetaRef = db.ref('live_rooms/' + livePin + '/meta');
   liveRoomMetaRef.on('value', snap => {
     const meta = snap.val();
-    if(!meta){ renderLiveGameMessage('🚫', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
+    if(!meta){ liveJoined = false; leaveFullscreen(); renderLiveGameMessage('🚫', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
     handleLiveMetaUpdate(meta);
   });
 }
@@ -993,6 +996,8 @@ async function renderLiveReveal(){
 // ── FINISH ────────────────────────────────────────────
 async function renderLiveFinished(meta){
   clearInterval(liveCountdownTimer);
+  liveJoined = false;
+  leaveFullscreen();
   const wrap = document.getElementById('live-game-wrap');
   wrap.innerHTML = liveGameMessageHtml('⏳', 'Yekun nəticələr yüklənir…', '');
   try{
@@ -1040,12 +1045,60 @@ function onLiveReturn(){
   const r = liveMonitor.back();
   if(!r) return;
   writeLiveFlags();
+  showLiveLeaveWarning(r.count);
 }
+
+function showLiveLeaveWarning(count){
+  document.getElementById('live-leave-warning')?.remove();
+  const el = document.createElement('div');
+  el.id = 'live-leave-warning';
+  el.className = 'overlay';
+  el.innerHTML = `<div class="modal" style="text-align:center">
+    <div style="font-size:40px;margin-bottom:8px">⚠️</div>
+    <h2>Xəbərdarlıq ${count}</h2>
+    <p>Oyun səhifəsini tərk etdiniz. Bu müəllimə bildirilir.</p>
+    <button class="btn btn-primary btn-full" onclick="document.getElementById('live-leave-warning').remove();enterFullscreen()">Davam et</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+
 document.addEventListener('visibilitychange', () => { if(document.hidden) onLiveLeave(); else onLiveReturn(); });
 window.addEventListener('blur', onLiveLeave);
 window.addEventListener('focus', onLiveReturn);
+window.addEventListener('pagehide', () => { if(liveJoined) writeLiveFlags(); });
+
 document.addEventListener('paste', () => {
   if(!liveJoined || !liveMonitor) return;
   liveMonitor.paste();
   writeLiveFlags();
 }, true);
+['copy','cut','contextmenu'].forEach(type => document.addEventListener(type, e => {
+  if(!liveJoined || !liveMonitor) return;
+  if(!(e.target instanceof Element) || !e.target.closest('#live-game-wrap')) return;
+  e.preventDefault();
+  liveMonitor.copy();
+}, true));
+// Long-press selection and dragging on the live game, outside the answer fields.
+['selectstart','dragstart'].forEach(type => document.addEventListener(type, e => {
+  if(!liveJoined) return;
+  if(!(e.target instanceof Element) || !e.target.closest('#live-game-view') || e.target.closest('textarea,input')) return;
+  e.preventDefault();
+}, true));
+
+// Same phone-assistant-overlay fallback as exam mode: two missed-focus polls in a row (~1s) count
+// as a leave, so a brief system popup or keyboard switch is not mistaken for one.
+let liveUnfocusedPolls = 0;
+setInterval(() => {
+  if(!liveJoined || !liveMonitor){ liveUnfocusedPolls = 0; return; }
+  if(document.hasFocus()){ liveUnfocusedPolls = 0; onLiveReturn(); }
+  else if(++liveUnfocusedPolls >= 2) onLiveLeave();
+}, 500);
+
+function onLiveFullscreenChange(){
+  if(!liveJoined || !liveMonitor) return;
+  if(document.fullscreenElement || document.webkitFullscreenElement) return;
+  onLiveLeave();
+  onLiveReturn();
+}
+document.addEventListener('fullscreenchange', onLiveFullscreenChange);
+document.addEventListener('webkitfullscreenchange', onLiveFullscreenChange);
