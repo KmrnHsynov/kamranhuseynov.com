@@ -6,6 +6,7 @@
 <title>QuizCraft — Sinif Testləri</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link rel="stylesheet" href="quiz-az.css"/>
 </head>
 <body>
@@ -37,11 +38,12 @@
     </div>
 
     <div class="sidebar-tabs">
-      <div class="sidebar-tab active" onclick="switchTab('questions')">Suallar</div>
-      <div class="sidebar-tab" onclick="switchTab('settings')">Parametrlər</div>
-      <div class="sidebar-tab" onclick="switchTab('pdf')">PDF</div>
-      <div class="sidebar-tab" onclick="switchTab('topics')">Mövzular</div>
-      <div class="sidebar-tab" onclick="switchTab('analytics')">Analitika</div>
+      <div class="sidebar-tab active" data-tab="questions" onclick="switchTab('questions')">Suallar</div>
+      <div class="sidebar-tab" data-tab="settings" onclick="switchTab('settings')">Parametrlər</div>
+      <div class="sidebar-tab" data-tab="pdf" onclick="switchTab('pdf')">PDF</div>
+      <div class="sidebar-tab" data-tab="topics" onclick="switchTab('topics')">Mövzular</div>
+      <div class="sidebar-tab" data-tab="analytics" onclick="switchTab('analytics')">Analitika</div>
+      <div class="sidebar-tab" data-tab="live" onclick="switchTab('live')">Canlı Oyun</div>
     </div>
 
     <!-- Questions panel -->
@@ -137,6 +139,9 @@
       <div id="analytics-sidebar"></div>
     </div>
 
+    <!-- Live game panel: the screen itself is drawn into #questions-container, same as Analytics -->
+    <div class="sidebar-panel" id="tab-live"></div>
+
     <div class="sidebar-footer">
       <button class="btn btn-ghost btn-full" onclick="addQuestion()">＋ Sual Əlavə Et</button>
       <button class="btn btn-success btn-full" onclick="startQuiz()">▶ Testi Başlat</button>
@@ -225,6 +230,8 @@
 <script src="quiz-export.js"></script>
 <script src="quiz-schedule.js"></script>
 <script src="quiz-examcodec.js"></script>
+<script src="quiz-live.js"></script>
+<script src="quiz-live-host.js"></script>
 <script src="quiz-az.js"></script>
 </body>
 </html>

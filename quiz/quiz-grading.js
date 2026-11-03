@@ -190,4 +190,22 @@ function buildResult(r, now){
   };
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, questionProblems, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult };
+// What a question looks like once published: students (publicQuestion) never see the answer,
+// the teacher-only answer key (answerKeyEntry) is the only place it lives.
+function publicQuestion(q){
+  const p = {id: q.id, type: q.type, text: q.text, points: q.points};
+  if(q.type==='mc') p.options = q.options.map(o=>o||'');
+  if(q.type==='fill') p.fillText = q.fillText||'';
+  return p;
+}
+
+function answerKeyEntry(q){
+  const k = {type: q.type, text: q.text, points: q.points};
+  if(q.type==='mc'){ k.options = q.options.map(o=>o||''); k.correctOption = q.correctOption; }
+  if(q.type==='tf') k.tfAnswer = !!q.tfAnswer;
+  if(q.type==='short') k.shortAnswer = q.shortAnswer||'';
+  if(q.type==='fill'){ k.fillText = q.fillText||''; k.fillAnswers = (q.fillAnswers||[]).map(a=>a||''); }
+  return k;
+}
+
+if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, questionProblems, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult, publicQuestion, answerKeyEntry };

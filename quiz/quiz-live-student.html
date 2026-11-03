@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QuizCraft — Canlı Oyun</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="quiz-az.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════
+     JOIN VIEW
+═══════════════════════════════ -->
+<div id="join-view" class="view active">
+  <div class="lock-card" style="max-width:440px">
+    <div class="lock-icon">🎮</div>
+    <h2>Canlı Oyuna Qoşul</h2>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Müəllimin verdiyi 6 rəqəmli kodu daxil edin və ya QR kodu skan edin.</p>
+    <input type="text" id="join-pin-inp" placeholder="PIN (6 rəqəm)…" inputmode="numeric" maxlength="6" style="margin-bottom:10px;text-align:center;font-family:'DM Mono',monospace;font-size:20px;letter-spacing:.1em" oninput="this.value=this.value.replace(/\D/g,'').slice(0,6)" onkeydown="if(event.key==='Enter')document.getElementById('join-name-inp').focus()"/>
+    <input type="text" id="join-name-inp" placeholder="Adınızı daxil edin…" maxlength="60" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')joinLiveRoom()"/>
+    <p id="join-error" style="display:none;font-size:12px;color:var(--wrong);margin:-2px 0 12px;text-align:left"></p>
+    <button class="btn btn-primary btn-full" id="join-btn" onclick="joinLiveRoom()">▶ Qoşul</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     GAME VIEW (lobby-wait / question / reveal / finished — content swapped in JS)
+═══════════════════════════════ -->
+<div id="game-view" class="view">
+  <div class="quiz-wrap" id="game-wrap"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="quiz-monitor.js"></script>
+<script src="quiz-grading.js"></script>
+<script src="quiz-live.js"></script>
+<script src="quiz-live-student.js"></script>
+</body>
+</html>

@@ -227,20 +227,21 @@ function clearPdfQuestions(){
 //  EDITOR — RENDER
 // ══════════════════════════════════════════════════════
 function switchTab(name){
-  document.querySelectorAll('.sidebar-tab').forEach((t,i)=>{
-    const names=['questions','settings','pdf','topics','analytics'];
-    t.classList.toggle('active', names[i]===name);
+  document.querySelectorAll('.sidebar-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.tab===name);
   });
   document.querySelectorAll('.sidebar-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='topics') refreshPublishedTopics(renderTopics);
   if(name==='analytics') renderAnalytics();
-  // The results are drawn into the same box as the question editor, so leaving the Analytics tab has
-  // to draw the editor back; otherwise the results stay on screen and picking a question shows nothing.
+  if(name==='live') renderLiveTab();
+  // Analytics and the live game draw into the same box as the question editor, so leaving either tab
+  // has to draw the editor back; otherwise their last screen stays on screen and picking a question shows nothing.
   const main = document.getElementById('questions-container');
-  if(name !== 'analytics'){
+  if(name !== 'analytics' && name !== 'live'){
     main.classList.remove('hidden');
     if(analyticsShown){ analyticsShown = false; renderEditor(); }
+    if(liveShown){ liveShown = false; renderEditor(); }
   }
 }
 
@@ -445,21 +446,7 @@ function assignBulkTopic(){
   setTimeout(()=>banner.remove(), 3000);
 }
 
-function publicQuestion(q){
-  const p = {id: q.id, type: q.type, text: q.text, points: q.points};
-  if(q.type==='mc') p.options = q.options.map(o=>o||'');
-  if(q.type==='fill') p.fillText = q.fillText||'';
-  return p;
-}
-
-function answerKeyEntry(q){
-  const k = {type: q.type, text: q.text, points: q.points};
-  if(q.type==='mc'){ k.options = q.options.map(o=>o||''); k.correctOption = q.correctOption; }
-  if(q.type==='tf') k.tfAnswer = !!q.tfAnswer;
-  if(q.type==='short') k.shortAnswer = q.shortAnswer||'';
-  if(q.type==='fill'){ k.fillText = q.fillText||''; k.fillAnswers = (q.fillAnswers||[]).map(a=>a||''); }
-  return k;
-}
+// publicQuestion / answerKeyEntry now live in quiz-grading.js (shared with the live-game room creator).
 
 function topicScheduleLabel(topic){
   const info = publishedTopics[topic];

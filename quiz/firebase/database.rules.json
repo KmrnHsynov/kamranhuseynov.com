@@ -97,6 +97,87 @@
           "$other": { ".validate": false }
         }
       }
+    },
+
+    "live_rooms": {
+      "$pin": {
+
+        "meta": {
+          ".read": true,
+          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          ".validate": "newData.hasChildren(['topic', 'status', 'currentIndex', 'questionCount', 'questionSeconds', 'leaveLimit', 'createdAt'])",
+          "topic":            { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "status":           { ".validate": "newData.isString() && (newData.val() === 'LOBBY' || newData.val() === 'QUESTION' || newData.val() === 'REVEAL' || newData.val() === 'FINISHED')" },
+          "currentIndex":     { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30" },
+          "questionCount":    { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 30" },
+          "questionSeconds":  { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 300" },
+          "questionStartedAt":{ ".validate": "newData.isNumber()" },
+          "leaveLimit":       { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20" },
+          "createdAt":        { ".validate": "newData.isNumber()" },
+          "$other":           { ".validate": false }
+        },
+
+        "questions": {
+          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          "$i": {
+            ".read": "auth.token.email === 'kmrnhsynov@gmail.com' || (root.child('live_rooms').child($pin).child('meta').child('currentIndex').val() + '') === $i || root.child('live_rooms').child($pin).child('meta').child('status').val() === 'FINISHED'"
+          }
+        },
+
+        "answer_key": {
+          ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'"
+        },
+
+        "players": {
+          ".read": true,
+          "$uid": {
+            "profile": {
+              ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'kmrnhsynov@gmail.com')",
+              ".validate": "newData.hasChildren(['displayName', 'joinedAt'])",
+              "displayName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
+              "joinedAt":    { ".validate": "newData.isNumber()" },
+              "connected":   { ".validate": "newData.isBoolean()" },
+              "$other":      { ".validate": false }
+            },
+            "score": {
+              ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000"
+            },
+            "flags": {
+              ".write": "auth != null && auth.uid === $uid",
+              "tabSwitches": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+              "timeAway":    { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
+              "pastes":      { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000" },
+              "flagged":     { ".validate": "newData.isBoolean()" },
+              "$other":      { ".validate": false }
+            }
+          }
+        },
+
+        "answers": {
+          ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          "$i": {
+            "$uid": {
+              ".read": "auth != null && auth.uid === $uid",
+              ".write": "auth != null && auth.uid === $uid && !data.exists() && root.child('live_rooms').child($pin).child('meta').child('status').val() === 'QUESTION' && (root.child('live_rooms').child($pin).child('meta').child('currentIndex').val() + '') === $i && now <= root.child('live_rooms').child($pin).child('meta').child('questionStartedAt').val() + root.child('live_rooms').child($pin).child('meta').child('questionSeconds').val() * 1000 + 15000",
+              ".validate": "newData.hasChildren(['responseTimeMs', 'submittedAt'])",
+              "responseTimeMs": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 600000" },
+              "submittedAt":    { ".validate": "newData.isNumber() && newData.val() === now" },
+              "selectedOption": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 4" },
+              "tfAnswer":       { ".validate": "newData.isBoolean()" },
+              "shortAnswer":    { ".validate": "newData.isString() && newData.val().length <= 500" },
+              "fillAnswers":    { "$k": { ".validate": "newData.isString() && newData.val().length <= 200" } },
+              "$other":         { ".validate": false }
+            }
+          }
+        },
+
+        "results": {
+          ".read": true,
+          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'"
+        }
+      }
     }
   }
 }
