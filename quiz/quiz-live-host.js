@@ -19,6 +19,7 @@ let liveRoomPin        = null;
 let liveMeta           = null;
 let livePlayersMap     = {};
 let liveAnswersMap     = {};    // answers/{currentIndex} of the question currently on screen
+let liveQuestionEligibleUids = [];  // players present when this question launched (see renderLiveQuestionActive)
 let liveQuestions      = [];    // public shape, in-memory copy used for rendering
 let liveAnswerKeyMap   = {};    // id -> answerKeyEntry, in-memory copy used for scoring
 let liveLastRevealStats = null;
@@ -305,7 +306,7 @@ function detachLiveRoom(){
   if(liveRoomPlayersRef) liveRoomPlayersRef.off();
   liveMetaRef = null; liveRoomPlayersRef = null;
   clearInterval(liveQuestionTimer);
-  liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {};
+  liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
 }
 
 // ── ROOM STATE → SCREEN ──────────────────────────────────────────────────
@@ -383,6 +384,13 @@ function renderLiveQuestionActive(){
   const q = liveQuestions[i];
   liveAnswersMap = {};
   liveRevealing = false;
+  // Frozen at question-launch, not recomputed live: someone joining mid-question hasn't even seen
+  // it yet, so they must not count toward "everyone answered" (that was making the round end the
+  // moment the original players finished, cutting latecomers off entirely). A disconnect among
+  // this set still drops out below, via the connected!==false check in updateLiveAnsweredCount.
+  liveQuestionEligibleUids = Object.entries(livePlayersMap)
+    .filter(([, p]) => (p.profile || {}).displayName && (p.profile || {}).connected !== false)
+    .map(([uid]) => uid);
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length}</div>
@@ -429,7 +437,13 @@ function startLiveQuestionTimer(){
 // Called whenever either the answers for this question or the roster changes, from both
 // listeners in attachLiveRoom(); the single choke point also decides whether to auto-reveal.
 function updateLiveAnsweredCount(){
-  const connected = Object.values(livePlayersMap).filter(p => (p.profile || {}).displayName && (p.profile || {}).connected !== false).length;
+  // Only players eligible for *this* question (frozen at launch) count toward "everyone
+  // answered" - a mid-question joiner doesn't inflate it, but a disconnect among the eligible
+  // set still drops out so the round doesn't wait forever on someone who left.
+  const connected = liveQuestionEligibleUids.filter(uid => {
+    const p = livePlayersMap[uid];
+    return p && (p.profile || {}).connected !== false;
+  }).length;
   const answered = Object.keys(liveAnswersMap).length;
   const el = document.getElementById('live-answered-count');
   if(el) el.textContent = `${answered} / ${connected} cavab verdi`;
@@ -463,6 +477,11 @@ function revealLiveQuestion(){
     const earned = liveScore(key, ans, a.responseTimeMs || 0, liveMeta.questionSeconds);
     updates['players/' + uid + '/score'] = firebase.database.ServerValue.increment(earned);
     updates['results/' + i + '/' + uid] = { correct, pointsEarned: earned };
+    // Applied locally too, not just sent to the server: meta/status and players/*/score are two
+    // separate listeners, and nothing guarantees the players one's round-trip confirmation lands
+    // before the meta one flips to REVEAL and renders the leaderboard - without this, the board
+    // shown right at reveal reflects last round's scores, not this one's, until the next render.
+    if(livePlayersMap[uid]) livePlayersMap[uid].score = (livePlayersMap[uid].score || 0) + earned;
   });
   liveLastRevealStats = { answeredCount: Object.keys(answers).length, correctCount };
   db.ref('live_rooms/' + liveRoomPin).update(updates).catch(err => alert('Xəta: ' + err.message));
