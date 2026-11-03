@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { generatePin, liveScore, sortLeaderboard } = require('./quiz-live.js');
+const { generatePin, liveScore, sortLeaderboard, liveTimerUrgencyClass } = require('./quiz-live.js');
 
 test('a pin is always a 6-digit numeric string', () => {
   for(let i = 0; i < 50; i++){
@@ -48,4 +48,18 @@ test('leaderboard sorts by score, highest first, without mutating the input', ()
 test('leaderboard treats a missing score as zero', () => {
   const sorted = sortLeaderboard([{ name: 'a' }, { name: 'b', score: 5 }]);
   assert.deepStrictEqual(sorted.map(p => p.name), ['b', 'a']);
+});
+
+test('timer urgency is by fraction of time left, not an absolute second count', () => {
+  assert.strictEqual(liveTimerUrgencyClass(20, 20), '');
+  assert.strictEqual(liveTimerUrgencyClass(11, 20), '');
+  assert.strictEqual(liveTimerUrgencyClass(10, 20), ' warn');
+  assert.strictEqual(liveTimerUrgencyClass(4, 20), ' danger');
+  assert.strictEqual(liveTimerUrgencyClass(0, 20), ' danger');
+  // A short 5s question still reaches danger, unlike the exam's fixed 120s cutoff.
+  assert.strictEqual(liveTimerUrgencyClass(1, 5), ' danger');
+});
+
+test('timer urgency with no time limit is never urgent', () => {
+  assert.strictEqual(liveTimerUrgencyClass(5, 0), '');
 });

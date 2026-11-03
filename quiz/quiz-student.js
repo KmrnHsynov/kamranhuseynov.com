@@ -981,11 +981,12 @@ function writeLiveAnswer(fields){
 
 function startLiveCountdown(meta){
   clearInterval(liveCountdownTimer);
-  const deadline = liveQuestionStartedLocal + meta.questionSeconds * 1000;
+  const total = meta.questionSeconds;
+  const deadline = liveQuestionStartedLocal + total * 1000;
   const tick = () => {
     const left = Math.max(0, Math.ceil((deadline - serverNow()) / 1000));
     const pill = document.getElementById('live-q-timer');
-    if(pill) pill.textContent = left;
+    if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
     if(left <= 0) clearInterval(liveCountdownTimer);
   };
   tick();
@@ -1028,13 +1029,16 @@ async function renderLiveFinished(meta){
     const players = snap.val() || {};
     const board = sortLeaderboard(Object.entries(players).map(([pid, p]) =>
       ({ uid: pid, name: (p.profile || {}).displayName || '?', score: p.score || 0 })));
+    const myEntry = board.find(p => p.uid === liveUid);
     const rank = board.findIndex(p => p.uid === liveUid) + 1;
+    const rest = board.slice(3, 10);
     wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:460px">
       <div class="lock-icon">🏁</div>
       <h2>${esc(meta.topic || 'Canlı Oyun')} — Bitdi</h2>
       <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong></p>
-      ${board.slice(0, 10).map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
-        <span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong>
+      ${livePodiumHtml(board, myEntry ? myEntry.name : undefined)}
+      ${rest.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
+        <span>${idx + 4}. ${esc(p.name)}</span><strong>${p.score}</strong>
       </div>`).join('')}
     </div>`;
   }catch(e){

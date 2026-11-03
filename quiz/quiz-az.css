@@ -460,6 +460,14 @@ textarea{resize:vertical;line-height:1.6;}
 .feedback-bar.fb-bad{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:var(--wrong);}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
+/* Live game podium (top 3, finished screen) */
+.live-podium{display:flex;align-items:flex-end;justify-content:center;gap:14px;margin:20px 0;}
+.live-podium-slot{display:flex;flex-direction:column;align-items:center;width:84px;opacity:0;animation:podiumRise .5s cubic-bezier(.34,1.56,.64,1) forwards;}
+.live-podium-medal{font-size:28px;margin-bottom:6px;}
+.live-podium-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;text-align:center;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.live-podium-bar{width:100%;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:10px 10px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;color:#fff;font-weight:800;font-size:15px;}
+@keyframes podiumRise{from{opacity:0;transform:translateY(16px) scaleY(.7);transform-origin:bottom;}to{opacity:1;transform:translateY(0) scaleY(1);}}
+
 /* Quiz nav */
 .quiz-nav{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
 .quiz-pts-lbl{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}

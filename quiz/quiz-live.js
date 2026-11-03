@@ -35,4 +35,36 @@ function sortLeaderboard(players){
   return players.slice().sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
-if(typeof module !== 'undefined') module.exports = { generatePin, liveScore, sortLeaderboard };
+// Question-timer pill color, by fraction of time left rather than an absolute second count (live
+// questions run 5-300s, unlike the exam's fixed 30-minute clock, so a fixed cutoff would never
+// trigger on a short question). '' means the plain/default color.
+function liveTimerUrgencyClass(secondsLeft, totalSeconds){
+  if(!(totalSeconds > 0)) return '';
+  const ratio = secondsLeft / totalSeconds;
+  if(ratio <= 0.2) return ' danger';
+  if(ratio <= 0.5) return ' warn';
+  return '';
+}
+
+// Top-3 podium markup shared by the host's and the player's finished screens. Presentation only -
+// not covered by quiz-live.test.js like the logic above, since esc() is a page global this file
+// doesn't define (same reasoning as liveQuestionOptionsHtml etc in quiz-live-host.js).
+function livePodiumHtml(leaderboard, highlightName){
+  const top3 = leaderboard.slice(0, 3);
+  if(!top3.length) return '';
+  const order = [1, 0, 2];       // silver, gold, bronze, left to right
+  const heights = [96, 130, 74];
+  const medals = ['🥈', '🥇', '🥉'];
+  return `<div class="live-podium">${order.map((rank, col) => {
+    const p = top3[rank];
+    if(!p) return '<div class="live-podium-slot"></div>';
+    const mine = highlightName != null && p.name === highlightName;
+    return `<div class="live-podium-slot" style="animation-delay:${col * 0.15}s">
+      <div class="live-podium-medal">${medals[rank]}</div>
+      <div class="live-podium-name"${mine ? ' style="color:var(--accent);font-weight:800"' : ''}>${esc(p.name)}</div>
+      <div class="live-podium-bar" style="height:${heights[rank]}px">${p.score}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+if(typeof module !== 'undefined') module.exports = { generatePin, liveScore, sortLeaderboard, liveTimerUrgencyClass, livePodiumHtml };

@@ -10,6 +10,7 @@
 
 const LIVE_MAX_QUESTIONS   = 30;
 const LIVE_DEFAULT_SECONDS = 20;
+const LIVE_DEFAULT_LEAVE_LIMIT = 3;
 const LIVE_STORAGE_KEY     = 'qc_live_room';
 const LIVE_OPT_LETTERS     = ['A', 'B', 'C', 'D', 'E'];
 
@@ -92,9 +93,13 @@ function renderLiveTopicPicker(){
           <label class="field-lbl">Sual sayı (max ${LIVE_MAX_QUESTIONS})</label>
           <input type="number" id="live-count-input" min="1" max="${firstCap}" value="${Math.min(firstCap, 20)}" style="width:100%"/>
         </div>
-        <div style="margin-bottom:20px">
+        <div style="margin-bottom:16px">
           <label class="field-lbl">Sual üçün vaxt (saniyə)</label>
           <input type="number" id="live-seconds-input" min="5" max="300" value="${LIVE_DEFAULT_SECONDS}" style="width:100%"/>
+        </div>
+        <div style="margin-bottom:20px">
+          <label class="field-lbl">Səhifədən Çıxış Limiti</label>
+          <input type="number" id="live-leave-limit-input" min="0" max="20" value="${LIVE_DEFAULT_LEAVE_LIMIT}" style="width:100%"/>
         </div>
         <button class="btn btn-primary btn-full" onclick="startLiveGame()">▶ Canlı Oyun Başlat</button>
       ` : '<div style="font-size:13px;color:var(--muted)">Hələ heç bir mövzuda sual yoxdur. Əvvəlcə Suallar bölməsində sual əlavə edin, ya da bir mövzu göndərin.</div>'}
@@ -185,6 +190,8 @@ async function startLiveGame(){
   if(!topic) return;
   const seconds = Math.min(300, Math.max(5, parseInt(document.getElementById('live-seconds-input')?.value, 10) || LIVE_DEFAULT_SECONDS));
   const wantCount = Math.min(LIVE_MAX_QUESTIONS, Math.max(1, parseInt(document.getElementById('live-count-input')?.value, 10) || LIVE_MAX_QUESTIONS));
+  const leaveLimitVal = parseInt(document.getElementById('live-leave-limit-input')?.value, 10);
+  const leaveLimit = Number.isNaN(leaveLimitVal) ? LIVE_DEFAULT_LEAVE_LIMIT : Math.min(20, Math.max(0, leaveLimitVal));
   const btn = document.querySelector('#questions-container .btn-primary');
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Yüklənir…'; }
 
@@ -215,7 +222,7 @@ async function startLiveGame(){
     const keyMap = Object.fromEntries(pool.map(q => [String(q.id), answerKeyEntry(q)]));
     const meta = {
       topic, status: 'LOBBY', currentIndex: 0, questionCount: publicQs.length,
-      questionSeconds: seconds, leaveLimit: 3, createdAt: Date.now()
+      questionSeconds: seconds, leaveLimit, createdAt: Date.now()
     };
     await db.ref('live_rooms/' + pin).set({ meta, questions: publicQs, answer_key: { questions: keyMap } });
     liveQuestions = publicQs;
@@ -407,11 +414,12 @@ function startLiveQuestionTimer(){
   clearInterval(liveQuestionTimer);
   // Driven off the host's own clock: fine here, since an early/late auto-reveal is a UX nicety,
   // not a security boundary (the database rule already gates when answers may be written).
-  const deadline = (liveMeta.questionStartedAt || Date.now()) + liveMeta.questionSeconds * 1000;
+  const total = liveMeta.questionSeconds;
+  const deadline = (liveMeta.questionStartedAt || Date.now()) + total * 1000;
   const tick = () => {
     const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
     const pill = document.getElementById('live-timer-pill');
-    if(pill) pill.textContent = left;
+    if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
     if(left <= 0){ clearInterval(liveQuestionTimer); revealLiveQuestion(); }
   };
   tick();
@@ -514,12 +522,13 @@ function finishLiveRoom(){
 function renderLiveFinished(){
   detachLiveAnswersListener();
   const leaderboard = liveLeaderboard();
+  const rest = leaderboard.slice(3, 10);
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto;text-align:center">
       <div style="font-size:32px;margin-bottom:10px">🏁</div>
       <h2 style="margin-bottom:18px">${esc(liveMeta.topic)} — Oyun Bitdi</h2>
-      ${leaderboard.length ? leaderboard.slice(0, 10).map((p, idx) =>
-        `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('')
+      ${leaderboard.length ? livePodiumHtml(leaderboard) + rest.map((p, idx) =>
+        `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 4}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('')
         : '<div style="font-size:12px;color:var(--muted)">Heç kim qoşulmadı.</div>'}
       <button class="btn btn-ghost btn-full" style="margin-top:20px" onclick="deleteLiveRoom()">🗑 Otağı Sil</button>
       <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="startNewLiveGame()">＋ Yeni Oyun</button>
