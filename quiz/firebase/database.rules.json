@@ -179,6 +179,27 @@
           ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'"
         }
       }
+    },
+
+    "live_history": {
+      ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      "$id": {
+        ".validate": "newData.hasChildren(['topic', 'createdAt', 'finishedAt', 'questionCount', 'playerCount', 'leaderboard'])",
+        "topic":         { ".validate": "newData.isString() && newData.val().length <= 200" },
+        "createdAt":     { ".validate": "newData.isNumber()" },
+        "finishedAt":    { ".validate": "newData.isNumber()" },
+        "questionCount": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 30" },
+        "playerCount":   { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000" },
+        "leaderboard": {
+          "$i": {
+            "name":   { ".validate": "newData.isString() && newData.val().length <= 60" },
+            "score":  { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
     }
   }
 }

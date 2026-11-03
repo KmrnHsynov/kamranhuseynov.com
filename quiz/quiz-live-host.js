@@ -96,7 +96,65 @@ function renderLiveTopicPicker(){
         </div>
         <button class="btn btn-primary btn-full" onclick="startLiveGame()">▶ Canlı Oyun Başlat</button>
       ` : '<div style="font-size:13px;color:var(--muted)">Hələ heç bir mövzuda sual yoxdur. Əvvəlcə Suallar bölməsində sual əlavə edin, ya da bir mövzu göndərin.</div>'}
+      <div id="live-history-list" style="margin-top:28px"></div>
     </div>`;
+  renderLiveHistoryList();
+}
+
+// ── HISTORY (a record of each finished game, written once by finishLiveRoom) ──────────────
+function renderLiveHistoryList(){
+  const el = document.getElementById('live-history-list');
+  if(!el) return;
+  el.innerHTML = '<div style="font-size:11px;color:var(--muted)">⏳ Keçmiş oyunlar yüklənir…</div>';
+  db.ref('live_history').limitToLast(10).once('value').then(snap => {
+    const el2 = document.getElementById('live-history-list');
+    if(!el2) return; // the teacher navigated to another tab while this was loading
+    const val = snap.val() || {};
+    const list = Object.entries(val).map(([id, h]) => ({ id, ...h })).sort((a, b) => (b.finishedAt || 0) - (a.finishedAt || 0));
+    if(!list.length){ el2.innerHTML = ''; return; }
+    el2.innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Son Oyunlar</div>
+      ${list.map(liveHistoryRowHtml).join('')}`;
+  }).catch(() => { const el2 = document.getElementById('live-history-list'); if(el2) el2.innerHTML = ''; });
+}
+
+function liveHistoryRowHtml(h){
+  const top = (h.leaderboard || [])[0];
+  const when = new Date(h.finishedAt || h.createdAt || 0).toLocaleString('az-AZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  return `<div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+    <div>
+      <div style="font-size:13px;font-weight:600">${esc(h.topic || '')}</div>
+      <div style="font-size:11px;color:var(--muted)">${esc(when)} · ${h.playerCount || 0} tələbə${top ? ' · 🥇 ' + esc(top.name) + ' (' + top.score + ')' : ''}</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 8px" data-id="${esc(h.id)}" onclick="showLiveHistoryDetail(this.dataset.id)">Bax</button>
+      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 8px;color:var(--wrong)" data-id="${esc(h.id)}" onclick="deleteLiveHistory(this.dataset.id)">🗑</button>
+    </div>
+  </div>`;
+}
+
+function showLiveHistoryDetail(id){
+  db.ref('live_history/' + id).once('value').then(snap => {
+    const h = snap.val();
+    if(!h) return;
+    const board = h.leaderboard || [];
+    document.getElementById('live-history-modal')?.remove();
+    const el = document.createElement('div');
+    el.id = 'live-history-modal';
+    el.className = 'overlay';
+    el.innerHTML = `<div class="modal" style="max-width:420px">
+      <h2 style="margin-bottom:4px">${esc(h.topic || '')}</h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">${h.playerCount || 0} tələbə · ${h.questionCount || 0} sual</p>
+      ${board.length ? board.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">Nəticə yoxdur.</div>'}
+      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="document.getElementById('live-history-modal').remove()">Bağla</button>
+    </div>`;
+    document.body.appendChild(el);
+  });
+}
+
+function deleteLiveHistory(id){
+  if(!confirm('Bu qeyd silinsin?')) return;
+  db.ref('live_history/' + id).remove().then(renderLiveHistoryList).catch(() => {});
 }
 
 // Local editor questions for this topic if it's loaded here; otherwise its published questions +
@@ -281,14 +339,25 @@ function liveJoinUrl(pin){
 function renderLivePlayerList(){
   const el = document.getElementById('live-player-list');
   if(!el) return;
-  const list = Object.values(livePlayersMap)
-    .map(p => ({ ...(p.profile || {}), flagged: !!(p.flags && p.flags.flagged) }))
+  const list = Object.entries(livePlayersMap)
+    .map(([uid, p]) => ({ uid, ...(p.profile || {}), flagged: !!(p.flags && p.flags.flagged) }))
     .filter(p => p.displayName);
   document.getElementById('live-start-btn')?.toggleAttribute('disabled', list.length === 0);
   el.innerHTML = list.length
     ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">${list.length} tələbə qoşulub</div>` +
-      list.map(p => `<span class="an-badge" style="margin:3px;background:var(--surface2);border:1px solid var(--border);color:var(--text)">${esc(p.displayName)}${p.flagged ? ' ⚠' : ''}</span>`).join('')
+      list.map(p => `<span class="an-badge" style="margin:3px;background:var(--surface2);border:1px solid var(--border);color:var(--text);display:inline-flex;align-items:center;gap:6px">
+        ${esc(p.displayName)}${p.flagged ? ' ⚠' : ''}
+        <button data-uid="${esc(p.uid)}" onclick="kickLivePlayer(this.dataset.uid)" title="Oyundan çıxar" style="background:none;border:none;color:var(--wrong);cursor:pointer;font-size:13px;padding:0;line-height:1">✕</button>
+      </span>`).join('')
     : '<div style="font-size:12px;color:var(--muted)">Hələ heç kim qoşulmayıb…</div>';
+}
+
+// Kick is only offered from the lobby (the roster shown here) - once the game starts, the screen
+// switches to the question/reveal views and there is no persistent roster to kick from.
+function kickLivePlayer(uid){
+  const name = (livePlayersMap[uid] && livePlayersMap[uid].profile || {}).displayName || 'Bu tələbə';
+  if(!confirm(`${name} oyundan çıxarılsın?`)) return;
+  db.ref('live_rooms/' + liveRoomPin + '/players/' + uid).remove().catch(err => alert('Xəta: ' + err.message));
 }
 
 // ── QUESTION LIVE ─────────────────────────────────────────────────────────
@@ -422,7 +491,17 @@ function confirmEndLiveRoom(){
 
 function finishLiveRoom(){
   clearInterval(liveQuestionTimer);
-  db.ref('live_rooms/' + liveRoomPin + '/meta').update({ status: 'FINISHED' }).catch(err => alert('Xəta: ' + err.message));
+  if(!liveMeta || !liveRoomPin) return;
+  const board = liveLeaderboard();
+  const historyId = db.ref('live_history').push().key;
+  const updates = {};
+  updates['live_rooms/' + liveRoomPin + '/meta/status'] = 'FINISHED';
+  updates['live_history/' + historyId] = {
+    topic: liveMeta.topic, createdAt: liveMeta.createdAt || Date.now(), finishedAt: Date.now(),
+    questionCount: liveQuestions.length, playerCount: board.length,
+    leaderboard: board.slice(0, 20).map(p => ({ name: p.name, score: p.score }))
+  };
+  db.ref().update(updates).catch(err => alert('Xəta: ' + err.message));
 }
 
 function renderLiveFinished(){

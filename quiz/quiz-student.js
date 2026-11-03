@@ -769,7 +769,7 @@ function esc(s){ return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').repl
 //  to avoid colliding with it; reuses esc/showView/authReady/serverOffset/serverNow from above)
 // ══════════════════════════════════════════════════════
 let livePin = '', liveUid = '', liveDisplayName = '';
-let liveRoomMetaRef = null, liveLastIndex = -1;
+let liveRoomMetaRef = null, livePlayerProfileRef = null, liveLastIndex = -1;
 let liveCurrentQuestion = null, liveQuestionStartedLocal = 0, liveAnswered = false;
 let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false;
 let liveCountdownTimer = null;
@@ -795,7 +795,6 @@ async function joinLiveRoom(){
     const meta = snap.val();
     if(!meta){ showLiveJoinError('Bu kodla oyun tapılmadı.'); return; }
     if(meta.status === 'FINISHED'){ showLiveJoinError('Bu oyun artıq bitib.'); return; }
-    if(meta.status !== 'LOBBY'){ showLiveJoinError('Oyun artıq başlayıb. Müəllimdən yeni oyun gözləyin.'); return; }
     if(browserBlocked(Number(meta.leaveLimit) || 0)){ showLiveJoinError('Bu oyunu Firefox-da (Android) açmaq olmur. Zəhmət olmasa Chrome brauzerində açın.'); return; }
 
     const user = await authReady;
@@ -830,10 +829,22 @@ function attachLiveRoomListener(){
     if(!meta){ liveJoined = false; leaveFullscreen(); renderLiveGameMessage('🚫', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
     handleLiveMetaUpdate(meta);
   });
+  // The teacher can only kick from the lobby roster, so this only ever fires once the player's
+  // own profile is removed out from under them - not a race with their own join write, since
+  // that write is already awaited (and so already landed) before this listener is attached.
+  livePlayerProfileRef = db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile');
+  livePlayerProfileRef.on('value', snap => {
+    if(snap.exists() || !liveJoined) return;
+    liveJoined = false;
+    leaveFullscreen();
+    renderLiveGameMessage('🚫', 'Oyundan çıxarıldınız', 'Müəllim sizi oyundan çıxarıb.');
+    detachLiveRoomListener();
+  });
 }
 function detachLiveRoomListener(){
   if(liveRoomMetaRef) liveRoomMetaRef.off();
-  liveRoomMetaRef = null;
+  if(livePlayerProfileRef) livePlayerProfileRef.off();
+  liveRoomMetaRef = null; livePlayerProfileRef = null;
   clearInterval(liveCountdownTimer);
 }
 
@@ -863,24 +874,36 @@ function renderLiveWaiting(meta){
 }
 
 // ── QUESTION ──────────────────────────────────────────
+// A late joiner or a reconnect both land here: liveAnswered is re-checked against the database
+// (not just the in-memory flag) so a reconnect after already answering can't be shown the
+// options again - the database would refuse a second submit anyway, but this avoids the confusing
+// dead click. A brand-new joiner mid-question simply has no answer yet and plays normally.
 async function loadAndRenderLiveQuestion(meta){
   const i = meta.currentIndex;
   liveLastIndex = i;
   try{
-    const snap = await db.ref('live_rooms/' + livePin + '/questions/' + i).once('value');
-    liveCurrentQuestion = snap.val();
+    const [qSnap, aSnap] = await Promise.all([
+      db.ref('live_rooms/' + livePin + '/questions/' + i).once('value'),
+      db.ref('live_rooms/' + livePin + '/answers/' + i + '/' + liveUid).once('value')
+    ]);
+    liveCurrentQuestion = qSnap.val();
+    liveAnswered = aSnap.exists();
   }catch(e){
     liveCurrentQuestion = null;
   }
   liveQuestionStartedLocal = meta.questionStartedAt || Date.now();
   renderLiveQuestion(meta, i);
-  startLiveCountdown(meta);
+  if(!liveAnswered) startLiveCountdown(meta);
 }
 
 function renderLiveQuestion(meta, i){
   const q = liveCurrentQuestion;
   const wrap = document.getElementById('live-game-wrap');
   if(!q){ wrap.innerHTML = liveGameMessageHtml('⚠️', 'Sual yüklənmədi', 'Səhifəni yeniləyin.'); return; }
+  if(liveAnswered){
+    wrap.innerHTML = liveGameMessageHtml('✓', `Sual ${i + 1} / ${meta.questionCount}`, 'Bu suala artıq cavab vermisiniz. Növbəti addımı gözləyin…');
+    return;
+  }
   wrap.innerHTML = `
     <div class="quiz-topbar">
       <span class="quiz-title-lbl">${esc(meta.topic || 'Canlı Oyun')}</span>
