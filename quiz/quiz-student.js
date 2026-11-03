@@ -169,10 +169,10 @@ function startExamMode(){
 async function loadExamList(){
   // Rules that do not know the public list yet refuse this read: then fall back to the plain list below.
   const idx = await db.ref('exam_index').once('value').then(s => s.val() || {}, () => ({}));
-  const listed = Object.entries(idx).map(([key,data])=>({key,...data})).filter(e=>e.qCount > 0);
+  const listed = Object.entries(idx).map(([key,data])=>({key,...data})).filter(e=>e.qCount > 0 && e.active !== false);
   if(listed.length) return listed;
   const old = await db.ref('student_quiz').once('value').then(s => s.val() || {}, () => ({}));
-  return Object.entries(old).map(([key,data])=>({key,...data})).filter(e=>legacyQuestionCount(e) > 0);
+  return Object.entries(old).map(([key,data])=>({key,...data})).filter(e=>legacyQuestionCount(e) > 0 && e.active !== false);
 }
 
 function questionList(v){

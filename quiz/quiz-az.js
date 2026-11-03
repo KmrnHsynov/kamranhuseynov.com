@@ -295,7 +295,7 @@ function refreshPublishedTopics(cb){
       if(exam&&(exam.questions||exam.payload)){
         const label = exam.topic || key;
         const count = exam.qCount || legacyQuestionCount(exam);
-        publishedTopics[label]={ count, key, opensAt: exam.opensAt||0, closesAt: exam.closesAt||0 };
+        publishedTopics[label]={ count, key, opensAt: exam.opensAt||0, closesAt: exam.closesAt||0, active: exam.active !== false };
         // Exams published before the public list existed get an entry, so students keep seeing them.
         if(index && (!index[key] || index[key].publishedAt !== (exam.publishedAt||0))) missing['exam_index/'+key] = examMeta(exam, count);
       }
@@ -330,9 +330,10 @@ function renderTopics(){
   const localListHtml = localTopics.length ? localTopics.map(topic=>{
     const count = questions.filter(q=>q.topic?.trim()===topic).length;
     const isActive = isPublished(topic);
-    return`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    const archived = isActive && publishedTopics[topic].active === false;
+    return`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;${archived?'opacity:.6':''}">
       <div>
-        <div style="font-size:13px;font-weight:600;color:${isActive?'var(--accent3)':'var(--text)'}">${esc(topic)}${isActive?' ✓':''}</div>
+        <div style="font-size:13px;font-weight:600;color:${isActive?(archived?'var(--muted)':'var(--accent3)'):'var(--text)'}">${esc(topic)}${isActive?(archived?' 📦 Arxivdə':' ✓'):''}</div>
         <div style="font-size:11px;color:var(--muted)">${count} sual${isActive&&topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
         ${isActive?`<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Serverdəki versiyanı redaktora yüklə">⟳ Serverdən yüklə</button>
@@ -343,6 +344,7 @@ function renderTopics(){
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" data-topic="${esc(topic)}" onclick="publishTopic(this.dataset.topic)">
           ${isActive?'✓ Göndərilib':'📤 Göndər'}
         </button>
+        ${isActive?`<button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>`:''}
         ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>`:''}
         <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="deleteTopic(this.dataset.topic)">🗑</button>
       </div>
@@ -355,13 +357,15 @@ function renderTopics(){
     </div>` +
     remoteOnlyTopics.map(topic=>{
       const info = publishedTopics[topic];
-      return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      const archived = info.active === false;
+      return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;${archived?'opacity:.6':''}">
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--accent3)">${esc(topic)} ✓</div>
+          <div style="font-size:13px;font-weight:600;color:${archived?'var(--muted)':'var(--accent3)'}">${esc(topic)}${archived?' 📦 Arxivdə':' ✓'}</div>
           <div style="font-size:11px;color:var(--muted)">${info.count||'?'} sual · yalnız serverdə${topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
         </div>
         <div style="display:flex;gap:6px">
           <button class="btn btn-sm btn-accent3" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Sualları serverdən bu redaktora yüklə">✎ Redaktə et</button>
+          <button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>
           <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
         </div>
       </div>`;
@@ -566,6 +570,22 @@ function unpublishTopic(topicName){
       delete publishedTopics[topicName];
       renderTopics();
     })
+    .catch(err=>alert('Xəta: '+err.message));
+}
+
+// Unlike unpublishTopic, this keeps the exam (and its answer key) on the server untouched - it
+// just hides it from the student list and blocks starting it, so it can be switched back on later
+// without republishing. Toggles both exam_index (the public list) and student_quiz (the real gate:
+// the database rules refuse to even read the questions while active===false).
+function toggleTopicActive(topicName){
+  const info = publishedTopics[topicName];
+  if(!info) return;
+  const next = info.active === false;
+  const updates = {};
+  updates['exam_index/' + info.key + '/active'] = next;
+  updates['student_quiz/' + info.key + '/active'] = next;
+  db.ref().update(updates)
+    .then(()=>{ info.active = next; renderTopics(); })
     .catch(err=>alert('Xəta: '+err.message));
 }
 

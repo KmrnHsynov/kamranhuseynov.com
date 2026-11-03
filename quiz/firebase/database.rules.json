@@ -12,6 +12,7 @@
         "qCount":      { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000" },
         "opensAt":     { ".validate": "newData.isNumber()" },
         "closesAt":    { ".validate": "newData.isNumber()" },
+        "active":      { ".validate": "newData.isBoolean()" },
         "$other":      { ".validate": false }
       }
     },
@@ -19,9 +20,10 @@
       ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
       ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
       "$exam": {
-        ".read": "!data.child('opensAt').exists() || now >= data.child('opensAt').val()",
+        ".read": "(!data.child('active').exists() || data.child('active').val() !== false) && (!data.child('opensAt').exists() || now >= data.child('opensAt').val())",
         "opensAt":  { ".validate": "newData.isNumber()" },
         "closesAt": { ".validate": "newData.isNumber()" },
+        "active":   { ".validate": "newData.isBoolean()" },
         "payload":  { ".validate": "newData.isString() && newData.val().length < 2000000" },
         "questions": {
           "$i": {
