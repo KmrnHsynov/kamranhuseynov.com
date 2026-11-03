@@ -2,9 +2,13 @@
 
 // Pure logic for the Kahoot-style live game mode, shared between the host (quiz-live-host.js, in
 // quiz-az.html) and the player (the live-game section of quiz-student.js), covered by quiz-live.test.js.
-// isCorrectAnswer comes from quiz-grading.js: a global in the browser (script-tag load order),
-// required here only so this file's tests can run standalone under Node.
-const { isCorrectAnswer } = typeof module !== 'undefined' ? require('./quiz-grading.js') : window;
+// isCorrectAnswer comes from quiz-grading.js: already a global in the browser (script-tag load
+// order), so nothing to import there. This has to be `var`, not `const`/`let`: a lexical
+// declaration with the same name as an existing global `function` (quiz-grading.js's
+// isCorrectAnswer) is a SyntaxError that aborts the whole script, whereas `var` safely coexists
+// with it. The assignment below only actually runs in Node, where there is no such global.
+var isCorrectAnswer;
+if(typeof module !== 'undefined') isCorrectAnswer = require('./quiz-grading.js').isCorrectAnswer;
 
 function generatePin(){
   return Math.floor(100000 + Math.random() * 900000).toString();

@@ -55,9 +55,26 @@ function liveTopicOptions(){
   }));
 }
 
+// The question-count input's max tracks whichever topic is selected (capped at LIVE_MAX_QUESTIONS,
+// since that's also what the database rules allow for a room's questionCount).
+function liveTopicCountCap(topics, topic){
+  const t = topics.find(x => x.topic === topic);
+  return Math.max(1, Math.min(LIVE_MAX_QUESTIONS, Number(t?.count) || LIVE_MAX_QUESTIONS));
+}
+function onLiveTopicChange(){
+  const topics = liveTopicOptions();
+  const topic = document.getElementById('live-topic-select')?.value;
+  const cap = liveTopicCountCap(topics, topic);
+  const input = document.getElementById('live-count-input');
+  if(!input) return;
+  input.max = cap;
+  if(Number(input.value) > cap || !input.value) input.value = cap;
+}
+
 function renderLiveTopicPicker(){
   const topics = liveTopicOptions();
   const main = document.getElementById('questions-container');
+  const firstCap = topics.length ? liveTopicCountCap(topics, topics[0].topic) : LIVE_MAX_QUESTIONS;
   main.innerHTML = `
     <div style="padding:28px;max-width:560px;margin:0 auto">
       <h2 style="margin-bottom:6px">Canlı Oyun</h2>
@@ -65,9 +82,13 @@ function renderLiveTopicPicker(){
       ${topics.length ? `
         <div style="margin-bottom:16px">
           <label class="field-lbl">Mövzu</label>
-          <select id="live-topic-select" style="width:100%">
+          <select id="live-topic-select" style="width:100%" onchange="onLiveTopicChange()">
             ${topics.map(t => `<option value="${esc(t.topic)}">${esc(t.topic)} (${t.count} sual${t.remote ? ' · serverdə' : ''})</option>`).join('')}
           </select>
+        </div>
+        <div style="margin-bottom:16px">
+          <label class="field-lbl">Sual sayı (max ${LIVE_MAX_QUESTIONS})</label>
+          <input type="number" id="live-count-input" min="1" max="${firstCap}" value="${Math.min(firstCap, 20)}" style="width:100%"/>
         </div>
         <div style="margin-bottom:20px">
           <label class="field-lbl">Sual üçün vaxt (saniyə)</label>
@@ -103,6 +124,7 @@ async function startLiveGame(){
   const topic = document.getElementById('live-topic-select')?.value;
   if(!topic) return;
   const seconds = Math.min(300, Math.max(5, parseInt(document.getElementById('live-seconds-input')?.value, 10) || LIVE_DEFAULT_SECONDS));
+  const wantCount = Math.min(LIVE_MAX_QUESTIONS, Math.max(1, parseInt(document.getElementById('live-count-input')?.value, 10) || LIVE_MAX_QUESTIONS));
   const btn = document.querySelector('#questions-container .btn-primary');
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Yüklənir…'; }
 
@@ -113,7 +135,10 @@ async function startLiveGame(){
     return;
   }
 
-  const problems = filtered.map((q, i) => ({ n: i + 1, list: questionProblems(q) })).filter(p => p.list.length);
+  // Validated after picking, not the whole topic: a broken question elsewhere in a 150-question
+  // bank shouldn't block a 20-question round that never includes it.
+  const pool = shuffleList(filtered.slice()).slice(0, wantCount);
+  const problems = pool.map((q, i) => ({ n: i + 1, list: questionProblems(q) })).filter(p => p.list.length);
   if(problems.length){
     alert(`Canlı oyun başlamadı. ${problems.length} sualı düzəltmək lazımdır:\n\n` +
       problems.slice(0, 8).map(p => `S${p.n}: ${p.list.join(', ')}`).join('\n') +
@@ -122,7 +147,6 @@ async function startLiveGame(){
     return;
   }
 
-  const pool = shuffleList(filtered.slice()).slice(0, LIVE_MAX_QUESTIONS);
   if(btn) btn.textContent = '⏳ Otaq yaradılır…';
 
   try{
