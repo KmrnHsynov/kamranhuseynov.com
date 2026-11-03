@@ -971,7 +971,7 @@ function writeLiveAnswer(fields){
   const status = document.getElementById('live-answer-status');
   if(status) status.textContent = '⏳ Göndərilir…';
   db.ref('live_rooms/' + livePin + '/answers/' + liveLastIndex + '/' + liveUid).set(data).then(() => {
-    if(status) status.textContent = '✓ Cavab göndərildi. Növbəti addımı gözləyin…';
+    document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml('✅', 'Cavab göndərildi!', 'Digər tələbələri gözləyin…');
   }).catch(() => {
     liveAnswered = false;
     document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.remove('locked'));

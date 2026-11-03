@@ -21,6 +21,8 @@ let liveAnswersMap     = {};    // answers/{currentIndex} of the question curren
 let liveQuestions      = [];    // public shape, in-memory copy used for rendering
 let liveAnswerKeyMap   = {};    // id -> answerKeyEntry, in-memory copy used for scoring
 let liveLastRevealStats = null;
+let liveRevealing = false;  // guards against the timer, the "everyone answered" check, and the
+                             // manual button all racing to call revealLiveQuestion() at once
 
 let liveMetaRef = null, liveRoomPlayersRef = null, liveAnswersRef = null, liveAnswersHandler = null;
 let liveQuestionTimer = null;
@@ -373,6 +375,7 @@ function renderLiveQuestionActive(){
   const i = liveMeta.currentIndex;
   const q = liveQuestions[i];
   liveAnswersMap = {};
+  liveRevealing = false;
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length}</div>
@@ -415,11 +418,14 @@ function startLiveQuestionTimer(){
   liveQuestionTimer = setInterval(tick, 500);
 }
 
+// Called whenever either the answers for this question or the roster changes, from both
+// listeners in attachLiveRoom(); the single choke point also decides whether to auto-reveal.
 function updateLiveAnsweredCount(){
-  const el = document.getElementById('live-answered-count');
-  if(!el) return;
   const connected = Object.values(livePlayersMap).filter(p => (p.profile || {}).displayName && (p.profile || {}).connected !== false).length;
-  el.textContent = `${Object.keys(liveAnswersMap).length} / ${connected} cavab verdi`;
+  const answered = Object.keys(liveAnswersMap).length;
+  const el = document.getElementById('live-answered-count');
+  if(el) el.textContent = `${answered} / ${connected} cavab verdi`;
+  if(liveMeta && liveMeta.status === 'QUESTION' && connected > 0 && answered >= connected) revealLiveQuestion();
 }
 
 // ── REVEAL ────────────────────────────────────────────────────────────────
@@ -433,7 +439,8 @@ function extractLiveAnswer(q, a){
 }
 
 function revealLiveQuestion(){
-  if(!liveMeta || liveMeta.status !== 'QUESTION') return;
+  if(!liveMeta || liveMeta.status !== 'QUESTION' || liveRevealing) return;
+  liveRevealing = true;
   clearInterval(liveQuestionTimer);
   const i = liveMeta.currentIndex;
   const q = liveQuestions[i];
