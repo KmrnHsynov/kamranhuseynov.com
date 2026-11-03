@@ -10,31 +10,31 @@ test('a pin is always a 6-digit numeric string', () => {
 });
 
 test('mc/tf: instant correct answer gets full points, full-time correct answer gets half', () => {
-  const q = { type: 'mc', points: 1000, correctOption: 2 };
+  const q = { type: 'mc', points: 1, correctOption: 2 };
   assert.strictEqual(liveScore(q, 2, 0, 20), 1000);
   assert.strictEqual(liveScore(q, 2, 20000, 20), 500);
   assert.strictEqual(liveScore(q, 2, 10000, 20), 750);
 });
 
 test('mc/tf: a wrong or unanswered question scores 0 regardless of time', () => {
-  const q = { type: 'tf', points: 1000, tfAnswer: true };
+  const q = { type: 'tf', points: 1, tfAnswer: true };
   assert.strictEqual(liveScore(q, false, 0, 20), 0);
   assert.strictEqual(liveScore(q, undefined, 0, 20), 0);
 });
 
 test('mc/tf: time past the allotted window is clamped, never scoring below half', () => {
-  const q = { type: 'mc', points: 1000, correctOption: 0 };
+  const q = { type: 'mc', points: 1, correctOption: 0 };
   assert.strictEqual(liveScore(q, 0, 999999, 20), 500);
 });
 
-test('short/fill: flat full credit when correct, no time bonus', () => {
+test('short/fill: flat 1000 when correct, no time bonus, the editor\'s own points value is ignored', () => {
   const short = { type: 'short', points: 3, shortAnswer: 'Paris' };
-  assert.strictEqual(liveScore(short, 'paris', 0, 20), 3);
-  assert.strictEqual(liveScore(short, 'paris', 19999, 20), 3);
+  assert.strictEqual(liveScore(short, 'paris', 0, 20), 1000);
+  assert.strictEqual(liveScore(short, 'paris', 19999, 20), 1000);
   assert.strictEqual(liveScore(short, 'london', 0, 20), 0);
 
   const fill = { type: 'fill', points: 4, fillAnswers: ['Bakı', 'Kür,Kura'] };
-  assert.strictEqual(liveScore(fill, ['bakı', 'kura'], 5000, 20), 4);
+  assert.strictEqual(liveScore(fill, ['bakı', 'kura'], 5000, 20), 1000);
   assert.strictEqual(liveScore(fill, ['bakı', 'x'], 0, 20), 0);
 });
 

@@ -14,14 +14,20 @@ function generatePin(){
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// mc/tf reward speed: full points at an instant answer, half at the full time allowed.
-// short/fill are flat full-credit once correct, revealed only after everyone has answered.
+// Kahoot-style: every question is worth up to 1000, not the exam editor's own (usually tiny,
+// e.g. 1) points value — that field only matters for exam-mode grading, not the live game.
+const LIVE_MAX_POINTS = 1000;
+
+// mc/tf: real Kahoot formula - half the points (500) are guaranteed just for being correct, the
+// other half scales with speed, so an instant answer is 1000 and one at the very last moment is
+// still 500, never 0. short/fill: flat 1000 once correct, no speed bonus (revealed only once
+// everyone's answered).
 function liveScore(q, ans, responseTimeMs, questionSeconds){
   if(!isCorrectAnswer(q, ans)) return 0;
-  if(q.type !== 'mc' && q.type !== 'tf') return q.points;
+  if(q.type !== 'mc' && q.type !== 'tf') return LIVE_MAX_POINTS;
   const allowedMs = Math.max(1, questionSeconds) * 1000;
   const ratio = Math.min(Math.max(responseTimeMs, 0) / allowedMs, 1);
-  return Math.round(q.points * (1 - ratio / 2));
+  return Math.round(LIVE_MAX_POINTS * (1 - ratio / 2));
 }
 
 // Highest score first; ties keep whoever is listed first (stable sort).
