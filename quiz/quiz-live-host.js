@@ -3,9 +3,10 @@
 // Host side of the Kahoot-style live game mode: a new "Canlı Oyun" tab in the teacher panel
 // (quiz-az.html / quiz-az.js). Draws into the same #questions-container the question editor and
 // Analytics tab already share (see switchTab in quiz-az.js), following that existing convention.
-// Reuses: `questions` (the in-memory question bank), `db`/`auth` (firebase-config.js),
-// `esc`/`shuffleList` (quiz-az.js), `isCorrectAnswer`/`correctAnswerText`/`questionProblems`/
-// `publicQuestion`/`answerKeyEntry` (quiz-grading.js), `generatePin`/`liveScore`/`sortLeaderboard` (quiz-live.js).
+// Reuses: `questions`/`publishedTopics`/`refreshPublishedTopics`/`normalizeImportedQuestion` (quiz-az.js /
+// quiz-backup.js), `db`/`auth` (firebase-config.js), `esc`/`shuffleList` (quiz-az.js),
+// `isCorrectAnswer`/`correctAnswerText`/`questionProblems`/`publicQuestion`/`answerKeyEntry` (quiz-grading.js),
+// `generatePin`/`liveScore`/`sortLeaderboard` (quiz-live.js).
 
 const LIVE_MAX_QUESTIONS   = 30;
 const LIVE_DEFAULT_SECONDS = 20;
@@ -30,29 +31,42 @@ function renderLiveTab(){
   document.getElementById('questions-container').classList.remove('hidden');
   if(liveRoomPin){ renderLiveRoom(); return; }
   const saved = loadLiveRoomMarker();
-  if(!saved){ renderLiveTopicPicker(); return; }
+  if(!saved){ refreshPublishedTopics(renderLiveTopicPicker); return; }
   document.getElementById('questions-container').innerHTML =
     '<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Canlı oyun yoxlanılır…</p></div>';
   db.ref('live_rooms/' + saved.pin + '/meta').once('value').then(snap => {
     const meta = snap.val();
     if(meta && meta.status !== 'FINISHED') resumeLiveRoom(saved.pin);
-    else { clearLiveRoomMarker(); renderLiveTopicPicker(); }
-  }).catch(() => renderLiveTopicPicker());
+    else { clearLiveRoomMarker(); refreshPublishedTopics(renderLiveTopicPicker); }
+  }).catch(() => refreshPublishedTopics(renderLiveTopicPicker));
 }
 
 // ── TOPIC PICKER ──────────────────────────────────────────────────────────
+// Same topic universe as the Mövzular tab: questions loaded into this browser's editor, plus
+// topics published from any device (publishedTopics, refreshed just before this renders).
+function liveTopicOptions(){
+  const localTopics = new Set(questions.map(q => q.topic?.trim()).filter(Boolean));
+  const remoteTopics = Object.keys(publishedTopics);
+  const all = [...new Set([...localTopics, ...remoteTopics])];
+  return all.map(t => ({
+    topic: t,
+    count: localTopics.has(t) ? questions.filter(q => q.topic?.trim() === t).length : (publishedTopics[t]?.count || '?'),
+    remote: !localTopics.has(t)
+  }));
+}
+
 function renderLiveTopicPicker(){
-  const localTopics = [...new Set(questions.map(q => q.topic?.trim()).filter(Boolean))];
+  const topics = liveTopicOptions();
   const main = document.getElementById('questions-container');
   main.innerHTML = `
     <div style="padding:28px;max-width:560px;margin:0 auto">
       <h2 style="margin-bottom:6px">Canlı Oyun</h2>
       <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Bir mövzu seçin, tələbələr PIN və ya QR kodla qoşulsun, suallar canlı göstərilsin.</p>
-      ${localTopics.length ? `
+      ${topics.length ? `
         <div style="margin-bottom:16px">
           <label class="field-lbl">Mövzu</label>
           <select id="live-topic-select" style="width:100%">
-            ${localTopics.map(t => `<option value="${esc(t)}">${esc(t)} (${questions.filter(q => q.topic?.trim() === t).length} sual)</option>`).join('')}
+            ${topics.map(t => `<option value="${esc(t.topic)}">${esc(t.topic)} (${t.count} sual${t.remote ? ' · serverdə' : ''})</option>`).join('')}
           </select>
         </div>
         <div style="margin-bottom:20px">
@@ -60,28 +74,56 @@ function renderLiveTopicPicker(){
           <input type="number" id="live-seconds-input" min="5" max="300" value="${LIVE_DEFAULT_SECONDS}" style="width:100%"/>
         </div>
         <button class="btn btn-primary btn-full" onclick="startLiveGame()">▶ Canlı Oyun Başlat</button>
-      ` : '<div style="font-size:13px;color:var(--muted)">Əvvəlcə Suallar bölməsində mövzu üzrə suallar əlavə edin.</div>'}
+      ` : '<div style="font-size:13px;color:var(--muted)">Hələ heç bir mövzuda sual yoxdur. Əvvəlcə Suallar bölməsində sual əlavə edin, ya da bir mövzu göndərin.</div>'}
     </div>`;
+}
+
+// Local editor questions for this topic if it's loaded here; otherwise its published questions +
+// answers, fetched from the server (same source loadTopicFromServer uses) without touching the editor.
+async function fetchLiveTopicQuestions(topic){
+  const localQs = questions.filter(q => q.topic?.trim() === topic);
+  if(localQs.length) return localQs;
+  const info = publishedTopics[topic];
+  if(!info) return [];
+  let keyDoc = null;
+  const version = (await db.ref('student_quiz/' + info.key + '/publishedAt').once('value')).val();
+  if(version) keyDoc = (await db.ref('answer_keys/' + info.key + '/' + version).once('value')).val();
+  if(!keyDoc){
+    const all = (await db.ref('answer_keys/' + info.key).once('value')).val() || {};
+    const newest = Object.keys(all).sort((a, b) => Number(b) - Number(a))[0];
+    keyDoc = newest ? all[newest] : null;
+  }
+  const raw = keyDoc && keyDoc.questions;
+  const list = !raw ? [] : (Array.isArray(raw) ? raw : Object.keys(raw).sort((a, b) => a - b).map(k => raw[k])).filter(Boolean);
+  let tempId = 0;
+  return list.map(normalizeImportedQuestion).filter(Boolean).map(q => ({ ...q, id: --tempId, topic }));
 }
 
 async function startLiveGame(){
   const topic = document.getElementById('live-topic-select')?.value;
   if(!topic) return;
   const seconds = Math.min(300, Math.max(5, parseInt(document.getElementById('live-seconds-input')?.value, 10) || LIVE_DEFAULT_SECONDS));
-  const filtered = questions.filter(q => q.topic?.trim() === topic);
-  if(!filtered.length) return;
+  const btn = document.querySelector('#questions-container .btn-primary');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Yüklənir…'; }
 
-  const problems = filtered.map(q => ({ n: questions.indexOf(q) + 1, list: questionProblems(q) })).filter(p => p.list.length);
+  const filtered = await fetchLiveTopicQuestions(topic).catch(() => []);
+  if(!filtered.length){
+    alert('Bu mövzunun sualları tapılmadı.');
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı Oyun Başlat'; }
+    return;
+  }
+
+  const problems = filtered.map((q, i) => ({ n: i + 1, list: questionProblems(q) })).filter(p => p.list.length);
   if(problems.length){
     alert(`Canlı oyun başlamadı. ${problems.length} sualı düzəltmək lazımdır:\n\n` +
       problems.slice(0, 8).map(p => `S${p.n}: ${p.list.join(', ')}`).join('\n') +
       (problems.length > 8 ? `\n… və daha ${problems.length - 8} sual` : ''));
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı Oyun Başlat'; }
     return;
   }
 
   const pool = shuffleList(filtered.slice()).slice(0, LIVE_MAX_QUESTIONS);
-  const btn = document.querySelector('#questions-container .btn-primary');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Otaq yaradılır…'; }
+  if(btn) btn.textContent = '⏳ Otaq yaradılır…';
 
   try{
     const pin = await reserveLivePin();
@@ -191,7 +233,7 @@ function renderLiveLobby(){
     <div style="padding:28px;max-width:640px;margin:0 auto;text-align:center">
       <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${esc(liveMeta.topic)}</div>
       <div style="font-size:48px;font-weight:800;letter-spacing:.08em;font-family:'DM Mono',monospace;margin-bottom:6px">${esc(liveRoomPin)}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Tələbələr quiz-live-student.html səhifəsində bu kodu daxil etsin, və ya QR kodu skan etsin.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Tələbələr quiz-student.html səhifəsində "Canlı Oyun"u seçib bu kodu daxil etsin, və ya QR kodu skan etsin.</div>
       <div id="live-qr" style="display:inline-block;padding:12px;background:#fff;border-radius:12px;margin-bottom:20px"></div>
       <div id="live-player-list" style="text-align:left;margin-bottom:20px"></div>
       <button class="btn btn-primary btn-full" id="live-start-btn" onclick="launchLiveQuestion(0)" disabled>▶ Oyunu Başlat</button>
@@ -209,7 +251,7 @@ function renderLiveQr(){
 }
 
 function liveJoinUrl(pin){
-  return location.href.replace(/[^/]*$/, '') + 'quiz-live-student.html?pin=' + pin;
+  return location.href.replace(/[^/]*$/, '') + 'quiz-student.html?mode=live&pin=' + pin;
 }
 
 function renderLivePlayerList(){

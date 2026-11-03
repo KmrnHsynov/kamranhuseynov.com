@@ -107,13 +107,16 @@ function analyticsKey(){
   return examKey || topicName.replace(/[.#$[\]/]/g,'_') || 'default';
 }
 
-// ── INIT ──────────────────────────────────────────────
-(function init(){
-  // Old versions cached the last published exam here and showed it when none was active.
-  try{ localStorage.removeItem(STORAGE_KEY_STUDENT); }catch(e){}
-  const saved = loadSavedAttempt();
-  if(saved){ resumeExam(saved); return; }
+// ── MODE SELECT ───────────────────────────────────────
+// Two modes share this one page: the exam (single-player, scheduled) and the live game
+// (host-paced, joined by PIN/QR — see the LIVE GAME section near the bottom of this file).
+function chooseExamMode(){ startExamMode(); }
+function chooseLiveMode(){
+  showView('live-join-view');
+  document.getElementById('live-name-inp')?.focus();
+}
 
+function startExamMode(){
   // Show loading state while fetching from Firebase
   document.getElementById('lobby-view').innerHTML=`
     <div class="lock-card" style="max-width:460px">
@@ -140,6 +143,25 @@ function analyticsKey(){
       }
     })
     .catch(showLoadError);
+}
+
+// ── INIT ──────────────────────────────────────────────
+(function init(){
+  // Old versions cached the last published exam here and showed it when none was active.
+  try{ localStorage.removeItem(STORAGE_KEY_STUDENT); }catch(e){}
+  const saved = loadSavedAttempt();
+  if(saved){ resumeExam(saved); return; }
+
+  // A link from the host's QR code / PIN screen goes straight to the live join form, pin prefilled.
+  const params = new URLSearchParams(location.search);
+  const linkedPin = (params.get('pin') || '').replace(/\D/g, '').slice(0, 6);
+  if(params.get('mode') === 'live' || linkedPin){
+    if(linkedPin) document.getElementById('live-pin-inp').value = linkedPin;
+    showView('live-join-view');
+    return;
+  }
+
+  showView('mode-view');
 })();
 
 // Questions are not part of the list: they are fetched when the student starts (see loadExamQuestions).
@@ -740,3 +762,290 @@ function showView(id){
   document.getElementById(id).classList.add('active');
 }
 function esc(s){ return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══════════════════════════════════════════════════════
+//  LIVE GAME (Kahoot-style, host-paced — separate state from the exam above, prefixed `live*`
+//  to avoid colliding with it; reuses esc/showView/authReady/serverOffset/serverNow from above)
+// ══════════════════════════════════════════════════════
+let livePin = '', liveUid = '', liveDisplayName = '';
+let liveRoomMetaRef = null, liveLastIndex = -1;
+let liveCurrentQuestion = null, liveQuestionStartedLocal = 0, liveAnswered = false;
+let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false;
+let liveCountdownTimer = null;
+
+// ── JOIN ──────────────────────────────────────────────
+function showLiveJoinError(msg){
+  const err = document.getElementById('live-join-error');
+  err.textContent = msg;
+  err.style.display = 'block';
+}
+
+async function joinLiveRoom(){
+  const pinVal = (document.getElementById('live-pin-inp').value || '').trim();
+  const nameVal = (document.getElementById('live-name-inp').value || '').trim();
+  document.getElementById('live-join-error').style.display = 'none';
+  if(!/^[0-9]{6}$/.test(pinVal)){ showLiveJoinError('PIN 6 rəqəm olmalıdır.'); return; }
+  if(!nameVal){ showLiveJoinError('Zəhmət olmasa adınızı daxil edin.'); return; }
+
+  const btn = document.getElementById('live-join-btn');
+  btn.disabled = true; btn.textContent = '⏳ Yoxlanılır…';
+  try{
+    const snap = await db.ref('live_rooms/' + pinVal + '/meta').once('value');
+    const meta = snap.val();
+    if(!meta){ showLiveJoinError('Bu kodla oyun tapılmadı.'); return; }
+    if(meta.status === 'FINISHED'){ showLiveJoinError('Bu oyun artıq bitib.'); return; }
+    if(meta.status !== 'LOBBY'){ showLiveJoinError('Oyun artıq başlayıb. Müəllimdən yeni oyun gözləyin.'); return; }
+
+    const user = await authReady;
+    liveUid = user.uid; livePin = pinVal; liveDisplayName = nameVal; liveLeaveLimit = Number(meta.leaveLimit) || 0;
+
+    await db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile').set({
+      displayName: liveDisplayName, joinedAt: firebase.database.ServerValue.TIMESTAMP, connected: true
+    });
+    db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile/connected').onDisconnect().set(false);
+
+    // Re-fetched here too (not just by exam mode) so a live-only visit still gets an accurate server clock.
+    const offsetSnap = await db.ref('.info/serverTimeOffset').once('value');
+    serverOffset = Number(offsetSnap.val()) || 0;
+    liveMonitor = liveLeaveLimit > 0 ? createMonitor(liveLeaveLimit) : null;
+    liveJoined = true;
+
+    showView('live-game-view');
+    attachLiveRoomListener();
+  }catch(e){
+    showLiveJoinError('Qoşulmaq mümkün olmadı. İnternet bağlantısını yoxlayın.');
+  }finally{
+    btn.disabled = false; btn.textContent = '▶ Qoşul';
+  }
+}
+
+// ── ROOM STATE ────────────────────────────────────────
+function attachLiveRoomListener(){
+  liveRoomMetaRef = db.ref('live_rooms/' + livePin + '/meta');
+  liveRoomMetaRef.on('value', snap => {
+    const meta = snap.val();
+    if(!meta){ renderLiveGameMessage('🚫', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
+    handleLiveMetaUpdate(meta);
+  });
+}
+function detachLiveRoomListener(){
+  if(liveRoomMetaRef) liveRoomMetaRef.off();
+  liveRoomMetaRef = null;
+  clearInterval(liveCountdownTimer);
+}
+
+// Every fire of this listener is a genuine state transition (status/currentIndex only ever change
+// together, written in one update by the host), so a full re-render each time is safe and simple.
+function handleLiveMetaUpdate(meta){
+  clearInterval(liveCountdownTimer);
+  if(meta.status === 'LOBBY') renderLiveWaiting(meta);
+  else if(meta.status === 'QUESTION'){ liveAnswered = false; loadAndRenderLiveQuestion(meta); }
+  else if(meta.status === 'REVEAL') renderLiveReveal();
+  else renderLiveFinished(meta);
+}
+
+function liveGameMessageHtml(icon, title, sub){
+  return `<div class="lock-card" style="margin:0 auto;max-width:460px">
+    <div class="lock-icon">${icon}</div>
+    <h2>${title}</h2>
+    <p>${sub}</p>
+  </div>`;
+}
+function renderLiveGameMessage(icon, title, sub){
+  document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml(icon, title, sub);
+}
+
+function renderLiveWaiting(meta){
+  renderLiveGameMessage('⏳', esc(meta.topic || 'Canlı Oyun'), `Salam, ${esc(liveDisplayName)}! Oyun başlayana qədər gözləyin…`);
+}
+
+// ── QUESTION ──────────────────────────────────────────
+async function loadAndRenderLiveQuestion(meta){
+  const i = meta.currentIndex;
+  liveLastIndex = i;
+  try{
+    const snap = await db.ref('live_rooms/' + livePin + '/questions/' + i).once('value');
+    liveCurrentQuestion = snap.val();
+  }catch(e){
+    liveCurrentQuestion = null;
+  }
+  liveQuestionStartedLocal = meta.questionStartedAt || Date.now();
+  renderLiveQuestion(meta, i);
+  startLiveCountdown(meta);
+}
+
+function renderLiveQuestion(meta, i){
+  const q = liveCurrentQuestion;
+  const wrap = document.getElementById('live-game-wrap');
+  if(!q){ wrap.innerHTML = liveGameMessageHtml('⚠️', 'Sual yüklənmədi', 'Səhifəni yeniləyin.'); return; }
+  wrap.innerHTML = `
+    <div class="quiz-topbar">
+      <span class="quiz-title-lbl">${esc(meta.topic || 'Canlı Oyun')}</span>
+      <div class="quiz-meta">
+        <span class="quiz-prog-txt">${i + 1} / ${meta.questionCount}</span>
+        <div class="timer-pill" id="live-q-timer">${meta.questionSeconds}</div>
+      </div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="width:${(i / meta.questionCount) * 100}%"></div></div>
+    <div class="quiz-card" id="live-q-card">
+      <div class="quiz-q-label">Sual ${i + 1}</div>
+      <div class="quiz-q-text">${esc(q.text)}</div>
+      ${liveAnswerInputHtml(q)}
+    </div>
+    <div id="live-answer-status" style="margin-top:14px;font-size:13px;color:var(--muted);text-align:center"></div>`;
+}
+
+function liveAnswerInputHtml(q){
+  const L = ['A', 'B', 'C', 'D', 'E'];
+  if(q.type === 'mc') return `<div class="quiz-mc-opts">${q.options.filter(o => o).map((o, i) =>
+    `<div class="quiz-mc-opt" onclick="submitLiveAnswer({selectedOption:${i}}, this)"><div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div></div>`).join('')}</div>`;
+  if(q.type === 'tf') return `<div class="quiz-tf-opts">
+    <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:true}, this)">✓ Doğru</div>
+    <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:false}, this)">✗ Yanlış</div>
+  </div>`;
+  if(q.type === 'short') return `<textarea id="live-short-inp" class="quiz-short-input" placeholder="Cavabınızı yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px"></textarea>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="submitLiveShort()">Göndər</button>`;
+  if(q.type === 'fill'){
+    const rendered = (q.fillText || '').replace(/\[blank\]/gi, () => '<input class="blank-inp" type="text"/>');
+    return `<div class="fill-text-render">${rendered}</div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="submitLiveFill()">Göndər</button>`;
+  }
+  return '';
+}
+
+function lockLiveAnswerUI(){
+  document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => { el.classList.add('locked'); el.onclick = null; });
+  const btn = document.querySelector('#live-q-card .btn-primary');
+  if(btn) btn.disabled = true;
+}
+
+function submitLiveAnswer(fields, el){
+  if(liveAnswered) return;
+  el?.classList.add('sel');
+  writeLiveAnswer(fields);
+}
+function submitLiveShort(){
+  if(liveAnswered) return;
+  const val = (document.getElementById('live-short-inp')?.value || '').trim();
+  if(!val) return;
+  writeLiveAnswer({ shortAnswer: val.slice(0, 500) });
+}
+function submitLiveFill(){
+  if(liveAnswered) return;
+  const vals = [...document.querySelectorAll('.blank-inp')].map(i => i.value.trim());
+  if(!vals.length || !vals.every(Boolean)) return;
+  writeLiveAnswer({ fillAnswers: vals.map(v => v.slice(0, 200)) });
+}
+
+function writeLiveAnswer(fields){
+  liveAnswered = true;
+  lockLiveAnswerUI();
+  const responseTimeMs = Math.max(0, serverNow() - liveQuestionStartedLocal);
+  const data = { ...fields, responseTimeMs, submittedAt: firebase.database.ServerValue.TIMESTAMP };
+  const status = document.getElementById('live-answer-status');
+  if(status) status.textContent = '⏳ Göndərilir…';
+  db.ref('live_rooms/' + livePin + '/answers/' + liveLastIndex + '/' + liveUid).set(data).then(() => {
+    if(status) status.textContent = '✓ Cavab göndərildi. Növbəti addımı gözləyin…';
+  }).catch(() => {
+    liveAnswered = false;
+    document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.remove('locked'));
+    if(status) status.textContent = '⚠️ Göndərilmədi, yenidən cəhd edin.';
+  });
+}
+
+function startLiveCountdown(meta){
+  clearInterval(liveCountdownTimer);
+  const deadline = liveQuestionStartedLocal + meta.questionSeconds * 1000;
+  const tick = () => {
+    const left = Math.max(0, Math.ceil((deadline - serverNow()) / 1000));
+    const pill = document.getElementById('live-q-timer');
+    if(pill) pill.textContent = left;
+    if(left <= 0) clearInterval(liveCountdownTimer);
+  };
+  tick();
+  liveCountdownTimer = setInterval(tick, 500);
+}
+
+// ── REVEAL ────────────────────────────────────────────
+async function renderLiveReveal(){
+  const i = liveLastIndex;
+  const wrap = document.getElementById('live-game-wrap');
+  wrap.innerHTML = liveGameMessageHtml('⏳', 'Nəticə yüklənir…', '');
+  try{
+    const [resSnap, scoreSnap] = await Promise.all([
+      db.ref('live_rooms/' + livePin + '/results/' + i + '/' + liveUid).once('value'),
+      db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/score').once('value')
+    ]);
+    const res = resSnap.val();
+    const score = Number(scoreSnap.val()) || 0;
+    const ok = res && res.correct;
+    const pts = res ? (res.pointsEarned || 0) : 0;
+    wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:440px">
+      <div class="lock-icon">${res ? (ok ? '✅' : '❌') : '⌛'}</div>
+      <h2>${res ? (ok ? 'Düzgün!' : 'Səhv') : 'Cavab vermədiniz'}</h2>
+      <p>${res && ok ? `+${pts} xal qazandınız.` : 'Bu sual üçün xal qazanmadınız.'}<br/>Ümumi xalınız: <strong>${score}</strong></p>
+    </div>`;
+  }catch(e){
+    wrap.innerHTML = liveGameMessageHtml('⚠️', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
+  }
+}
+
+// ── FINISH ────────────────────────────────────────────
+async function renderLiveFinished(meta){
+  clearInterval(liveCountdownTimer);
+  const wrap = document.getElementById('live-game-wrap');
+  wrap.innerHTML = liveGameMessageHtml('⏳', 'Yekun nəticələr yüklənir…', '');
+  try{
+    const snap = await db.ref('live_rooms/' + livePin + '/players').once('value');
+    const players = snap.val() || {};
+    const board = sortLeaderboard(Object.entries(players).map(([pid, p]) =>
+      ({ uid: pid, name: (p.profile || {}).displayName || '?', score: p.score || 0 })));
+    const rank = board.findIndex(p => p.uid === liveUid) + 1;
+    wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:460px">
+      <div class="lock-icon">🏁</div>
+      <h2>${esc(meta.topic || 'Canlı Oyun')} — Bitdi</h2>
+      <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong></p>
+      ${board.slice(0, 10).map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
+        <span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong>
+      </div>`).join('')}
+    </div>`;
+  }catch(e){
+    wrap.innerHTML = liveGameMessageHtml('⚠️', 'Yekun nəticə yüklənmədi', '');
+  }
+}
+
+// ── ANTI-CHEAT ────────────────────────────────────────
+// Unlike exam mode above, a violation never ends the attempt early: it only flags the player so the
+// host can see it in the live roster, since the host paces the game for everyone at once.
+function writeLiveFlags(){
+  if(!liveMonitor || !liveUid || !livePin) return;
+  const m = liveMonitor.stats();
+  db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/flags').update({
+    tabSwitches: m.tabSwitches, timeAway: m.timeAway, pastes: m.pastes
+  }).catch(() => {});
+}
+function markLiveFlagged(){
+  if(!liveUid || !livePin) return;
+  db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/flags/flagged').set(true).catch(() => {});
+}
+function onLiveLeave(){
+  if(!liveJoined || !liveMonitor) return;
+  const r = liveMonitor.leave();
+  if(!r) return;
+  writeLiveFlags();
+  if(r.reached) markLiveFlagged();
+}
+function onLiveReturn(){
+  if(!liveJoined || !liveMonitor) return;
+  const r = liveMonitor.back();
+  if(!r) return;
+  writeLiveFlags();
+}
+document.addEventListener('visibilitychange', () => { if(document.hidden) onLiveLeave(); else onLiveReturn(); });
+window.addEventListener('blur', onLiveLeave);
+window.addEventListener('focus', onLiveReturn);
+document.addEventListener('paste', () => {
+  if(!liveJoined || !liveMonitor) return;
+  liveMonitor.paste();
+  writeLiveFlags();
+}, true);

@@ -1,7 +1,7 @@
 'use strict';
 
-// Pure logic for the Kahoot-style live game mode, shared between the host (quiz-live-host.js)
-// and the player (quiz-live-student.js) pages, and covered by quiz-live.test.js.
+// Pure logic for the Kahoot-style live game mode, shared between the host (quiz-live-host.js, in
+// quiz-az.html) and the player (the live-game section of quiz-student.js), covered by quiz-live.test.js.
 // isCorrectAnswer comes from quiz-grading.js: a global in the browser (script-tag load order),
 // required here only so this file's tests can run standalone under Node.
 const { isCorrectAnswer } = typeof module !== 'undefined' ? require('./quiz-grading.js') : window;
