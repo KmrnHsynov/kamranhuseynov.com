@@ -177,8 +177,12 @@
         },
 
         "results": {
-          ".read": true,
-          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'"
+          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          "$i": {
+            "$uid": {
+              ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'kmrnhsynov@gmail.com')"
+            }
+          }
         }
       }
     },

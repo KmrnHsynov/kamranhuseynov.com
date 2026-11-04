@@ -340,7 +340,7 @@ function renderTopics(){
           <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" data-topic="${esc(topic)}" onclick="removeTopicFromEditor(this.dataset.topic)" title="Göndərilmiş test dəyişməz qalır">⌫ Redaktordan çıxar</button>
         </div>`:''}
       </div>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" data-topic="${esc(topic)}" onclick="publishTopic(this.dataset.topic)">
           ${isActive?'✓ Göndərilib':'📤 Göndər'}
         </button>
@@ -363,7 +363,7 @@ function renderTopics(){
           <div style="font-size:13px;font-weight:600;color:${archived?'var(--muted)':'var(--accent3)'}">${esc(topic)}${archived?' 📦 Arxivdə':' ✓'}</div>
           <div style="font-size:11px;color:var(--muted)">${info.count||'?'} sual · yalnız serverdə${topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
         </div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-sm btn-accent3" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Sualları serverdən bu redaktora yüklə">✎ Redaktə et</button>
           <button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>
           <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>

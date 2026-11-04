@@ -773,6 +773,7 @@ let liveRoomMetaRef = null, livePlayerProfileRef = null, liveLastIndex = -1;
 let liveCurrentQuestion = null, liveQuestionStartedLocal = 0, liveAnswered = false;
 let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false;
 let liveCountdownTimer = null;
+let liveRenderGen = 0;
 
 // ── JOIN ──────────────────────────────────────────────
 function showLiveJoinError(msg){
@@ -850,12 +851,17 @@ function detachLiveRoomListener(){
 
 // Every fire of this listener is a genuine state transition (status/currentIndex only ever change
 // together, written in one update by the host), so a full re-render each time is safe and simple.
+// liveRenderGen guards the three async render paths below: each bumps it, fetches, then checks it's
+// still current before touching the DOM - otherwise a slow fetch for an earlier state (e.g. a
+// REVEAL fetch still in flight when the next QUESTION already arrived) could land after a newer
+// render and clobber it with stale content.
 function handleLiveMetaUpdate(meta){
   clearInterval(liveCountdownTimer);
+  const gen = ++liveRenderGen;
   if(meta.status === 'LOBBY') renderLiveWaiting(meta);
-  else if(meta.status === 'QUESTION'){ liveAnswered = false; loadAndRenderLiveQuestion(meta); }
-  else if(meta.status === 'REVEAL') renderLiveReveal();
-  else renderLiveFinished(meta);
+  else if(meta.status === 'QUESTION'){ liveAnswered = false; loadAndRenderLiveQuestion(meta, gen); }
+  else if(meta.status === 'REVEAL') renderLiveReveal(gen);
+  else renderLiveFinished(meta, gen);
 }
 
 function liveGameMessageHtml(icon, title, sub){
@@ -878,7 +884,7 @@ function renderLiveWaiting(meta){
 // (not just the in-memory flag) so a reconnect after already answering can't be shown the
 // options again - the database would refuse a second submit anyway, but this avoids the confusing
 // dead click. A brand-new joiner mid-question simply has no answer yet and plays normally.
-async function loadAndRenderLiveQuestion(meta){
+async function loadAndRenderLiveQuestion(meta, gen){
   const i = meta.currentIndex;
   liveLastIndex = i;
   try{
@@ -891,6 +897,7 @@ async function loadAndRenderLiveQuestion(meta){
   }catch(e){
     liveCurrentQuestion = null;
   }
+  if(gen !== liveRenderGen) return; // a newer state already arrived while this was in flight
   liveQuestionStartedLocal = meta.questionStartedAt || Date.now();
   renderLiveQuestion(meta, i);
   if(!liveAnswered) startLiveCountdown(meta);
@@ -994,7 +1001,7 @@ function startLiveCountdown(meta){
 }
 
 // ── REVEAL ────────────────────────────────────────────
-async function renderLiveReveal(){
+async function renderLiveReveal(gen){
   const i = liveLastIndex;
   const wrap = document.getElementById('live-game-wrap');
   wrap.innerHTML = liveGameMessageHtml('⏳', 'Nəticə yüklənir…', '');
@@ -1003,6 +1010,7 @@ async function renderLiveReveal(){
       db.ref('live_rooms/' + livePin + '/results/' + i + '/' + liveUid).once('value'),
       db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/score').once('value')
     ]);
+    if(gen !== liveRenderGen) return;
     const res = resSnap.val();
     const score = Number(scoreSnap.val()) || 0;
     const ok = res && res.correct;
@@ -1013,19 +1021,24 @@ async function renderLiveReveal(){
       <p>${res && ok ? `+${pts} xal qazandınız.` : 'Bu sual üçün xal qazanmadınız.'}<br/>Ümumi xalınız: <strong>${score}</strong></p>
     </div>`;
   }catch(e){
-    wrap.innerHTML = liveGameMessageHtml('⚠️', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
+    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('⚠️', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
   }
 }
 
 // ── FINISH ────────────────────────────────────────────
-async function renderLiveFinished(meta){
+async function renderLiveFinished(meta, gen){
   clearInterval(liveCountdownTimer);
   liveJoined = false;
   leaveFullscreen();
+  // The game is genuinely over, so the room listener is no longer needed - without detaching it,
+  // the teacher deleting the room afterward (routine cleanup) would still fire it and replace this
+  // final-rank screen with a "room deleted" message.
+  detachLiveRoomListener();
   const wrap = document.getElementById('live-game-wrap');
   wrap.innerHTML = liveGameMessageHtml('⏳', 'Yekun nəticələr yüklənir…', '');
   try{
     const snap = await db.ref('live_rooms/' + livePin + '/players').once('value');
+    if(gen !== liveRenderGen) return;
     const players = snap.val() || {};
     const board = sortLeaderboard(Object.entries(players).map(([pid, p]) =>
       ({ uid: pid, name: (p.profile || {}).displayName || '?', score: p.score || 0 })));
@@ -1042,7 +1055,7 @@ async function renderLiveFinished(meta){
       </div>`).join('')}
     </div>`;
   }catch(e){
-    wrap.innerHTML = liveGameMessageHtml('⚠️', 'Yekun nəticə yüklənmədi', '');
+    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('⚠️', 'Yekun nəticə yüklənmədi', '');
   }
 }
 

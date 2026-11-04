@@ -25,6 +25,7 @@ let liveAnswerKeyMap   = {};    // id -> answerKeyEntry, in-memory copy used for
 let liveLastRevealStats = null;
 let liveRevealing = false;  // guards against the timer, the "everyone answered" check, and the
                              // manual button all racing to call revealLiveQuestion() at once
+let liveFinishing = false;  // guards against a double-click on an end-game button
 
 let liveMetaRef = null, liveRoomPlayersRef = null, liveAnswersRef = null, liveAnswersHandler = null;
 let liveQuestionTimer = null;
@@ -307,6 +308,7 @@ function detachLiveRoom(){
   liveMetaRef = null; liveRoomPlayersRef = null;
   clearInterval(liveQuestionTimer);
   liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
+  liveRevealing = false; liveFinishing = false;
 }
 
 // ── ROOM STATE → SCREEN ──────────────────────────────────────────────────
@@ -484,7 +486,9 @@ function revealLiveQuestion(){
     if(livePlayersMap[uid]) livePlayersMap[uid].score = (livePlayersMap[uid].score || 0) + earned;
   });
   liveLastRevealStats = { answeredCount: Object.keys(answers).length, correctCount };
-  db.ref('live_rooms/' + liveRoomPin).update(updates).catch(err => alert('Xəta: ' + err.message));
+  // Reset on failure so a network hiccup doesn't permanently wedge the round: without this, every
+  // future trigger (timer, "everyone answered", the manual button) would keep no-opping forever.
+  db.ref('live_rooms/' + liveRoomPin).update(updates).catch(err => { liveRevealing = false; alert('Xəta: ' + err.message); });
 }
 
 function renderLiveReveal(){
@@ -524,8 +528,11 @@ function confirmEndLiveRoom(){
 }
 
 function finishLiveRoom(){
+  // Guards a double-click (the end-game and "last question" buttons have no disabled state):
+  // without this, two live_history pushes would be written for the same game.
+  if(liveFinishing || !liveMeta || !liveRoomPin) return;
+  liveFinishing = true;
   clearInterval(liveQuestionTimer);
-  if(!liveMeta || !liveRoomPin) return;
   const board = liveLeaderboard();
   const historyId = db.ref('live_history').push().key;
   const updates = {};
@@ -535,7 +542,7 @@ function finishLiveRoom(){
     questionCount: liveQuestions.length, playerCount: board.length,
     leaderboard: board.slice(0, 20).map(p => ({ name: p.name, score: p.score }))
   };
-  db.ref().update(updates).catch(err => alert('Xəta: ' + err.message));
+  db.ref().update(updates).catch(err => { liveFinishing = false; alert('Xəta: ' + err.message); });
 }
 
 function renderLiveFinished(){
