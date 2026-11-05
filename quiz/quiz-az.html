@@ -85,6 +85,10 @@
         </div>
       </div>
       <div class="sidebar-section">
+        <div class="toggle-row"><span>Hər cihazdan yalnız bir cəhd</span><label class="toggle"><input type="checkbox" id="one-attempt"/><span class="toggle-slider"></span></label></div>
+        <p class="hint-text">Tələbə testi bitirdikdən (və ya çıxdıqdan) sonra eyni brauzerdən yenidən başlaya bilməz. Brauzer məlumatlarını silməklə keçmək olar; belə cəhdlər Analitikada 📱 ilə işarələnir.</p>
+      </div>
+      <div class="sidebar-section">
         <label>Testin Açılış Vaxtı</label>
         <input type="datetime-local" id="opens-at"/>
         <p class="hint-text">Boş buraxsanız, göndərilən kimi açıq olur.</p>
@@ -145,7 +149,7 @@
     <div class="sidebar-footer">
       <button class="btn btn-ghost btn-full" onclick="addQuestion()">＋ Sual Əlavə Et</button>
       <button class="btn btn-success btn-full" onclick="startQuiz()">▶ Testi Başlat</button>
-      <button class="btn btn-ghost btn-full btn-sm" onclick="showView('lock-view')" style="font-size:11px;color:var(--muted)">🔒 Kilidlə &amp; Çıx</button>
+      <button class="btn btn-ghost btn-full btn-sm" onclick="signOutTeacher()" style="font-size:11px;color:var(--muted)">🔒 Kilidlə &amp; Çıx</button>
     </div>
   </aside>
 
@@ -222,16 +226,16 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js?v=10"></script>
-<script src="quiz-grading.js?v=10"></script>
+<script src="quiz-grading.js?v=12"></script>
 <script src="quiz-pdf-parse.js?v=10"></script>
 <script src="quiz-backup.js?v=10"></script>
 <script src="quiz-xlsx.js?v=10"></script>
 <script src="quiz-csv.js?v=10"></script>
-<script src="quiz-export.js?v=10"></script>
+<script src="quiz-export.js?v=11"></script>
 <script src="quiz-schedule.js?v=10"></script>
-<script src="quiz-examcodec.js?v=10"></script>
-<script src="quiz-live.js?v=12"></script>
-<script src="quiz-live-host.js?v=11"></script>
-<script src="quiz-az.js?v=10"></script>
+<script src="quiz-examcodec.js?v=11"></script>
+<script src="quiz-live.js?v=14"></script>
+<script src="quiz-live-host.js?v=13"></script>
+<script src="quiz-az.js?v=13"></script>
 </body>
 </html>

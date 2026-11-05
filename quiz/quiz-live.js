@@ -30,6 +30,23 @@ function liveScore(q, ans, responseTimeMs, questionSeconds){
   return Math.round(LIVE_MAX_POINTS * (1 - ratio / 2));
 }
 
+// How long a player took, from the two server-stamped times (question launch, answer accepted).
+// The player's own responseTimeMs is only a fallback for answers without a server time: it comes
+// from their browser, so trusting it would let anyone claim an instant answer.
+function liveResponseTimeMs(answer, questionStartedAt){
+  const a = answer || {};
+  if(Number.isFinite(a.submittedAt) && Number.isFinite(questionStartedAt)) return Math.max(0, a.submittedAt - questionStartedAt);
+  return Math.max(0, Number(a.responseTimeMs) || 0);
+}
+
+// A rejoin request moves an old player's score to the new one and removes the old entry, so it is
+// only honoured for a player who has dropped out, under the same name the requester joined with.
+function liveRejoinAllowed(requester, target){
+  const norm = s => String(s || '').trim().toLowerCase();
+  const rp = (requester || {}).profile || {}, tp = (target || {}).profile || {};
+  return !!tp.displayName && tp.connected === false && norm(rp.displayName) === norm(tp.displayName);
+}
+
 // Highest score first; ties keep whoever is listed first (stable sort).
 function sortLeaderboard(players){
   return players.slice().sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -39,7 +56,7 @@ function sortLeaderboard(players){
 // questions run 5-300s, unlike the exam's fixed 30-minute clock, so a fixed cutoff would never
 // trigger on a short question). '' means the plain/default color.
 function liveTimerUrgencyClass(secondsLeft, totalSeconds){
-  if(!(totalSeconds > 0) || totalSeconds === 30) return '';
+  if(!(totalSeconds > 0)) return '';
   const ratio = secondsLeft / totalSeconds;
   if(ratio <= 0.2) return ' danger';
   if(ratio <= 0.5) return ' warn';
@@ -49,7 +66,8 @@ function liveTimerUrgencyClass(secondsLeft, totalSeconds){
 // Top-3 podium markup shared by the host's and the player's finished screens. Presentation only -
 // not covered by quiz-live.test.js like the logic above, since esc() is a page global this file
 // doesn't define (same reasoning as liveQuestionOptionsHtml etc in quiz-live-host.js).
-function livePodiumHtml(leaderboard, highlightName){
+// highlightUid marks the viewing player's own slot; by id, so two players with the same name are not both marked.
+function livePodiumHtml(leaderboard, highlightUid){
   const top3 = leaderboard.slice(0, 3);
   if(!top3.length) return '';
   const order = [1, 0, 2];       // silver, gold, bronze, left to right
@@ -58,7 +76,7 @@ function livePodiumHtml(leaderboard, highlightName){
   return `<div class="live-podium">${order.map((rank, col) => {
     const p = top3[rank];
     if(!p) return '<div class="live-podium-slot"></div>';
-    const mine = highlightName != null && p.name === highlightName;
+    const mine = highlightUid != null && p.uid === highlightUid;
     return `<div class="live-podium-slot" style="animation-delay:${col * 0.15}s">
       <div class="live-podium-medal">${medals[rank]}</div>
       <div class="live-podium-name"${mine ? ' style="color:var(--accent);font-weight:800"' : ''}>${esc(p.name)}</div>
@@ -67,4 +85,4 @@ function livePodiumHtml(leaderboard, highlightName){
   }).join('')}</div>`;
 }
 
-if(typeof module !== 'undefined') module.exports = { generatePin, liveScore, sortLeaderboard, liveTimerUrgencyClass, livePodiumHtml };
+if(typeof module !== 'undefined') module.exports = { generatePin, liveScore, liveResponseTimeMs, liveRejoinAllowed, sortLeaderboard, liveTimerUrgencyClass, livePodiumHtml };

@@ -213,3 +213,79 @@ test('a released result keeps to the sizes the database rules allow', () => {
   assert.ok(res.studentName.length <= 60 && res.topic.length <= 200 && res.exam.length <= 200);
   assert.strictEqual(buildResult(done('a', { studentName: '' }), 1).studentName, 'Anonim');
 });
+
+// ── Azerbaijani letters and stray fill answers ──
+const { acceptsAnswer, answerKeyEntry: keyEntryOf } = require('./quiz-grading.js');
+
+test('short answers follow Azerbaijani case rules: BAKI, bakı and baki match Bakı', () => {
+  const q = { type: 'short', shortAnswer: 'Bakı' };
+  ['BAKI', 'bakı', 'Bakı', 'baki', ' BAKI '].forEach(a => assert.strictEqual(isCorrectAnswer(q, a), true, a));
+  assert.strictEqual(isCorrectAnswer(q, 'Gəncə'), false);
+});
+
+test('capital İ matches a lower-case i in the key, and the other way round', () => {
+  assert.strictEqual(isCorrectAnswer({ type: 'short', shortAnswer: 'istanbul' }, 'İSTANBUL'), true);
+  assert.strictEqual(isCorrectAnswer({ type: 'short', shortAnswer: 'İstanbul' }, 'istanbul'), true);
+  assert.strictEqual(acceptsAnswer('İlham, ilkin', 'İLKİN'), true);
+});
+
+test('fill ignores answer entries beyond the number of blanks (trailing ";" in the editor)', () => {
+  const q = { type: 'fill', fillText: 'Paytaxt [blank]', fillAnswers: ['Bakı', ''] };
+  assert.strictEqual(isCorrectAnswer(q, ['BAKI']), true);
+  assert.strictEqual(isCorrectAnswer(keyEntryOf({ ...q, text: 'Q', points: 1 }), ['Bakı']), true);
+  assert.deepStrictEqual(keyEntryOf({ ...q, text: 'Q', points: 1 }).fillAnswers, ['Bakı']);
+});
+
+test('fill still needs every blank answered and right', () => {
+  const q = { type: 'fill', fillText: '[blank] və [blank]', fillAnswers: ['Kür', 'Araz', 'extra'] };
+  assert.strictEqual(isCorrectAnswer(q, ['kür', 'araz']), true);
+  assert.strictEqual(isCorrectAnswer(q, ['kür']), false);
+  assert.strictEqual(isCorrectAnswer(q, ['kür', 'Volqa']), false);
+});
+
+test('repeat-name detection treats İlkin and ilkin as the same name', () => {
+  const recs = markRepeatAttempts([{ _exam: 'e', studentName: 'İlkin Məmmədov' }, { _exam: 'e', studentName: 'ilkin  məmmədov' }]);
+  assert.strictEqual(recs[0].repeatCount, 2);
+});
+
+// ── tampered question lists and attempts that ran out of time ──
+const { attemptQids, attemptQidProblem, attemptExpired } = require('./quiz-grading.js');
+const key3 = { questions: { 1: { type: 'tf', points: 5, tfAnswer: true }, 2: { type: 'tf', points: 5, tfAnswer: true }, 3: { type: 'tf', points: 5, tfAnswer: true } } };
+
+test('a question listed twice is graded once', () => {
+  const g = gradeAttempt({ qids: ['1', '1', '1', '2', '3'], answers: { 1: true } }, key3);
+  assert.strictEqual(g.correct, 1);
+  assert.strictEqual(g.maxScore, 15);
+  assert.deepStrictEqual(attemptQids({ qids: [1, '1', 2] }), ['1', '2']);
+});
+
+test('a cut or repeated question list is flagged, a normal one is not', () => {
+  assert.strictEqual(attemptQidProblem({ qids: ['3', '1', '2'] }, key3), '');
+  assert.strictEqual(attemptQidProblem({ qids: ['1'] }, key3), 'short');
+  assert.strictEqual(attemptQidProblem({ qids: ['1', '1', '2', '3'] }, key3), 'dup');
+  assert.strictEqual(attemptQidProblem({ qids: ['1'] }, null), '');
+});
+
+test('exams over 30 questions expect 30 in each attempt', () => {
+  const big = { questions: Object.fromEntries(Array.from({ length: 40 }, (_, i) => [i, { type: 'tf', points: 1, tfAnswer: true }])) };
+  assert.strictEqual(attemptQidProblem({ qids: Array.from({ length: 30 }, (_, i) => String(i)) }, big), '');
+  assert.strictEqual(attemptQidProblem({ qids: Array.from({ length: 29 }, (_, i) => String(i)) }, big), 'short');
+});
+
+test('flagged attempts are not released', () => {
+  const rs = [{ status: 'done', attemptId: 'a', qidProblem: 'short' }, { status: 'done', attemptId: 'b', qidProblem: '' }];
+  assert.deepStrictEqual(resultsToRelease(rs, {}).map(r => r.attemptId), ['b']);
+});
+
+test('an in-progress attempt expires after the exam time plus 2 minutes', () => {
+  const r = { status: 'in_progress', startedAt: 1000000, updatedAt: 1000000 };
+  assert.strictEqual(attemptExpired(r, 30, 1000000 + 32 * 60000), false);
+  assert.strictEqual(attemptExpired(r, 30, 1000000 + 32 * 60000 + 1), true);
+  assert.strictEqual(attemptExpired({ ...r, status: 'done' }, 30, 1e12), false);
+});
+
+test('without the exam length, an attempt expires after a day without saves', () => {
+  const r = { status: 'in_progress', startedAt: 0, updatedAt: 5000 };
+  assert.strictEqual(attemptExpired(r, undefined, 5000 + 23 * 3600000), false);
+  assert.strictEqual(attemptExpired(r, undefined, 5000 + 25 * 3600000), true);
+});

@@ -12,14 +12,22 @@ const DEFAULT_LEAVE_LIMIT   = 3;
 const STORAGE_KEY_ATTEMPT   = 'qc_student_attempt';
 const OPT_LETTERS           = ['A','B','C','D','E'];
 // Students sign in anonymously so the database rules can tie each attempt to its owner.
+// A failed sign-in (no internet yet, a blocked request) is tried again, every 3 s and then less often,
+// otherwise every save would wait forever.
 const authReady = new Promise(resolve => {
+  let tries = 0;
+  const signIn = () => auth.signInAnonymously().catch(e => {
+    console.warn('anonymous sign-in failed', e.code);
+    if(!auth.currentUser) setTimeout(signIn, Math.min(3000 * ++tries, 30000));
+  });
   auth.onAuthStateChanged(u => {
     if(u) resolve(u);
-    else auth.signInAnonymously().catch(e => console.warn('anonymous sign-in failed', e.code));
+    else signIn();
   });
 });
 let leaveLimit = DEFAULT_LEAVE_LIMIT, monitor = null, examActive = false, attemptId = '', autoReason = null, startedAt = 0;
 let examVersion = 0, attemptCreated = false;
+let examOneAttempt = false;
 let sourceQs = [], examQCount = 0, startingExam = false, examOpensAt = 0, examClosesAt = 0, serverOffset = 0, lobbyTimer = null;
 function serverNow(){ return Date.now() + serverOffset; }
 
@@ -98,6 +106,16 @@ function loadSavedAttempt(){
     return s && s.v === 2 && s.attemptId && Array.isArray(s.quizQs) && s.quizQs.length ? s : null;
   }catch(e){ return null; }
 }
+
+// Exams set to "one attempt per device" are remembered here once started. Clearing the browser's
+// data gets around it; the teacher's Analytics flags several attempts from one device anyway.
+const STORAGE_KEY_TAKEN = 'qc_taken_exams';
+function takenExams(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY_TAKEN) || '{}') || {}; }catch(e){ return {}; } }
+function examTakenHere(key){ return !!takenExams()[key]; }
+function markExamTaken(key){
+  try{ const t = takenExams(); t[key] = Date.now(); localStorage.setItem(STORAGE_KEY_TAKEN, JSON.stringify(t)); }catch(e){}
+}
+function blockedAsRetake(){ return examOneAttempt && examTakenHere(examKey); }
 
 function readLeaveLimit(exam){
   const n = parseInt(exam && exam.leaveLimit, 10);
@@ -190,6 +208,7 @@ function useExam(e){
   examVersion  = e.publishedAt || 0;
   examOpensAt  = Number(e.opensAt) || 0;
   examClosesAt = Number(e.closesAt) || 0;
+  examOneAttempt = e.oneAttempt === true;
 }
 
 function showNoQuiz(){
@@ -291,6 +310,18 @@ function showLobby(){
     showView('lobby-view');
     return;
   }
+  if(blockedAsRetake()){
+    document.getElementById('lobby-view').innerHTML = `
+    <div class="lock-card" style="max-width:460px">
+      ${backToListHtml()}
+      <div class="lock-icon">✅</div>
+      <h2>Bu testi artıq vermisiniz</h2>
+      <p>${esc(topicName||'İmtahan')}<br/>Bu test üçün hər cihazdan yalnız bir cəhd icazəlidir. Nəticə elan olunanda kodunuzla baxa bilərsiniz.</p>
+      ${lookupHtml()}
+    </div>`;
+    showView('lobby-view');
+    return;
+  }
   const count = Math.min(examQCount, MAX_QUESTIONS);
   const closing = examClosesAt ? `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
   const notice = leaveLimit > 0 ? `
@@ -331,6 +362,7 @@ async function loadExamQuestions(){
     sourceQs = list; quizQs = list; examQCount = list.length;
     examVersion = e.publishedAt || 0; EXAM_SECONDS = (e.examMinutes || 30) * 60; leaveLimit = readLeaveLimit(e);
     examOpensAt = Number(e.opensAt) || 0; examClosesAt = Number(e.closesAt) || 0;
+    examOneAttempt = e.oneAttempt === true;
     return true;
   }catch(err){
     console.warn('loading the questions failed', err.code || err.message || err);
@@ -343,7 +375,7 @@ async function loadExamQuestions(){
 async function startExam(){
   if(startingExam) return;
   // Checked again here: the page may have been open since before the exam closed.
-  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked(leaveLimit)){ showLobby(); return; }
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked(leaveLimit) || blockedAsRetake()){ showLobby(); return; }
   const typedName = (document.getElementById('student-name-inp')?.value || '').trim();
   if(!typedName){
     const err = document.getElementById('name-error');
@@ -358,7 +390,7 @@ async function startExam(){
   const loaded = sourceQs.length ? true : await loadExamQuestions();
   startingExam = false;
   if(!loaded){ showLobby(); return; }
-  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked(leaveLimit)){ showLobby(); return; }
+  if(scheduleState(serverNow(), examOpensAt, examClosesAt) !== 'open' || browserBlocked(leaveLimit) || blockedAsRetake()){ showLobby(); return; }
   // Shuffle all questions, pick up to 30. Always from the untouched source, so starting again
   // after leaving does not shuffle already-shuffled options and break the answer positions.
   let pool = shuffle(JSON.parse(JSON.stringify(sourceQs))).slice(0, MAX_QUESTIONS);
@@ -380,6 +412,7 @@ async function startExam(){
   monitor = leaveLimit > 0 ? createMonitor(leaveLimit) : null;
   autoReason = null;
   examActive = true;
+  if(examOneAttempt) markExamTaken(examKey);
   saveAttempt('in_progress');
 
   document.getElementById('quiz-disp-title').textContent = 'İmtahan';
@@ -539,6 +572,7 @@ function answeredCount(){ return quizQs.filter(q => quizAns[q.id] !== undefined)
 // Writes only raw answers and server-stamped times. Scores are worked out in the teacher panel.
 // The first save creates the record (with startedAt); later saves update it without touching startedAt.
 // Resolves to true once the database has accepted the write, false if it was refused. Never rejects.
+let lastSaveError = '';   // code of the last refused save, e.g. 'PERMISSION_DENIED'
 function saveAttempt(status){
   if(!attemptId) return Promise.resolve(false);
   const first = !attemptCreated;
@@ -569,8 +603,9 @@ function saveAttempt(status){
         data.uid = u.uid;
         return first ? db.ref(path).set({ ...data, startedAt: SERVER_TIME }) : db.ref(path).update(data);
       })
-      .then(() => true, e => {
+      .then(() => { lastSaveError = ''; return true; }, e => {
         if(first) attemptCreated = false;
+        lastSaveError = (e && e.code) || 'error';
         console.warn('saving attempt failed', e.code || e);
         return false;
       });
@@ -588,14 +623,25 @@ function setSaveState(state){
     pending: 'Səhifəni bağlamayın.',
     slow: 'Göndərmə gecikir. İnternet bağlantısını yoxlayın və səhifəni bağlamayın.',
     ok: '',
-    failed: 'Cavablarınız göndərilə bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin. Səhifəni bağlamayın.'
+    failed: 'Cavablarınız göndərilə bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin. Səhifəni bağlamayın.',
+    rejected: 'İmtahan vaxtı bitdiyi üçün son cavablar artıq qəbul olunmur. Vaxt bitənə qədər saxlanılmış cavablarınız müəllimdə qalır.'
   };
-  set('result-icon', { pending: '⏳', slow: '⏳', ok: '✅', failed: '⚠️' }[state]);
-  set('result-heading', { pending: 'İmtahan göndərilir…', slow: 'İmtahan göndərilir…', ok: 'İmtahan göndərildi', failed: 'İmtahan göndərilmədi' }[state]);
+  set('result-icon', { pending: '⏳', slow: '⏳', ok: '✅', failed: '⚠️', rejected: '⌛' }[state]);
+  set('result-heading', { pending: 'İmtahan göndərilir…', slow: 'İmtahan göndərilir…', ok: 'İmtahan göndərildi', failed: 'İmtahan göndərilmədi', rejected: 'İmtahan vaxtı bitib' }[state]);
   set('result-save', notes[state]);
   if(retry) retry.style.display = state === 'failed' ? 'inline-flex' : 'none';
   const extra = document.getElementById('result-extra');
-  if(extra) extra.style.display = state === 'ok' ? 'block' : 'none';
+  if(extra) extra.style.display = state === 'ok' || state === 'rejected' ? 'block' : 'none';
+  document.getElementById('result-home')?.remove();
+  if(state === 'rejected'){
+    const home = document.createElement('button');
+    home.id = 'result-home';
+    home.className = 'btn btn-ghost';
+    home.style.marginBottom = '12px';
+    home.textContent = '← Ana səhifə';
+    home.onclick = () => { location.href = location.pathname; };
+    document.getElementById('result-save')?.after(home);
+  }
 }
 
 function sendFinal(){
@@ -603,6 +649,15 @@ function sendFinal(){
   const slow = setTimeout(() => { if(finalSaveState === 'pending') setSaveState('slow'); }, 8000);
   saveAttempt('done').then(ok => {
     clearTimeout(slow);
+    // Refused by the database rules (in practice: more than 2 minutes past the exam's end, e.g. the
+    // browser was closed and opened again later). Retrying can never work, and keeping the saved attempt
+    // would bring this screen back on every visit, so let it go. The answers saved before the end stay.
+    if(!ok && lastSaveError === 'PERMISSION_DENIED'){
+      clearSavedAttempt();
+      rememberLastAttempt();
+      setSaveState('rejected');
+      return;
+    }
     if(!ok){ setSaveState('failed'); return; }
     clearSavedAttempt();
     rememberLastAttempt();
@@ -808,13 +863,16 @@ async function joinLiveRoom(){
     // DIFFERENT uid (new device/browser, or this one lost its persisted anon session after a
     // connection drop), offer to resume their score instead of starting over at 0. Confirmed
     // explicitly (not silent) since two different students could legitimately share a name.
+    // Only a player who is currently disconnected can be taken over, so typing a classmate's name
+    // cannot push them out of the game (the host checks the same thing before merging).
     const wantedName = liveDisplayName.toLowerCase();
     const playersVal = playersSnap.val() || {};
     let rejoinTargetUid = null;
     for(const uid in playersVal){
       if(uid === liveUid) continue;
-      const existingName = (((playersVal[uid] || {}).profile || {}).displayName || '').trim().toLowerCase();
-      if(existingName && existingName === wantedName){ rejoinTargetUid = uid; break; }
+      const profile = (playersVal[uid] || {}).profile || {};
+      const existingName = (profile.displayName || '').trim().toLowerCase();
+      if(existingName && existingName === wantedName && profile.connected === false){ rejoinTargetUid = uid; break; }
     }
     if(rejoinTargetUid){
       const oldScore = Number(playersVal[rejoinTargetUid].score) || 0;
@@ -956,8 +1014,10 @@ function renderLiveQuestion(meta, i){
 
 function liveAnswerInputHtml(q){
   const L = ['A', 'B', 'C', 'D', 'E'];
-  if(q.type === 'mc') return `<div class="quiz-mc-opts">${q.options.filter(o => o).map((o, i) =>
-    `<div class="quiz-mc-opt" onclick="submitLiveAnswer({selectedOption:${i}}, this)"><div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div></div>`).join('')}</div>`;
+  // Each option keeps its position in the teacher's list (blank ones are skipped, not removed),
+  // because the answer key's correctOption is that position.
+  if(q.type === 'mc') return `<div class="quiz-mc-opts">${q.options.map((o, i) => o ?
+    `<div class="quiz-mc-opt" onclick="submitLiveAnswer({selectedOption:${i}}, this)"><div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div></div>` : '').join('')}</div>`;
   if(q.type === 'tf') return `<div class="quiz-tf-opts">
     <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:true}, this)">✓ Doğru</div>
     <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:false}, this)">✗ Yanlış</div>
@@ -972,10 +1032,17 @@ function liveAnswerInputHtml(q){
   return '';
 }
 
+// The click handlers stay in place: `liveAnswered` already blocks a second submit, and keeping
+// them lets the player try again if the send fails.
 function lockLiveAnswerUI(){
-  document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => { el.classList.add('locked'); el.onclick = null; });
+  document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.add('locked'));
   const btn = document.querySelector('#live-q-card .btn-primary');
   if(btn) btn.disabled = true;
+}
+function unlockLiveAnswerUI(){
+  document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.remove('locked', 'sel'));
+  const btn = document.querySelector('#live-q-card .btn-primary');
+  if(btn) btn.disabled = false;
 }
 
 function submitLiveAnswer(fields, el){
@@ -1012,7 +1079,7 @@ function writeLiveAnswer(fields){
   }).catch(() => {
     liveAnswered = false;
     if(gen !== liveRenderGen) return;
-    document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.remove('locked'));
+    unlockLiveAnswerUI();
     if(status) status.textContent = '⚠️ Göndərilmədi, yenidən cəhd edin.';
   });
 }
@@ -1080,7 +1147,7 @@ async function renderLiveFinished(meta, gen){
       <div class="lock-icon">🏁</div>
       <h2>${esc(meta.topic || 'Canlı Oyun')} — Bitdi</h2>
       <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong></p>
-      ${livePodiumHtml(board, myEntry ? myEntry.name : undefined)}
+      ${livePodiumHtml(board, myEntry ? myEntry.uid : undefined)}
       ${rest.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
         <span>${idx + 4}. ${esc(p.name)}</span><strong>${p.score}</strong>
       </div>`).join('')}

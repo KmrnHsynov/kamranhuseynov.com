@@ -3,9 +3,9 @@
 // Results as a CSV file for a gradebook. Pure: the download itself lives in quiz-az.js.
 // ';' is the default because Excel set to an Azerbaijani region splits columns on it.
 
-const CSV_STATUS = { done: 'Bitirib', in_progress: 'Tamamlanmayıb', exited: 'Çıxıb' };
+const CSV_STATUS = { done: 'Bitirib', in_progress: 'Tamamlanmayıb', exited: 'Çıxıb', expired: 'Vaxtı bitib' };
 const CSV_HEADER = ['Ad', 'Mövzu', 'Başlama', 'Status', 'Doğru', 'Yanlış', 'Cavabsız', 'Xal', 'Maksimum xal', 'Faiz',
-  'Vaxt (san)', 'Çıxışlar', 'Kənarda (san)', 'Yapışdırma', 'Avto-göndərilib', 'Təkrar cəhd'];
+  'Vaxt (san)', 'Çıxışlar', 'Kənarda (san)', 'Yapışdırma', 'Avto-göndərilib', 'Təkrar cəhd', 'Şübhəli'];
 
 function csvCell(value, sep){
   let s = value == null ? '' : String(value);
@@ -36,7 +36,8 @@ function recordsToCsv(records, opts){
       r.timeAway || 0,
       r.pastes || 0,
       r.autoSubmitted ? 'Bəli' : 'Xeyr',
-      r.repeatCount > 1 ? r.repeatCount : ''
+      r.repeatCount > 1 ? r.repeatCount : '',
+      r.qidProblem ? 'Bəli' : ''
     ];
   }));
   return rows.map(row => row.map(c => csvCell(c, sep)).join(sep)).join('\r\n') + '\r\n';

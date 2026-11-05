@@ -64,8 +64,39 @@ test('timer urgency with no time limit is never urgent', () => {
   assert.strictEqual(liveTimerUrgencyClass(5, 0), '');
 });
 
-test('a 30-second question never shows urgency color, even near zero', () => {
+test('a 30-second question gets urgency colors like any other length', () => {
   assert.strictEqual(liveTimerUrgencyClass(30, 30), '');
-  assert.strictEqual(liveTimerUrgencyClass(5, 30), '');
-  assert.strictEqual(liveTimerUrgencyClass(0, 30), '');
+  assert.strictEqual(liveTimerUrgencyClass(15, 30), ' warn');
+  assert.strictEqual(liveTimerUrgencyClass(5, 30), ' danger');
+});
+
+// ── server-timed speed bonus and rejoin checks ──
+const { liveResponseTimeMs, liveRejoinAllowed } = require('./quiz-live.js');
+
+test('response time comes from the server times, not the player-supplied value', () => {
+  assert.strictEqual(liveResponseTimeMs({ responseTimeMs: 0, submittedAt: 15000 }, 10000), 5000);
+  assert.strictEqual(liveResponseTimeMs({ submittedAt: 9000 }, 10000), 0);
+  assert.strictEqual(liveResponseTimeMs({ responseTimeMs: 1200 }, 10000), 1200);
+});
+
+test('a forged instant answer no longer gets the full speed bonus', () => {
+  const q = { type: 'mc', correctOption: 1 };
+  const score = liveScore(q, 1, liveResponseTimeMs({ responseTimeMs: 0, submittedAt: 20000 }, 10000), 20);
+  assert.strictEqual(score, 750);
+});
+
+test('rejoin only takes over a disconnected player with the same name', () => {
+  const me = { profile: { displayName: 'Aysel ' } };
+  assert.strictEqual(liveRejoinAllowed(me, { profile: { displayName: 'aysel', connected: false } }), true);
+  assert.strictEqual(liveRejoinAllowed(me, { profile: { displayName: 'Aysel', connected: true } }), false);
+  assert.strictEqual(liveRejoinAllowed(me, { profile: { displayName: 'Aysel' } }), false);
+  assert.strictEqual(liveRejoinAllowed(me, { profile: { displayName: 'Nigar', connected: false } }), false);
+  assert.strictEqual(liveRejoinAllowed(me, null), false);
+});
+
+test('the podium marks only the viewing player, even when two share a name', () => {
+  global.esc = s => String(s);
+  const { livePodiumHtml } = require('./quiz-live.js');
+  const html = livePodiumHtml([{ uid: 'a', name: 'Ali', score: 900 }, { uid: 'b', name: 'Ali', score: 800 }], 'b');
+  assert.strictEqual((html.match(/color:var\(--accent\)/g) || []).length, 1);
 });

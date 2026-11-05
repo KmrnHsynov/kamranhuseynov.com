@@ -52,7 +52,16 @@ async function signInTeacher(){
   }
 }
 
-function signOutTeacher(){ auth.signOut(); }
+// Really signs out (a refresh must ask for the password again). A running live game is only
+// detached here: its room stays, and signing back in resumes it.
+function signOutTeacher(){
+  clearInterval(timerInt);
+  if(typeof detachLiveRoom === 'function') detachLiveRoom();
+  switchTab('questions');
+  document.getElementById('analytics-sidebar').innerHTML = '';
+  document.getElementById('questions-container').innerHTML = '';
+  auth.signOut();
+}
 
 // Anonymous users (students using the same browser) never get the editor.
 auth.onAuthStateChanged(user=>{
@@ -138,8 +147,18 @@ async function importQuestions(file){
 // ══════════════════════════════════════════════════════
 //  PERSISTENCE (non-pdf questions)
 // ══════════════════════════════════════════════════════
+// The browser's storage can be full (or blocked). Editing goes on, but the teacher is told once,
+// since the questions would then be lost on reload.
+let saveQsWarned = false;
 function saveQs(){
-  localStorage.setItem(STORAGE_KEY_QS, JSON.stringify({questions, qId}));
+  try{
+    localStorage.setItem(STORAGE_KEY_QS, JSON.stringify({questions, qId}));
+    saveQsWarned = false;
+  }catch(e){
+    if(saveQsWarned) return;
+    saveQsWarned = true;
+    alert('Suallar bu brauzerdə saxlanıla bilmədi (yaddaş dolub və ya bloklanıb). Səhifəni bağlamadan "⬇ Ehtiyat nüsxə" ilə faylda saxlayın.');
+  }
 }
 
 function loadSaved(){
@@ -283,12 +302,30 @@ function tlbl(t){return{mc:'ÇS',tf:'D/Y',short:'Qısa',fill:'Boşluq'}[t]||t;}
 
 function toKey(str){ return str.replace(/[.#$[\]/]/g,'_'); }
 
+// The public list (exam_index) has everything this needs and is small. The full exams, with every
+// question, are only downloaded when that list is empty or unreadable: then this is an old database
+// and the exams found there get their list entries.
 function refreshPublishedTopics(cb){
   const el = document.getElementById('topics-list');
   if(el) el.innerHTML='<div style="padding:16px;font-size:12px;color:var(--muted)">⏳ Yüklənir…</div>';
-  Promise.all([db.ref('student_quiz').once('value'), db.ref('exam_index').once('value').catch(()=>null)]).then(([snap, indexSnap])=>{
+  db.ref('exam_index').once('value').then(s=>s.val()||{}, ()=>null).then(index=>{
+    if(index && Object.keys(index).length){
+      publishedTopics = {};
+      Object.entries(index).forEach(([key, e])=>{
+        if(!e) return;
+        publishedTopics[e.topic || key] = { count: e.qCount || 0, key, opensAt: e.opensAt||0, closesAt: e.closesAt||0, active: e.active !== false };
+      });
+      cb && cb();
+      return;
+    }
+    return refreshPublishedTopicsFull(index, cb);
+  }).catch(()=>{ cb && cb(); });
+}
+
+function refreshPublishedTopicsFull(index, cb){
+  return db.ref('student_quiz').once('value').then(snap=>{
     const val = snap.val()||{};
-    const index = indexSnap ? (indexSnap.val()||{}) : null;   // null: the database rules do not allow the public list yet
+    // index null: the database rules do not allow the public list yet
     publishedTopics = {};
     const missing = {};
     Object.entries(val).forEach(([key,exam])=>{
@@ -302,7 +339,7 @@ function refreshPublishedTopics(cb){
     });
     if(Object.keys(missing).length) db.ref().update(missing).catch(()=>{});
     cb && cb();
-  }).catch(()=>{ cb && cb(); });
+  });
 }
 
 function renderTopics(){
@@ -494,9 +531,10 @@ function publishTopic(topicName){
   const exam = {topic: topicName, examMinutes, leaveLimit, publishedAt};
   if(opensAt) exam.opensAt = opensAt;      // left out when empty: Firebase rejects undefined values
   if(closesAt) exam.closesAt = closesAt;
+  if(document.getElementById('one-attempt')?.checked) exam.oneAttempt = true;
   const publicQs = filtered.map(publicQuestion);
   const meta = examMeta(exam, publicQs.length);
-  const answerKey = {questions: Object.fromEntries(filtered.map(q=>[q.id, answerKeyEntry(q)]))};
+  const answerKey = {examMinutes, questions: Object.fromEntries(filtered.map(q=>[q.id, answerKeyEntry(q)]))};
   let oldFormat = false;
   encodeQuestions(publicQs, key, publishedAt).then(payload=>{
     updates['student_quiz/'+key] = {...meta, payload};
@@ -551,16 +589,15 @@ function deleteTopic(topicName){
   }).catch(()=>renderTopics());
 }
 
+// Clears this browser's editor only. Published tests stay on the server (also ones sent from other
+// devices); each one is taken down on its own from the Mövzular tab with "Geri Al".
 function deleteAllQuestions(){
   if(!questions.length) return;
-  const live = Object.keys(publishedTopics);
-  const warn = live.length ? `\n\nDiqqət: tələbələr üçün göndərilmiş ${live.length} test də silinəcək (${live.slice(0,5).join(', ')}${live.length>5?', …':''}). Tələbə nəticələri qalır.` : '';
-  if(!confirm(`Bütün ${questions.length} sual silinsin?${warn}`)) return;
+  const unsent = [...new Set(questions.map(q=>q.topic?.trim()).filter(t=>!publishedTopics[t]))].length;
+  const warn = unsent || questions.some(q=>!q.topic?.trim()) ? '\n\nDiqqət: göndərilməmiş suallar tamamilə itəcək. Əvvəlcə "⬇ Ehtiyat nüsxə" ilə saxlaya bilərsiniz.' : '';
+  if(!confirm(`Bu brauzerdəki bütün ${questions.length} sual redaktordan silinsin?\nGöndərilmiş testlər tələbələr üçün qalır (onları Mövzular tabında "Geri Al" ilə silmək olar).${warn}`)) return;
   questions = []; qId = 0; activeQId = null;
   saveQs(); renderSidebar(); renderEditor();
-  removeExams({student_quiz: null, exam_index: null})
-    .then(()=>{ publishedTopics = {}; })
-    .catch(err=>alert('Göndərilmiş testlər serverdən silinmədi: '+err.message));
 }
 
 function unpublishTopic(topicName){
@@ -600,10 +637,12 @@ function renderAnalytics(){
   main.innerHTML='<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Yüklənir…</p></div>';
   sidebar.innerHTML='';
 
-  Promise.all([db.ref('analytics').once('value'), db.ref('answer_keys').once('value'), db.ref('results').once('value')]).then(([snapshot, keySnap, resultsSnap])=>{
+  Promise.all([db.ref('analytics').once('value'), db.ref('answer_keys').once('value'), db.ref('results').once('value'),
+    db.ref('exam_index').once('value').catch(()=>null)]).then(([snapshot, keySnap, resultsSnap, indexSnap])=>{
     const val = snapshot.val()||{};
     const answerKeys = keySnap.val()||{};
     const released = resultsSnap.val()||{};
+    const examIndex = indexSnap ? (indexSnap.val()||{}) : {};
     const examKeys = Object.keys(val);
 
     // Build records for current filter
@@ -614,7 +653,8 @@ function renderAnalytics(){
     } else {
       records = withExam(analyticsFilter);
     }
-    records.forEach(r=>applyGrade(r, answerKeys));
+    const now = Date.now();
+    records.forEach(r=>applyGrade(r, answerKeys, examIndex, now));
     records.sort((a,b)=>a.timestamp-b.timestamp);
     markRepeatAttempts(records);
     markDeviceFlags(records);
@@ -645,8 +685,14 @@ function renderAnalytics(){
 }
 
 // Students only store raw answers and server times; the score is worked out here from the saved key.
-function applyGrade(r, answerKeys){
-  const g = gradeAttempt(r, (answerKeys[r._exam]||{})[r.examVersion]);
+function applyGrade(r, answerKeys, examIndex, now){
+  const key = (answerKeys[r._exam]||{})[r.examVersion];
+  // Exam length: saved with the key since this version, else the exam's current settings.
+  const minutes = (key && key.examMinutes) || ((examIndex||{})[r._exam]||{}).examMinutes;
+  // Only changes what this screen shows; the stored attempt is left as it is.
+  if(attemptExpired(r, minutes, now || Date.now())) r.status = 'expired';
+  r.qidProblem = attemptQidProblem(r, key);
+  const g = gradeAttempt(r, key);
   const end = r.finishedAt || r.updatedAt || r.startedAt || 0;
   r.timestamp = r.startedAt || 0;
   r.timeUsed = r.startedAt ? Math.max(0, Math.round((end - r.startedAt)/1000)) : 0;
@@ -856,8 +902,10 @@ function deviceBadgesHtml(r){
 }
 
 function leaveBadge(r){
+  if(r.qidProblem) return `<span class="an-badge an-low" title="${r.qidProblem==='dup'?'Eyni sual siyahıda bir neçə dəfə var':'Siyahıda testdəkindən az sual var'}: cəhdin məlumatı brauzerdə dəyişdirilmiş ola bilər. Nəticə elan olunmur.">⚠ Şübhəli</span>`;
   if(r.autoSubmitted) return '<span class="an-badge an-low">Avto-göndərildi</span>';
   if(r.status==='in_progress') return '<span class="an-badge an-mid">Tamamlanmayıb</span>';
+  if(r.status==='expired') return '<span class="an-badge an-grey" title="Tələbə bitirmədən vaxt doldu (brauzer bağlanıb və ya internet kəsilib). Saxlanmış cavablar qiymətləndirilib.">Vaxtı bitib</span>';
   if(r.status==='exited') return '<span class="an-badge an-grey">Çıxdı</span>';
   if((r.tabSwitches||0)>0 || (r.pastes||0)>0) return '<span class="an-badge an-warn">Çıxışlar</span>';
   return '';
@@ -1082,8 +1130,7 @@ function submitShort(qid){
   answered=true;clearInterval(timerInt);
   quizAns[qid]=val;
   const q=quizQs.find(q=>q.id===qid);
-  const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());
-  const ok=acc.includes(val.toLowerCase());
+  const ok=acceptsAnswer(q.shortAnswer,val);
   if(inp){inp.style.borderColor=ok?'var(--correct)':'var(--wrong)';inp.readOnly=true;}
   showFb(ok,quizCfg.showAnswers?(ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer):(ok?'✓ Düzdür!':'✗ Yanlış'));
 }
@@ -1096,11 +1143,9 @@ function submitFill(qid){
   answered=true;clearInterval(timerInt);
   quizAns[qid]=vals;
   const q=quizQs.find(q=>q.id===qid);
-  let allOk=true;
+  const allOk=isCorrectAnswer(q,vals);
   vals.forEach((v,i)=>{
-    const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());
-    const ok=acc.includes(v.toLowerCase());
-    if(!ok)allOk=false;
+    const ok=acceptsAnswer((q.fillAnswers||[])[i],v);
     inps[i].classList.add(ok?'ok':'bad');inps[i].readOnly=true;
   });
   showFb(allOk,quizCfg.showAnswers?(allOk?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır — Düzgün: '+(q.fillAnswers||[]).join(', ')):(allOk?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır'));
@@ -1131,10 +1176,10 @@ function restoreAns(q,saved){
     if(tEl)tEl.onclick=null;if(fEl)fEl.onclick=null;
   } else if(q.type==='short'){
     const inp=document.getElementById('short-inp');
-    if(inp){inp.value=saved||'';const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());inp.style.borderColor=acc.includes((saved||'').toLowerCase())?'var(--correct)':'var(--wrong)';inp.readOnly=true;}
+    if(inp){inp.value=saved||'';inp.style.borderColor=isCorrectAnswer(q,saved)?'var(--correct)':'var(--wrong)';inp.readOnly=true;}
   } else if(q.type==='fill'&&Array.isArray(saved)){
     const inps=[...document.querySelectorAll('.blank-inp')];
-    saved.forEach((v,i)=>{if(inps[i]){inps[i].value=v;const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());inps[i].classList.add(acc.includes(v.toLowerCase())?'ok':'bad');inps[i].readOnly=true;}});
+    saved.forEach((v,i)=>{if(inps[i]){inps[i].value=v;inps[i].classList.add(acceptsAnswer((q.fillAnswers||[])[i],v)?'ok':'bad');inps[i].readOnly=true;}});
   }
 }
 
@@ -1142,8 +1187,8 @@ function showFbFromSaved(q,saved){
   let ok=false,msg='';
   if(q.type==='mc'){ok=saved===q.correctOption;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+['A','B','C','D','E'][q.correctOption];}
   else if(q.type==='tf'){ok=saved===q.tfAnswer;msg=ok?'✓ Düzdür!':'✗ Yanlış — Düzgün: '+(q.tfAnswer?'Doğru':'Yanlış');}
-  else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((saved||'').toLowerCase());msg=ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer;}
-  else if(q.type==='fill'){const vals=Array.isArray(saved)?saved:[];ok=vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});msg=ok?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır';}
+  else if(q.type==='short'){ok=isCorrectAnswer(q,saved);msg=ok?'✓ Düzdür!':'✗ Yanlış — Gözlənilən: '+q.shortAnswer;}
+  else if(q.type==='fill'){ok=isCorrectAnswer(q,saved);msg=ok?'✓ Hamısı düzdür!':'✗ Bəziləri yanlışdır';}
   if(msg)showFb(ok,msg);
 }
 
@@ -1172,11 +1217,7 @@ function finishQuiz(){
   quizQs.forEach(q=>{
     total+=q.points;
     const ans=quizAns[q.id];
-    let correct=false;
-    if(q.type==='mc')correct=ans===q.correctOption;
-    else if(q.type==='tf')correct=ans===q.tfAnswer;
-    else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());correct=acc.includes((ans||'').toLowerCase());}
-    else if(q.type==='fill'){const vals=Array.isArray(ans)?ans:[];correct=vals.length>0&&vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});}
+    const correct=isCorrectAnswer(q,ans);
     if(correct){ok++;earned+=q.points;}else bad++;
   });
   const pct=total?Math.round((earned/total)*100):0;
@@ -1201,8 +1242,8 @@ function buildReview(q){
   let ok=false,yourA='(cavab yoxdur)',corA='';
   if(q.type==='mc'){ok=ans===q.correctOption;yourA=ans!=null?`${L[ans]}: ${q.options[ans]}`:'(cavab yoxdur)';corA=`${L[q.correctOption]}: ${q.options[q.correctOption]}`;}
   else if(q.type==='tf'){ok=ans===q.tfAnswer;yourA=ans==null?'(cavab yoxdur)':(ans?'Doğru':'Yanlış');corA=q.tfAnswer?'Doğru':'Yanlış';}
-  else if(q.type==='short'){const acc=(q.shortAnswer||'').split(',').map(s=>s.trim().toLowerCase());ok=acc.includes((ans||'').toLowerCase());yourA=ans||'(cavab yoxdur)';corA=q.shortAnswer;}
-  else if(q.type==='fill'){const vals=Array.isArray(ans)?ans:[];ok=vals.length>0&&vals.every((v,i)=>{const acc=((q.fillAnswers||[])[i]||'').split(',').map(s=>s.trim().toLowerCase());return acc.includes(v.toLowerCase());});yourA=vals.join(', ')||'(cavab yoxdur)';corA=(q.fillAnswers||[]).join(', ');}
+  else if(q.type==='short'){ok=isCorrectAnswer(q,ans);yourA=ans||'(cavab yoxdur)';corA=q.shortAnswer;}
+  else if(q.type==='fill'){const vals=Array.isArray(ans)?ans:[];ok=isCorrectAnswer(q,ans);yourA=vals.join(', ')||'(cavab yoxdur)';corA=(q.fillAnswers||[]).join(', ');}
   return`<div class="review-item ${ok?'r-ok':'r-bad'}">
     <div class="review-q">${esc(q.text)}</div>
     <div class="review-ans-row">

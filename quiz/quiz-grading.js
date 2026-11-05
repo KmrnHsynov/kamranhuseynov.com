@@ -4,8 +4,24 @@
 // key:  {questions: {<id>: {type, points, correctOption, tfAnswer, shortAnswer, fillAnswers}}}
 // rec:  {qids: [<id>...], answers: {<id>: number | boolean | string | string[]}}
 
-function gradeNorm(s){ return String(s == null ? '' : s).trim().toLowerCase(); }
+// Azerbaijani lower case (I -> ı, İ -> i), then ı and i count as the same letter, so "BAKI", "Bakı"
+// and "baki" (typed without an Azerbaijani keyboard) all match. Plain toLowerCase() turns "I" into "i"
+// and "İ" into "i" plus a combining dot, which never matched the key.
+function gradeFold(s){
+  return String(s == null ? '' : s).toLocaleLowerCase('az').replace(/̇/g, '').replace(/ı/g, 'i');
+}
+function gradeNorm(s){ return gradeFold(s).trim().replace(/\s+/g, ' '); }
 function gradeAccepted(spec){ return String(spec == null ? '' : spec).split(',').map(gradeNorm); }
+// One written answer against the teacher's comma-separated accepted answers.
+function acceptsAnswer(spec, ans){ return gradeAccepted(spec).includes(gradeNorm(ans)); }
+
+// The answers that belong to the blanks. Extra entries (a trailing ";" in the editor, or a [blank]
+// deleted after its answer was typed) are ignored, otherwise no student could ever match them.
+function fillExpected(q){
+  const exp = gradeList(q.fillAnswers);
+  const blanks = (String(q.fillText || '').match(/\[blank\]/gi) || []).length;
+  return blanks ? exp.slice(0, blanks) : exp;
+}
 
 // Firebase hands back arrays as arrays, or as {0:..,1:..} objects when they have gaps.
 function gradeList(v){
@@ -25,19 +41,49 @@ function isCorrectAnswer(q, ans){
   if(!isAnswered(q, ans)) return false;
   if(q.type === 'mc') return ans === q.correctOption;
   if(q.type === 'tf') return ans === q.tfAnswer;
-  if(q.type === 'short') return gradeAccepted(q.shortAnswer).includes(gradeNorm(ans));
+  if(q.type === 'short') return acceptsAnswer(q.shortAnswer, ans);
   if(q.type === 'fill'){
-    const vals = gradeList(ans), exp = gradeList(q.fillAnswers);
-    return vals.length >= exp.length && vals.every((v, i) => gradeAccepted(exp[i]).includes(gradeNorm(v)));
+    const vals = gradeList(ans), exp = fillExpected(q);
+    return exp.length > 0 && vals.length >= exp.length && exp.every((a, i) => acceptsAnswer(a, vals[i]));
   }
   return false;
+}
+
+// The questions an attempt was shown. The list is written by the student's browser, so the same
+// question listed twice is counted once: otherwise repeating one known answer would multiply its points.
+function attemptQids(rec){ return [...new Set(gradeList(rec && rec.qids).map(String))]; }
+
+// Students see every question of the exam, up to 30 (see MAX_QUESTIONS in quiz-student.js).
+const ATTEMPT_MAX_QUESTIONS = 30;
+// '' when the attempt's question list looks as the student page writes it. 'dup' when a question is
+// listed more than once, 'short' when fewer questions are listed than the exam has: dropping the ones
+// the student was unsure of would otherwise raise their percentage.
+function attemptQidProblem(rec, key){
+  if(!key || !key.questions) return '';
+  const raw = gradeList(rec && rec.qids).map(String);
+  const ids = new Set(raw);
+  if(ids.size < raw.length) return 'dup';
+  const expected = Math.min(Object.keys(key.questions).length, ATTEMPT_MAX_QUESTIONS);
+  return ids.size < expected ? 'short' : '';
+}
+
+// An attempt still marked in progress after the database stopped accepting its answers (the exam
+// time plus the rules' 2-minute grace) will never be finished: the browser was closed or lost its
+// connection. Its saved answers are final. Without the exam's length, a day with no saves counts.
+const ATTEMPT_GRACE_MS = 2 * 60 * 1000, ATTEMPT_STALE_MS = 24 * 60 * 60 * 1000;
+function attemptExpired(rec, examMinutes, now){
+  if(!rec || rec.status !== 'in_progress') return false;
+  const mins = Number(examMinutes);
+  if(mins > 0 && rec.startedAt) return now > rec.startedAt + mins * 60000 + ATTEMPT_GRACE_MS;
+  const last = rec.updatedAt || rec.startedAt || 0;
+  return !!last && now - last > ATTEMPT_STALE_MS;
 }
 
 function gradeAttempt(rec, key){
   if(!key || !key.questions) return null;
   const answers = rec.answers || {};
   let correct = 0, wrong = 0, unanswered = 0, score = 0, maxScore = 0;
-  gradeList(rec.qids).forEach(id => {
+  attemptQids(rec).forEach(id => {
     const q = key.questions[id];
     if(!q) return;
     const pts = Number(q.points) || 0;
@@ -63,7 +109,7 @@ function questionStats(records, answerKeys){
     const key = (answerKeys[r._exam] || {})[r.examVersion];
     if(!key || !key.questions) return;
     const answers = r.answers || {};
-    gradeList(r.qids).forEach(id => {
+    attemptQids(r).forEach(id => {
       const q = key.questions[id];
       if(!q) return;
       const gid = r._exam + '|' + r.examVersion + '|' + id;
@@ -127,7 +173,7 @@ function correctAnswerText(q){
 function attemptReview(rec, key){
   if(!key || !key.questions) return [];
   const answers = rec.answers || {};
-  return gradeList(rec.qids).map(id => {
+  return attemptQids(rec).map(id => {
     const q = key.questions[id];
     if(!q) return null;
     const ans = answers[id];
@@ -137,7 +183,7 @@ function attemptReview(rec, key){
 }
 
 // Students type their own name, so the same name twice in one exam is worth a second look.
-function nameKey(name){ return String(name || '').trim().toLowerCase().replace(/ı/g, 'i').replace(/\s+/g, ' '); }
+function nameKey(name){ return gradeNorm(name); }
 function markRepeatAttempts(records){
   const counts = {};
   records.forEach(r => { const k = r._exam + '|' + nameKey(r.studentName); counts[k] = (counts[k] || 0) + 1; });
@@ -174,9 +220,10 @@ function markDeviceFlags(records){
 }
 
 // Releasing results: only counts are published (never answers or the key), one small record per attempt.
-// Attempts still in progress, and ones that could not be graded, are not released.
+// Attempts still in progress, ones that could not be graded, and ones whose question list was
+// tampered with (see attemptQidProblem) are not released.
 function resultsToRelease(records, released){
-  return records.filter(r => r.status !== 'in_progress' && !r.ungraded && r.attemptId && !(released && released[r.attemptId]));
+  return records.filter(r => r.status !== 'in_progress' && !r.ungraded && !r.qidProblem && r.attemptId && !(released && released[r.attemptId]));
 }
 
 function buildResult(r, now){
@@ -204,8 +251,8 @@ function answerKeyEntry(q){
   if(q.type==='mc'){ k.options = q.options.map(o=>o||''); k.correctOption = q.correctOption; }
   if(q.type==='tf') k.tfAnswer = !!q.tfAnswer;
   if(q.type==='short') k.shortAnswer = q.shortAnswer||'';
-  if(q.type==='fill'){ k.fillText = q.fillText||''; k.fillAnswers = (q.fillAnswers||[]).map(a=>a||''); }
+  if(q.type==='fill'){ k.fillText = q.fillText||''; k.fillAnswers = fillExpected(q).map(a=>a||''); }
   return k;
 }
 
-if(typeof module !== 'undefined') module.exports = { gradeAttempt, isCorrectAnswer, isAnswered, questionStats, questionProblems, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult, publicQuestion, answerKeyEntry };
+if(typeof module !== 'undefined') module.exports = { acceptsAnswer, attemptQids, attemptQidProblem, attemptExpired, gradeAttempt, isCorrectAnswer, isAnswered, questionStats, questionProblems, attemptReview, markRepeatAttempts, markDeviceFlags, resultsToRelease, buildResult, publicQuestion, answerKeyEntry };

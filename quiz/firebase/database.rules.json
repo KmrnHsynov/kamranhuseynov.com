@@ -13,6 +13,7 @@
         "opensAt":     { ".validate": "newData.isNumber()" },
         "closesAt":    { ".validate": "newData.isNumber()" },
         "active":      { ".validate": "newData.isBoolean()" },
+        "oneAttempt":  { ".validate": "newData.isBoolean()" },
         "$other":      { ".validate": false }
       }
     },
@@ -24,6 +25,7 @@
         "opensAt":  { ".validate": "newData.isNumber()" },
         "closesAt": { ".validate": "newData.isNumber()" },
         "active":   { ".validate": "newData.isBoolean()" },
+        "oneAttempt": { ".validate": "newData.isBoolean()" },
         "payload":  { ".validate": "newData.isString() && newData.val().length < 2000000" },
         "questions": {
           "$i": {
@@ -123,7 +125,7 @@
         "questions": {
           ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
           "$i": {
-            ".read": "auth.token.email === 'kmrnhsynov@gmail.com' || (root.child('live_rooms').child($pin).child('meta').child('currentIndex').val() + '') === $i || root.child('live_rooms').child($pin).child('meta').child('status').val() === 'FINISHED'"
+            ".read": "auth != null && (auth.token.email === 'kmrnhsynov@gmail.com' || (root.child('live_rooms').child($pin).child('meta').child('status').val() !== 'LOBBY' && (root.child('live_rooms').child($pin).child('meta').child('currentIndex').val() + '') === $i) || root.child('live_rooms').child($pin).child('meta').child('status').val() === 'FINISHED')"
           }
         },
 

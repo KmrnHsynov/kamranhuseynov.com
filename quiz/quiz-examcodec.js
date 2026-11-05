@@ -62,6 +62,7 @@ function examMeta(exam, qCount){
   };
   if(exam.opensAt) m.opensAt = exam.opensAt;
   if(exam.closesAt) m.closesAt = exam.closesAt;
+  if(exam.oneAttempt === true) m.oneAttempt = true;
   return m;
 }
 

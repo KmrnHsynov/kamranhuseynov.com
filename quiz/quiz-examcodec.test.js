@@ -58,3 +58,9 @@ test('question count works for lists and for Firebase objects with gaps', () => 
   assert.strictEqual(legacyQuestionCount({ questions: { 0: 'a', 2: 'b' } }), 2);
   assert.strictEqual(legacyQuestionCount({}), 0);
 });
+
+test('examMeta carries the one-attempt setting only when it is on', () => {
+  const { examMeta } = require('./quiz-examcodec.js');
+  assert.strictEqual(examMeta({ topic: 'T', oneAttempt: true }, 3).oneAttempt, true);
+  assert.strictEqual('oneAttempt' in examMeta({ topic: 'T' }, 3), false);
+});

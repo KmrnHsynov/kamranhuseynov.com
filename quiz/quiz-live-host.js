@@ -31,6 +31,11 @@ let liveMetaRef = null, liveRoomPlayersRef = null, liveAnswersRef = null, liveAn
 let liveRejoinRequestsRef = null;
 let liveQuestionTimer = null;
 
+// How far this computer's clock is from the server's (kept up to date by Firebase).
+let liveHostServerOffset = 0;
+db.ref('.info/serverTimeOffset').on('value', s => { liveHostServerOffset = Number(s.val()) || 0; });
+function liveHostNow(){ return Date.now() + liveHostServerOffset; }
+
 // ── ENTRY POINT (called by switchTab('live') in quiz-az.js) ─────────────────
 function renderLiveTab(){
   liveShown = true;
@@ -43,7 +48,11 @@ function renderLiveTab(){
   db.ref('live_rooms/' + saved.pin + '/meta').once('value').then(snap => {
     const meta = snap.val();
     if(meta && meta.status !== 'FINISHED') resumeLiveRoom(saved.pin);
-    else { clearLiveRoomMarker(); refreshPublishedTopics(renderLiveTopicPicker); }
+    else {
+      // A finished game that was never cleaned up (the panel was closed on its final screen).
+      if(meta) db.ref('live_rooms/' + saved.pin).remove().catch(() => {});
+      clearLiveRoomMarker(); refreshPublishedTopics(renderLiveTopicPicker);
+    }
   }).catch(() => refreshPublishedTopics(renderLiveTopicPicker));
 }
 
@@ -297,8 +306,14 @@ function processLiveRejoinRequest(pin, newUid, req){
   const reqRef = db.ref('live_rooms/' + pin + '/rejoin_requests/' + newUid);
   const targetUid = req && req.targetUid;
   if(!targetUid || targetUid === newUid){ reqRef.remove().catch(() => {}); return; }
-  db.ref('live_rooms/' + pin + '/players/' + targetUid).once('value').then(snap => {
+  Promise.all([
+    db.ref('live_rooms/' + pin + '/players/' + targetUid).once('value'),
+    db.ref('live_rooms/' + pin + '/players/' + newUid).once('value')
+  ]).then(([snap, newSnap]) => {
     const oldPlayer = snap.val();
+    // Refused (request dropped, nobody's score moves) unless the old player is disconnected and the
+    // names match: otherwise anyone could type a classmate's name and push them out of the game.
+    if(!liveRejoinAllowed(newSnap.val(), oldPlayer)) return reqRef.remove();
     const updates = {};
     updates['players/' + newUid + '/score'] = (oldPlayer && Number(oldPlayer.score)) || 0;
     if(oldPlayer && oldPlayer.flags) updates['players/' + newUid + '/flags'] = oldPlayer.flags;
@@ -438,8 +453,9 @@ function renderLiveQuestionActive(){
 }
 
 function liveQuestionOptionsHtml(q){
-  if(q.type === 'mc') return `<div>${q.options.filter(Boolean).map((o, i) =>
-    `<div style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">${LIVE_OPT_LETTERS[i]}. ${esc(o)}</div>`).join('')}</div>`;
+  // Letters follow the option's position in the teacher's list, same as the players' buttons and the key.
+  if(q.type === 'mc') return `<div>${q.options.map((o, i) => o ?
+    `<div style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">${LIVE_OPT_LETTERS[i]}. ${esc(o)}</div>` : '').join('')}</div>`;
   if(q.type === 'tf') return '<div style="font-size:13px;color:var(--muted)">Doğru / Yanlış sualı</div>';
   if(q.type === 'fill') return `<div style="font-size:14px">${esc(q.fillText || '').replace(/\[blank\]/gi, '____')}</div>`;
   return '<div style="font-size:13px;color:var(--muted)">Yazılı cavab sualı</div>';
@@ -447,12 +463,12 @@ function liveQuestionOptionsHtml(q){
 
 function startLiveQuestionTimer(){
   clearInterval(liveQuestionTimer);
-  // Driven off the host's own clock: fine here, since an early/late auto-reveal is a UX nicety,
-  // not a security boundary (the database rule already gates when answers may be written).
+  // questionStartedAt is server time, so the countdown uses server time too: a host computer whose
+  // clock is off would otherwise reveal every question early (or late).
   const total = liveMeta.questionSeconds;
-  const deadline = (liveMeta.questionStartedAt || Date.now()) + total * 1000;
+  const deadline = (liveMeta.questionStartedAt || liveHostNow()) + total * 1000;
   const tick = () => {
-    const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    const left = Math.max(0, Math.ceil((deadline - liveHostNow()) / 1000));
     const pill = document.getElementById('live-timer-pill');
     if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
     if(left <= 0){ clearInterval(liveQuestionTimer); revealLiveQuestion(); }
@@ -501,7 +517,7 @@ function revealLiveQuestion(){
     const ans = extractLiveAnswer(key, a);
     const correct = isCorrectAnswer(key, ans);
     if(correct) correctCount++;
-    const earned = liveScore(key, ans, a.responseTimeMs || 0, liveMeta.questionSeconds);
+    const earned = liveScore(key, ans, liveResponseTimeMs(a, liveMeta.questionStartedAt), liveMeta.questionSeconds);
     updates['players/' + uid + '/score'] = firebase.database.ServerValue.increment(earned);
     updates['results/' + i + '/' + uid] = { correct, pointsEarned: earned };
     // Applied locally too, not just sent to the server: meta/status and players/*/score are two
@@ -586,9 +602,13 @@ function renderLiveFinished(){
     </div>`;
 }
 
+// The finished room is removed here: the result is kept in live_history, and players have already
+// loaded their final screen (they stop listening once the game is FINISHED).
 function startNewLiveGame(){
+  const pin = liveRoomPin;
   detachLiveRoom();
   clearLiveRoomMarker();
+  if(pin) db.ref('live_rooms/' + pin).remove().catch(() => {});
   renderLiveTopicPicker();
 }
 

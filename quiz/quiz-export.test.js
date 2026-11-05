@@ -15,7 +15,7 @@ test('one header row plus one row per attempt, every row the same width', () => 
 test('values land in the right columns', () => {
   const row = recordsToCsv([base], { formatDate: fmt }).trim().split('\r\n')[1].split(';');
   assert.deepStrictEqual(row.slice(0, 10), ['Ali', 'T', '2026-11-01 10:00', 'Bitirib', '3', '1', '0', '5', '6', '83']);
-  assert.deepStrictEqual(row.slice(10), ['600', '2', '30', '1', 'Xeyr', '']);
+  assert.deepStrictEqual(row.slice(10), ['600', '2', '30', '1', 'Xeyr', '', '']);
 });
 
 test('names with the separator, quotes or line breaks are quoted', () => {
@@ -45,4 +45,10 @@ test('statuses and repeat attempts are written out', () => {
 
 test('the separator can be changed', () => {
   assert.strictEqual(recordsToCsv([base], { sep: ',', formatDate: fmt }).split('\r\n')[0].split(',').length, CSV_HEADER.length);
+});
+
+test('expired and suspicious attempts are written out', () => {
+  const row = recordsToCsv([{ ...base, status: 'expired', qidProblem: 'short' }], { formatDate: fmt }).trim().split('\r\n')[1].split(';');
+  assert.strictEqual(row[3], 'Vaxtı bitib');
+  assert.strictEqual(row[row.length - 1], 'Bəli');
 });
