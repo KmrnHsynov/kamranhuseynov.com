@@ -53,8 +53,8 @@ function livePodiumHtml(leaderboard, highlightName){
   const top3 = leaderboard.slice(0, 3);
   if(!top3.length) return '';
   const order = [1, 0, 2];       // silver, gold, bronze, left to right
-  const heights = [96, 130, 74];
-  const medals = ['🥈', '🥇', '🥉'];
+  const heights = [130, 96, 74]; // indexed by rank (0=1st..2=3rd), not by column
+  const medals = ['🥇', '🥈', '🥉'];
   return `<div class="live-podium">${order.map((rank, col) => {
     const p = top3[rank];
     if(!p) return '<div class="live-podium-slot"></div>';
