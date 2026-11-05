@@ -63,3 +63,9 @@ test('timer urgency is by fraction of time left, not an absolute second count', 
 test('timer urgency with no time limit is never urgent', () => {
   assert.strictEqual(liveTimerUrgencyClass(5, 0), '');
 });
+
+test('a 30-second question never shows urgency color, even near zero', () => {
+  assert.strictEqual(liveTimerUrgencyClass(30, 30), '');
+  assert.strictEqual(liveTimerUrgencyClass(5, 30), '');
+  assert.strictEqual(liveTimerUrgencyClass(0, 30), '');
+});

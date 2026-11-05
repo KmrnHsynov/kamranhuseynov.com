@@ -798,13 +798,39 @@ async function joinLiveRoom(){
     if(meta.status === 'FINISHED'){ showLiveJoinError('Bu oyun artıq bitib.'); return; }
     if(browserBlocked(Number(meta.leaveLimit) || 0)){ showLiveJoinError('Bu oyunu Firefox-da (Android) açmaq olmur. Zəhmət olmasa Chrome brauzerində açın.'); return; }
 
-    const user = await authReady;
+    const [user, playersSnap] = await Promise.all([
+      authReady,
+      db.ref('live_rooms/' + pinVal + '/players').once('value')
+    ]);
     liveUid = user.uid; livePin = pinVal; liveDisplayName = nameVal; liveLeaveLimit = Number(meta.leaveLimit) || 0;
+
+    // Reconnect detection: if someone with this exact name is already in the room under a
+    // DIFFERENT uid (new device/browser, or this one lost its persisted anon session after a
+    // connection drop), offer to resume their score instead of starting over at 0. Confirmed
+    // explicitly (not silent) since two different students could legitimately share a name.
+    const wantedName = liveDisplayName.toLowerCase();
+    const playersVal = playersSnap.val() || {};
+    let rejoinTargetUid = null;
+    for(const uid in playersVal){
+      if(uid === liveUid) continue;
+      const existingName = (((playersVal[uid] || {}).profile || {}).displayName || '').trim().toLowerCase();
+      if(existingName && existingName === wantedName){ rejoinTargetUid = uid; break; }
+    }
+    if(rejoinTargetUid){
+      const oldScore = Number(playersVal[rejoinTargetUid].score) || 0;
+      const resume = confirm('"' + liveDisplayName + '" adlı oyunçu artıq otaqdadır (' + oldScore + ' xal). Bağlantınız kəsilibsə, xalınızla davam edə bilərsiniz.\n\nDavam edilsin?');
+      if(!resume) rejoinTargetUid = null;
+    }
 
     await db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile').set({
       displayName: liveDisplayName, joinedAt: firebase.database.ServerValue.TIMESTAMP, connected: true
     });
     db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile/connected').onDisconnect().set(false);
+    if(rejoinTargetUid){
+      await db.ref('live_rooms/' + livePin + '/rejoin_requests/' + liveUid).set({
+        targetUid: rejoinTargetUid, requestedAt: firebase.database.ServerValue.TIMESTAMP
+      }).catch(() => {});
+    }
 
     // Re-fetched here too (not just by exam mode) so a live-only visit still gets an accurate server clock.
     const offsetSnap = await db.ref('.info/serverTimeOffset').once('value');
@@ -973,14 +999,19 @@ function submitLiveFill(){
 function writeLiveAnswer(fields){
   liveAnswered = true;
   lockLiveAnswerUI();
+  const gen = liveRenderGen; // a reveal/next-question can arrive while this write is in flight
   const responseTimeMs = Math.max(0, serverNow() - liveQuestionStartedLocal);
   const data = { ...fields, responseTimeMs, submittedAt: firebase.database.ServerValue.TIMESTAMP };
   const status = document.getElementById('live-answer-status');
   if(status) status.textContent = '⏳ Göndərilir…';
   db.ref('live_rooms/' + livePin + '/answers/' + liveLastIndex + '/' + liveUid).set(data).then(() => {
+    // Without this check, a reveal that already rendered while this write was still in flight gets
+    // clobbered by this stale "waiting" screen, and nothing re-renders it until the next question.
+    if(gen !== liveRenderGen) return;
     document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml('✅', 'Cavab göndərildi!', 'Digər tələbələri gözləyin…');
   }).catch(() => {
     liveAnswered = false;
+    if(gen !== liveRenderGen) return;
     document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.remove('locked'));
     if(status) status.textContent = '⚠️ Göndərilmədi, yenidən cəhd edin.';
   });

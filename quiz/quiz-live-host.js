@@ -28,6 +28,7 @@ let liveRevealing = false;  // guards against the timer, the "everyone answered"
 let liveFinishing = false;  // guards against a double-click on an end-game button
 
 let liveMetaRef = null, liveRoomPlayersRef = null, liveAnswersRef = null, liveAnswersHandler = null;
+let liveRejoinRequestsRef = null;
 let liveQuestionTimer = null;
 
 // ── ENTRY POINT (called by switchTab('live') in quiz-az.js) ─────────────────
@@ -282,6 +283,29 @@ function attachLiveRoom(pin){
     if(liveMeta.status === 'LOBBY') renderLivePlayerList();
     else if(liveMeta.status === 'QUESTION') updateLiveAnsweredCount();
   });
+  liveRejoinRequestsRef = db.ref('live_rooms/' + pin + '/rejoin_requests');
+  liveRejoinRequestsRef.on('child_added', snap => processLiveRejoinRequest(pin, snap.key, snap.val()));
+}
+
+// A player rejoining under a new uid (new device, or an old session that didn't survive a
+// connection drop) can't write another uid's score themselves (teacher-only by rule), so they
+// drop a request here and the host - already trusted to write any player's score - carries the
+// merge out: copy the old player's score/flags onto the new uid, then remove the old entry so the
+// roster/leaderboard don't show both. Re-reads `players/{targetUid}` fresh rather than trusting
+// livePlayersMap, since sibling listeners aren't guaranteed to deliver in order.
+function processLiveRejoinRequest(pin, newUid, req){
+  const reqRef = db.ref('live_rooms/' + pin + '/rejoin_requests/' + newUid);
+  const targetUid = req && req.targetUid;
+  if(!targetUid || targetUid === newUid){ reqRef.remove().catch(() => {}); return; }
+  db.ref('live_rooms/' + pin + '/players/' + targetUid).once('value').then(snap => {
+    const oldPlayer = snap.val();
+    const updates = {};
+    updates['players/' + newUid + '/score'] = (oldPlayer && Number(oldPlayer.score)) || 0;
+    if(oldPlayer && oldPlayer.flags) updates['players/' + newUid + '/flags'] = oldPlayer.flags;
+    updates['players/' + targetUid] = null;
+    updates['rejoin_requests/' + newUid] = null;
+    return db.ref('live_rooms/' + pin).update(updates);
+  }).catch(() => { reqRef.remove().catch(() => {}); });
 }
 
 function handleLiveMetaSnapshot(snap){
@@ -305,7 +329,8 @@ function detachLiveRoom(){
   detachLiveAnswersListener();
   if(liveMetaRef) liveMetaRef.off('value', handleLiveMetaSnapshot);
   if(liveRoomPlayersRef) liveRoomPlayersRef.off();
-  liveMetaRef = null; liveRoomPlayersRef = null;
+  if(liveRejoinRequestsRef) liveRejoinRequestsRef.off();
+  liveMetaRef = null; liveRoomPlayersRef = null; liveRejoinRequestsRef = null;
   clearInterval(liveQuestionTimer);
   liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
   liveRevealing = false; liveFinishing = false;

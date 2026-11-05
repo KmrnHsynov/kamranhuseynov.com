@@ -39,7 +39,7 @@ function sortLeaderboard(players){
 // questions run 5-300s, unlike the exam's fixed 30-minute clock, so a fixed cutoff would never
 // trigger on a short question). '' means the plain/default color.
 function liveTimerUrgencyClass(secondsLeft, totalSeconds){
-  if(!(totalSeconds > 0)) return '';
+  if(!(totalSeconds > 0) || totalSeconds === 30) return '';
   const ratio = secondsLeft / totalSeconds;
   if(ratio <= 0.2) return ' danger';
   if(ratio <= 0.5) return ' warn';
