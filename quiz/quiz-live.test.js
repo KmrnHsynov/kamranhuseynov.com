@@ -100,3 +100,8 @@ test('the podium marks only the viewing player, even when two share a name', () 
   const html = livePodiumHtml([{ uid: 'a', name: 'Ali', score: 900 }, { uid: 'b', name: 'Ali', score: 800 }], 'b');
   assert.strictEqual((html.match(/color:var\(--accent\)/g) || []).length, 1);
 });
+
+test('a player removed for leaving too often cannot be taken over by a rejoin', () => {
+  const me = { profile: { displayName: 'Aysel' } };
+  assert.strictEqual(liveRejoinAllowed(me, { profile: { displayName: 'Aysel', connected: false }, flags: { flagged: true } }), false);
+});

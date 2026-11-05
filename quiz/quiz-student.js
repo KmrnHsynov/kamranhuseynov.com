@@ -826,7 +826,7 @@ function esc(s){ return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').repl
 let livePin = '', liveUid = '', liveDisplayName = '';
 let liveRoomMetaRef = null, livePlayerProfileRef = null, liveLastIndex = -1;
 let liveCurrentQuestion = null, liveQuestionStartedLocal = 0, liveAnswered = false;
-let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false;
+let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false, liveStatus = '';
 let liveCountdownTimer = null;
 let liveRenderGen = 0;
 
@@ -858,6 +858,11 @@ async function joinLiveRoom(){
       db.ref('live_rooms/' + pinVal + '/players').once('value')
     ]);
     liveUid = user.uid; livePin = pinVal; liveDisplayName = nameVal; liveLeaveLimit = Number(meta.leaveLimit) || 0;
+    const mine = (playersSnap.val() || {})[liveUid];
+    if(liveWasRemoved(pinVal) || (mine && mine.flags && mine.flags.flagged)){
+      showLiveJoinError('Səhifəni çox dəfə tərk etdiyiniz üçün bu oyundan çıxarılmısınız.');
+      return;
+    }
 
     // Reconnect detection: if someone with this exact name is already in the room under a
     // DIFFERENT uid (new device/browser, or this one lost its persisted anon session after a
@@ -941,6 +946,7 @@ function detachLiveRoomListener(){
 // render and clobber it with stale content.
 function handleLiveMetaUpdate(meta){
   clearInterval(liveCountdownTimer);
+  liveStatus = meta.status;
   const gen = ++liveRenderGen;
   if(meta.status === 'LOBBY') renderLiveWaiting(meta);
   else if(meta.status === 'QUESTION'){ liveAnswered = false; loadAndRenderLiveQuestion(meta, gen); }
@@ -1171,15 +1177,42 @@ function markLiveFlagged(){
   if(!liveUid || !livePin) return;
   db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/flags/flagged').set(true).catch(() => {});
 }
+// Leaving only counts once the game has started: waiting in the lobby, switching apps is fine.
+function liveMonitoring(){ return liveJoined && !!liveMonitor && liveStatus !== 'LOBBY' && liveStatus !== ''; }
 function onLiveLeave(){
-  if(!liveJoined || !liveMonitor) return;
+  if(!liveMonitoring()) return;
   const r = liveMonitor.leave();
   if(!r) return;
   writeLiveFlags();
-  if(r.reached) markLiveFlagged();
+  if(r.reached) removeSelfFromLive();
+}
+
+// Reaching the leave limit ends the game for this player, like the exam's auto-submit. They are
+// marked (flags.flagged) and shown as disconnected, so the host stops waiting for their answers and
+// scores none from them; their points so far stay on the board. This device cannot join this game again.
+const STORAGE_KEY_LIVE_REMOVED = 'qc_live_removed';
+function liveWasRemoved(pin){
+  try{ return !!(JSON.parse(localStorage.getItem(STORAGE_KEY_LIVE_REMOVED) || '{}') || {})[pin]; }catch(e){ return false; }
+}
+function removeSelfFromLive(){
+  const pin = livePin, uid = liveUid;
+  try{
+    const t = JSON.parse(localStorage.getItem(STORAGE_KEY_LIVE_REMOVED) || '{}') || {};
+    t[pin] = Date.now();
+    localStorage.setItem(STORAGE_KEY_LIVE_REMOVED, JSON.stringify(t));
+  }catch(e){}
+  markLiveFlagged();
+  const connectedRef = db.ref('live_rooms/' + pin + '/players/' + uid + '/profile/connected');
+  connectedRef.onDisconnect().cancel().catch(() => {});
+  connectedRef.set(false).catch(() => {});
+  liveJoined = false;
+  detachLiveRoomListener();
+  leaveFullscreen();
+  document.getElementById('live-leave-warning')?.remove();
+  renderLiveGameMessage('🚫', 'Oyundan çıxarıldınız', `Oyun səhifəsini ${liveLeaveLimit} dəfə tərk etdiyiniz üçün oyun sizin üçün bitdi. Bu müəllimə bildirilib.`);
 }
 function onLiveReturn(){
-  if(!liveJoined || !liveMonitor) return;
+  if(!liveMonitoring()) return;
   const r = liveMonitor.back();
   if(!r) return;
   writeLiveFlags();
@@ -1193,8 +1226,8 @@ function showLiveLeaveWarning(count){
   el.className = 'overlay';
   el.innerHTML = `<div class="modal" style="text-align:center">
     <div style="font-size:40px;margin-bottom:8px">⚠️</div>
-    <h2>Xəbərdarlıq ${count}</h2>
-    <p>Oyun səhifəsini tərk etdiniz. Bu müəllimə bildirilir.</p>
+    <h2>Xəbərdarlıq ${count}/${liveLeaveLimit}</h2>
+    <p>Oyun səhifəsini tərk etdiniz. Bu müəllimə bildirilir. Yenə ${liveLeaveLimit - count} dəfə çıxsanız, oyundan çıxarılacaqsınız.</p>
     <button class="btn btn-primary btn-full" onclick="document.getElementById('live-leave-warning').remove();enterFullscreen()">Davam et</button>
   </div>`;
   document.body.appendChild(el);
@@ -1227,13 +1260,13 @@ document.addEventListener('paste', () => {
 // as a leave, so a brief system popup or keyboard switch is not mistaken for one.
 let liveUnfocusedPolls = 0;
 setInterval(() => {
-  if(!liveJoined || !liveMonitor){ liveUnfocusedPolls = 0; return; }
+  if(!liveMonitoring()){ liveUnfocusedPolls = 0; return; }
   if(document.hasFocus()){ liveUnfocusedPolls = 0; onLiveReturn(); }
   else if(++liveUnfocusedPolls >= 2) onLiveLeave();
 }, 500);
 
 function onLiveFullscreenChange(){
-  if(!liveJoined || !liveMonitor) return;
+  if(!liveMonitoring()) return;
   if(document.fullscreenElement || document.webkitFullscreenElement) return;
   onLiveLeave();
   onLiveReturn();

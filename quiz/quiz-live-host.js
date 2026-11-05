@@ -31,6 +31,15 @@ let liveMetaRef = null, liveRoomPlayersRef = null, liveAnswersRef = null, liveAn
 let liveRejoinRequestsRef = null;
 let liveQuestionTimer = null;
 
+// Players who reached the leave limit (flags.flagged). Remembered for the whole game, so clearing
+// the flag from a browser console does not bring them back.
+let liveRemovedUids = new Set();
+function liveIsRemoved(uid){
+  const p = livePlayersMap[uid];
+  if(p && p.flags && p.flags.flagged) liveRemovedUids.add(uid);
+  return liveRemovedUids.has(uid);
+}
+
 // How far this computer's clock is from the server's (kept up to date by Firebase).
 let liveHostServerOffset = 0;
 db.ref('.info/serverTimeOffset').on('value', s => { liveHostServerOffset = Number(s.val()) || 0; });
@@ -161,14 +170,26 @@ function showLiveHistoryDetail(id){
     const el = document.createElement('div');
     el.id = 'live-history-modal';
     el.className = 'overlay';
-    el.innerHTML = `<div class="modal" style="max-width:420px">
+    // The list scrolls between a fixed title and a fixed close button, so a long game can always be
+    // closed; clicking outside the box or pressing Esc closes it too.
+    el.innerHTML = `<div class="modal modal-scroll" style="max-width:420px">
       <h2 style="margin-bottom:4px">${esc(h.topic || '')}</h2>
       <p style="font-size:12px;color:var(--muted);margin-bottom:16px">${h.playerCount || 0} tələbə · ${h.questionCount || 0} sual</p>
-      ${board.length ? board.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">Nəticə yoxdur.</div>'}
-      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="document.getElementById('live-history-modal').remove()">Bağla</button>
+      <div class="modal-body">
+        ${board.length ? board.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">Nəticə yoxdur.</div>'}
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:16px;flex-shrink:0" onclick="closeLiveHistoryModal()">Bağla</button>
     </div>`;
+    el.addEventListener('click', e => { if(e.target === el) closeLiveHistoryModal(); });
+    document.addEventListener('keydown', liveHistoryEsc);
     document.body.appendChild(el);
   });
+}
+
+function liveHistoryEsc(e){ if(e.key === 'Escape') closeLiveHistoryModal(); }
+function closeLiveHistoryModal(){
+  document.getElementById('live-history-modal')?.remove();
+  document.removeEventListener('keydown', liveHistoryEsc);
 }
 
 function deleteLiveHistory(id){
@@ -288,6 +309,7 @@ function attachLiveRoom(pin){
   liveRoomPlayersRef = db.ref('live_rooms/' + pin + '/players');
   liveRoomPlayersRef.on('value', snap => {
     livePlayersMap = snap.val() || {};
+    Object.keys(livePlayersMap).forEach(liveIsRemoved);
     if(!liveShown || !liveMeta) return;
     if(liveMeta.status === 'LOBBY') renderLivePlayerList();
     else if(liveMeta.status === 'QUESTION') updateLiveAnsweredCount();
@@ -348,6 +370,7 @@ function detachLiveRoom(){
   liveMetaRef = null; liveRoomPlayersRef = null; liveRejoinRequestsRef = null;
   clearInterval(liveQuestionTimer);
   liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
+  liveRemovedUids = new Set();
   liveRevealing = false; liveFinishing = false;
 }
 
@@ -431,7 +454,7 @@ function renderLiveQuestionActive(){
   // moment the original players finished, cutting latecomers off entirely). A disconnect among
   // this set still drops out below, via the connected!==false check in updateLiveAnsweredCount.
   liveQuestionEligibleUids = Object.entries(livePlayersMap)
-    .filter(([, p]) => (p.profile || {}).displayName && (p.profile || {}).connected !== false)
+    .filter(([uid, p]) => (p.profile || {}).displayName && (p.profile || {}).connected !== false && !liveIsRemoved(uid))
     .map(([uid]) => uid);
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
@@ -485,9 +508,9 @@ function updateLiveAnsweredCount(){
   // set still drops out so the round doesn't wait forever on someone who left.
   const connected = liveQuestionEligibleUids.filter(uid => {
     const p = livePlayersMap[uid];
-    return p && (p.profile || {}).connected !== false;
+    return p && (p.profile || {}).connected !== false && !liveIsRemoved(uid);
   }).length;
-  const answered = Object.keys(liveAnswersMap).length;
+  const answered = Object.keys(liveAnswersMap).filter(uid => !liveIsRemoved(uid)).length;
   const el = document.getElementById('live-answered-count');
   if(el) el.textContent = `${answered} / ${connected} cavab verdi`;
   if(liveMeta && liveMeta.status === 'QUESTION' && connected > 0 && answered >= connected) revealLiveQuestion();
@@ -514,6 +537,7 @@ function revealLiveQuestion(){
   const updates = { 'meta/status': 'REVEAL' };
   let correctCount = 0;
   Object.entries(answers).forEach(([uid, a]) => {
+    if(liveIsRemoved(uid)) return;   // removed for leaving the page: no more points
     const ans = extractLiveAnswer(key, a);
     const correct = isCorrectAnswer(key, ans);
     if(correct) correctCount++;
@@ -526,7 +550,7 @@ function revealLiveQuestion(){
     // shown right at reveal reflects last round's scores, not this one's, until the next render.
     if(livePlayersMap[uid]) livePlayersMap[uid].score = (livePlayersMap[uid].score || 0) + earned;
   });
-  liveLastRevealStats = { answeredCount: Object.keys(answers).length, correctCount };
+  liveLastRevealStats = { answeredCount: Object.keys(answers).filter(uid => !liveIsRemoved(uid)).length, correctCount };
   // Reset on failure so a network hiccup doesn't permanently wedge the round: without this, every
   // future trigger (timer, "everyone answered", the manual button) would keep no-opping forever.
   db.ref('live_rooms/' + liveRoomPin).update(updates).catch(err => { liveRevealing = false; alert('Xəta: ' + err.message); });

@@ -44,7 +44,8 @@ function liveResponseTimeMs(answer, questionStartedAt){
 function liveRejoinAllowed(requester, target){
   const norm = s => String(s || '').trim().toLowerCase();
   const rp = (requester || {}).profile || {}, tp = (target || {}).profile || {};
-  return !!tp.displayName && tp.connected === false && norm(rp.displayName) === norm(tp.displayName);
+  const removed = !!((target || {}).flags || {}).flagged;   // left the game too often: not a slot to resume
+  return !!tp.displayName && tp.connected === false && !removed && norm(rp.displayName) === norm(tp.displayName);
 }
 
 // Highest score first; ties keep whoever is listed first (stable sort).
