@@ -34,7 +34,7 @@ let liveRevealDelay = null;   // the short wait between the timer running out an
 
 // After the timer runs out, wait this long before reading the answers, so an answer sent in the
 // last moment still reaches the server. Students' screens stop taking answers at 0.
-const LIVE_REVEAL_GRACE_MS = 1500;
+const LIVE_REVEAL_GRACE_MS = 2000;
 
 // Players the teacher kicked, or who reached the leave limit (flags.flagged). Saved in the room
 // (live_rooms/<pin>/banned), where the rules stop them from joining again or sending answers. It also
@@ -50,7 +50,10 @@ function liveIsRemoved(uid){
   return liveRemovedUids.has(uid) || !!liveBannedMap[uid];
 }
 
-// How far this computer's clock is from the server's (kept up to date by Firebase).
+// How far this computer's clock is from the server's. Firebase measures it once, when the connection
+// opens, so it goes stale if this computer's clock moves later (waking from sleep, an automatic time
+// correction). That is why a question seen starting here is timed with a local stopwatch instead
+// (liveQuestionLocalStart); this offset is only used after a reload in the middle of a question.
 let liveHostServerOffset = 0;
 db.ref('.info/serverTimeOffset').on('value', s => { liveHostServerOffset = Number(s.val()) || 0; });
 function liveHostNow(){ return Date.now() + liveHostServerOffset; }
@@ -357,8 +360,16 @@ function processLiveRejoinRequest(pin, newUid, req){
   }).catch(() => { reqRef.remove().catch(() => {}); });
 }
 
+// A question this panel saw start (not one already running when the panel loaded): its countdown runs
+// on performance.now(), which no clock change can move, so it always gets its full time.
+let liveQuestionLocalStart = null;   // { index, t: performance.now() at launch }
+
 function handleLiveMetaSnapshot(snap){
+  const prev = liveMeta;
   liveMeta = snap.val();
+  if(prev && liveMeta && liveMeta.status === 'QUESTION' && (prev.status !== 'QUESTION' || prev.currentIndex !== liveMeta.currentIndex)){
+    liveQuestionLocalStart = { index: liveMeta.currentIndex, t: performance.now() };
+  }
   if(!liveMeta){
     // Deleted from elsewhere (or never existed): fall back to the topic picker.
     detachLiveRoom();
@@ -386,7 +397,7 @@ function detachLiveRoom(){
   clearTimeout(liveRevealDelay);
   liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
   liveRemovedUids = new Set();
-  liveRevealing = false; liveFinishing = false;
+  liveRevealing = false; liveFinishing = false; liveQuestionLocalStart = null;
 }
 
 // ── ROOM STATE → SCREEN ──────────────────────────────────────────────────
@@ -504,12 +515,15 @@ function startLiveQuestionTimer(){
   clearInterval(liveQuestionTimer);
   clearTimeout(liveRevealDelay);
   const index = liveMeta.currentIndex;
-  // questionStartedAt is server time, so the countdown uses server time too: a host computer whose
-  // clock is off would otherwise reveal every question early (or late).
   const total = liveMeta.questionSeconds;
+  const local = liveQuestionLocalStart && liveQuestionLocalStart.index === index ? liveQuestionLocalStart.t : null;
   const deadline = (liveMeta.questionStartedAt || liveHostNow()) + total * 1000;
+  // Seen starting here: the local stopwatch. Otherwise (a reload mid-question): server time, never more than the full time.
+  const msLeft = () => local != null
+    ? total * 1000 - (performance.now() - local)
+    : Math.min(total * 1000, deadline - liveHostNow());
   const tick = () => {
-    const left = Math.max(0, Math.ceil((deadline - liveHostNow()) / 1000));
+    const left = Math.max(0, Math.ceil(msLeft() / 1000));
     const pill = document.getElementById('live-timer-pill');
     if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
     if(left <= 0){

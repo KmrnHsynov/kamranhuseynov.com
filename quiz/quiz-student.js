@@ -857,6 +857,10 @@ let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false, liveStatus = '';
 let liveCountdownTimer = null;
 let liveRenderGen = 0;
 let liveTimeUp = false;   // the question's time ran out on this screen: no more answers
+// A question this phone saw start live is timed with performance.now() from that moment, which a wrong
+// or changing phone clock cannot affect. Server time (serverNow) is only used for a question that was
+// already running when the phone joined or reloaded.
+let liveLastMeta = null, liveQuestionLocalStart = null;   // { index, t }
 
 // ── JOIN ──────────────────────────────────────────────
 function showLiveJoinError(msg){
@@ -957,6 +961,7 @@ db.ref('.info/connected').on('value', snap => {
 
 // ── ROOM STATE ────────────────────────────────────────
 function attachLiveRoomListener(){
+  liveLastMeta = null; liveQuestionLocalStart = null;
   liveRoomMetaRef = db.ref('live_rooms/' + livePin + '/meta');
   liveRoomMetaRef.on('value', snap => {
     const meta = snap.val();
@@ -990,6 +995,11 @@ function detachLiveRoomListener(){
 // render and clobber it with stale content.
 function handleLiveMetaUpdate(meta){
   clearInterval(liveCountdownTimer);
+  const prev = liveLastMeta;
+  liveLastMeta = meta;
+  if(prev && meta.status === 'QUESTION' && (prev.status !== 'QUESTION' || prev.currentIndex !== meta.currentIndex)){
+    liveQuestionLocalStart = { index: meta.currentIndex, t: performance.now() };
+  }
   liveStatus = meta.status;
   const gen = ++liveRenderGen;
   if(meta.status === 'LOBBY') renderLiveWaiting(meta);
@@ -1138,15 +1148,21 @@ function startLiveCountdown(meta){
   clearInterval(liveCountdownTimer);
   const total = meta.questionSeconds;
   const deadline = liveQuestionStartedLocal + total * 1000;
+  const local = liveQuestionLocalStart && liveQuestionLocalStart.index === meta.currentIndex ? liveQuestionLocalStart.t : null;
+  const msLeft = () => local != null
+    ? total * 1000 - (performance.now() - local)
+    : Math.min(total * 1000, deadline - serverNow());
   const tick = () => {
-    const left = Math.max(0, Math.ceil((deadline - serverNow()) / 1000));
+    const left = Math.max(0, Math.ceil(msLeft() / 1000));
     const pill = document.getElementById('live-q-timer');
     if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
     if(left <= 0){
       clearInterval(liveCountdownTimer);
-      // Answers stop here, on the same clock the teacher's screen uses. The teacher's screen waits a
-      // moment before scoring, so an answer sent just before this point still arrives in time.
-      if(!liveAnswered){
+      // Answers stop here when this phone saw the question start: its stopwatch started a moment after
+      // the teacher's, and the teacher's screen waits a little before scoring, so an answer sent just
+      // before this point still counts. When timed by server time (joined mid-question), the phone's
+      // clock may be off, so answering stays open until the teacher's screen ends the question.
+      if(!liveAnswered && local != null){
         liveTimeUp = true;
         lockLiveAnswerUI();
         const status = document.getElementById('live-answer-status');
