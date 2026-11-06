@@ -23,21 +23,31 @@ let liveQuestionEligibleUids = [];  // players present when this question launch
 let liveQuestions      = [];    // public shape, in-memory copy used for rendering
 let liveAnswerKeyMap   = {};    // id -> answerKeyEntry, in-memory copy used for scoring
 let liveLastRevealStats = null;
-let liveRevealing = false;  // guards against the timer, the "everyone answered" check, and the
-                             // manual button all racing to call revealLiveQuestion() at once
+let liveRevealing = false;  // guards against the timer and the manual button both calling
+                             // revealLiveQuestion() at once
 let liveFinishing = false;  // guards against a double-click on an end-game button
 
 let liveMetaRef = null, liveRoomPlayersRef = null, liveAnswersRef = null, liveAnswersHandler = null;
-let liveRejoinRequestsRef = null;
+let liveRejoinRequestsRef = null, liveBannedRef = null;
 let liveQuestionTimer = null;
+let liveRevealDelay = null;   // the short wait between the timer running out and scoring
 
-// Players who reached the leave limit (flags.flagged). Remembered for the whole game, so clearing
-// the flag from a browser console does not bring them back.
+// After the timer runs out, wait this long before reading the answers, so an answer sent in the
+// last moment still reaches the server. Students' screens stop taking answers at 0.
+const LIVE_REVEAL_GRACE_MS = 1500;
+
+// Players the teacher kicked, or who reached the leave limit (flags.flagged). Saved in the room
+// (live_rooms/<pin>/banned), where the rules stop them from joining again or sending answers. It also
+// survives a reload of this panel, and clearing the flag from a browser console does not undo it.
 let liveRemovedUids = new Set();
+let liveBannedMap = {};
 function liveIsRemoved(uid){
   const p = livePlayersMap[uid];
-  if(p && p.flags && p.flags.flagged) liveRemovedUids.add(uid);
-  return liveRemovedUids.has(uid);
+  if(p && p.flags && p.flags.flagged && !liveRemovedUids.has(uid)){
+    liveRemovedUids.add(uid);
+    if(liveRoomPin && !liveBannedMap[uid]) db.ref('live_rooms/' + liveRoomPin + '/banned/' + uid).set(true).catch(() => {});
+  }
+  return liveRemovedUids.has(uid) || !!liveBannedMap[uid];
 }
 
 // How far this computer's clock is from the server's (kept up to date by Firebase).
@@ -316,6 +326,8 @@ function attachLiveRoom(pin){
   });
   liveRejoinRequestsRef = db.ref('live_rooms/' + pin + '/rejoin_requests');
   liveRejoinRequestsRef.on('child_added', snap => processLiveRejoinRequest(pin, snap.key, snap.val()));
+  liveBannedRef = db.ref('live_rooms/' + pin + '/banned');
+  liveBannedRef.on('value', snap => { liveBannedMap = snap.val() || {}; }, () => {});
 }
 
 // A player rejoining under a new uid (new device, or an old session that didn't survive a
@@ -335,7 +347,7 @@ function processLiveRejoinRequest(pin, newUid, req){
     const oldPlayer = snap.val();
     // Refused (request dropped, nobody's score moves) unless the old player is disconnected and the
     // names match: otherwise anyone could type a classmate's name and push them out of the game.
-    if(!liveRejoinAllowed(newSnap.val(), oldPlayer)) return reqRef.remove();
+    if(!liveRejoinAllowed(newSnap.val(), oldPlayer) || liveIsRemoved(targetUid) || liveIsRemoved(newUid)) return reqRef.remove();
     const updates = {};
     updates['players/' + newUid + '/score'] = (oldPlayer && Number(oldPlayer.score)) || 0;
     if(oldPlayer && oldPlayer.flags) updates['players/' + newUid + '/flags'] = oldPlayer.flags;
@@ -367,8 +379,11 @@ function detachLiveRoom(){
   if(liveMetaRef) liveMetaRef.off('value', handleLiveMetaSnapshot);
   if(liveRoomPlayersRef) liveRoomPlayersRef.off();
   if(liveRejoinRequestsRef) liveRejoinRequestsRef.off();
-  liveMetaRef = null; liveRoomPlayersRef = null; liveRejoinRequestsRef = null;
+  if(liveBannedRef) liveBannedRef.off();
+  liveMetaRef = null; liveRoomPlayersRef = null; liveRejoinRequestsRef = null; liveBannedRef = null;
+  liveBannedMap = {};
   clearInterval(liveQuestionTimer);
+  clearTimeout(liveRevealDelay);
   liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
   liveRemovedUids = new Set();
   liveRevealing = false; liveFinishing = false;
@@ -432,7 +447,9 @@ function renderLivePlayerList(){
 function kickLivePlayer(uid){
   const name = (livePlayersMap[uid] && livePlayersMap[uid].profile || {}).displayName || 'Bu tələbə';
   if(!confirm(`${name} oyundan çıxarılsın?`)) return;
-  db.ref('live_rooms/' + liveRoomPin + '/players/' + uid).remove().catch(err => alert('Xəta: ' + err.message));
+  // Marked as banned in the same write, so the rules refuse it if they try to join again.
+  db.ref('live_rooms/' + liveRoomPin).update({ ['players/' + uid]: null, ['banned/' + uid]: true })
+    .catch(err => alert('Xəta: ' + err.message));
 }
 
 // ── QUESTION LIVE ─────────────────────────────────────────────────────────
@@ -449,10 +466,9 @@ function renderLiveQuestionActive(){
   const q = liveQuestions[i];
   liveAnswersMap = {};
   liveRevealing = false;
-  // Frozen at question-launch, not recomputed live: someone joining mid-question hasn't even seen
-  // it yet, so they must not count toward "everyone answered" (that was making the round end the
-  // moment the original players finished, cutting latecomers off entirely). A disconnect among
-  // this set still drops out below, via the connected!==false check in updateLiveAnsweredCount.
+  // Frozen at question-launch, not recomputed live: the "x / y answered" counter is for the players
+  // who were there when the question started. A disconnect among them drops out of the count
+  // (see updateLiveAnsweredCount).
   liveQuestionEligibleUids = Object.entries(livePlayersMap)
     .filter(([uid, p]) => (p.profile || {}).displayName && (p.profile || {}).connected !== false && !liveIsRemoved(uid))
     .map(([uid]) => uid);
@@ -486,6 +502,8 @@ function liveQuestionOptionsHtml(q){
 
 function startLiveQuestionTimer(){
   clearInterval(liveQuestionTimer);
+  clearTimeout(liveRevealDelay);
+  const index = liveMeta.currentIndex;
   // questionStartedAt is server time, so the countdown uses server time too: a host computer whose
   // clock is off would otherwise reveal every question early (or late).
   const total = liveMeta.questionSeconds;
@@ -494,18 +512,21 @@ function startLiveQuestionTimer(){
     const left = Math.max(0, Math.ceil((deadline - liveHostNow()) / 1000));
     const pill = document.getElementById('live-timer-pill');
     if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
-    if(left <= 0){ clearInterval(liveQuestionTimer); revealLiveQuestion(); }
+    if(left <= 0){
+      clearInterval(liveQuestionTimer);
+      // Tied to this question, so a late timeout can never end the next one.
+      liveRevealDelay = setTimeout(() => revealLiveQuestion(index), LIVE_REVEAL_GRACE_MS);
+    }
   };
   tick();
   liveQuestionTimer = setInterval(tick, 500);
 }
 
 // Called whenever either the answers for this question or the roster changes, from both
-// listeners in attachLiveRoom(); the single choke point also decides whether to auto-reveal.
+// listeners in attachLiveRoom(). Only updates the counter: a question always runs its full time
+// (or until the teacher presses the reveal button), even when everyone has already answered.
 function updateLiveAnsweredCount(){
-  // Only players eligible for *this* question (frozen at launch) count toward "everyone
-  // answered" - a mid-question joiner doesn't inflate it, but a disconnect among the eligible
-  // set still drops out so the round doesn't wait forever on someone who left.
+  // Players eligible for *this* question (frozen at launch), minus any who dropped out since.
   const connected = liveQuestionEligibleUids.filter(uid => {
     const p = livePlayersMap[uid];
     return p && (p.profile || {}).connected !== false && !liveIsRemoved(uid);
@@ -513,7 +534,6 @@ function updateLiveAnsweredCount(){
   const answered = Object.keys(liveAnswersMap).filter(uid => !liveIsRemoved(uid)).length;
   const el = document.getElementById('live-answered-count');
   if(el) el.textContent = `${answered} / ${connected} cavab verdi`;
-  if(liveMeta && liveMeta.status === 'QUESTION' && connected > 0 && answered >= connected) revealLiveQuestion();
 }
 
 // ── REVEAL ────────────────────────────────────────────────────────────────
@@ -526,14 +546,25 @@ function extractLiveAnswer(q, a){
   return undefined;
 }
 
-function revealLiveQuestion(){
+// `expectedIndex` is passed by the timer: the reveal only goes ahead if that question is still on.
+async function revealLiveQuestion(expectedIndex){
   if(!liveMeta || liveMeta.status !== 'QUESTION' || liveRevealing) return;
+  if(expectedIndex != null && liveMeta.currentIndex !== expectedIndex) return;
   liveRevealing = true;
   clearInterval(liveQuestionTimer);
+  clearTimeout(liveRevealDelay);
+  const pin = liveRoomPin;
   const i = liveMeta.currentIndex;
   const q = liveQuestions[i];
   const key = liveAnswerKeyMap[String(q.id)];
-  const answers = liveAnswersMap || {};
+  // Read fresh from the server: the listener's copy can be missing answers the server already took
+  // in the last moment, and those students could never send again (one answer per question).
+  let answers;
+  try{ answers = (await db.ref('live_rooms/' + pin + '/answers/' + i).once('value')).val() || {}; }
+  catch(e){ answers = liveAnswersMap || {}; }
+  // The room may have been left, or moved on, while that was loading.
+  if(pin !== liveRoomPin || !liveMeta || liveMeta.status !== 'QUESTION' || liveMeta.currentIndex !== i) return;
+  liveAnswersMap = answers;
   const updates = { 'meta/status': 'REVEAL' };
   let correctCount = 0;
   Object.entries(answers).forEach(([uid, a]) => {
@@ -552,7 +583,7 @@ function revealLiveQuestion(){
   });
   liveLastRevealStats = { answeredCount: Object.keys(answers).filter(uid => !liveIsRemoved(uid)).length, correctCount };
   // Reset on failure so a network hiccup doesn't permanently wedge the round: without this, every
-  // future trigger (timer, "everyone answered", the manual button) would keep no-opping forever.
+  // future trigger (the timer, the manual button) would keep no-opping forever.
   db.ref('live_rooms/' + liveRoomPin).update(updates).catch(err => { liveRevealing = false; alert('Xəta: ' + err.message); });
 }
 

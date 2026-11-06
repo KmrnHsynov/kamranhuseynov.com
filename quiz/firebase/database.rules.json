@@ -66,7 +66,7 @@
       "$exam": {
         "$attempt": {
           ".write": "auth != null && newData.child('uid').val() === auth.uid && (!data.exists() || (data.child('uid').val() === auth.uid && data.child('status').val() === 'in_progress'))",
-          ".validate": "newData.hasChildren(['attemptId', 'uid', 'status', 'studentName', 'topic', 'examVersion', 'startedAt', 'updatedAt', 'qids', 'tabSwitches', 'timeAway', 'pastes', 'autoSubmitted']) && (newData.child('status').val() === 'in_progress') === !newData.child('finishedAt').exists() && (data.exists() || ((!root.child('student_quiz').child($exam).child('opensAt').exists() || now >= root.child('student_quiz').child($exam).child('opensAt').val()) && (!root.child('student_quiz').child($exam).child('closesAt').exists() || now <= root.child('student_quiz').child($exam).child('closesAt').val()))) && (!root.child('student_quiz').child($exam).child('examMinutes').exists() || now <= newData.child('startedAt').val() + root.child('student_quiz').child($exam).child('examMinutes').val() * 60000 + 120000)",
+          ".validate": "newData.hasChildren(['attemptId', 'uid', 'status', 'studentName', 'topic', 'examVersion', 'startedAt', 'updatedAt', 'qids', 'tabSwitches', 'timeAway', 'pastes', 'autoSubmitted']) && (newData.child('status').val() === 'in_progress') === !newData.child('finishedAt').exists() && (data.exists() || (root.child('student_quiz').child($exam).exists() && root.child('student_quiz').child($exam).child('active').val() !== false && (!root.child('student_quiz').child($exam).child('opensAt').exists() || now >= root.child('student_quiz').child($exam).child('opensAt').val()) && (!root.child('student_quiz').child($exam).child('closesAt').exists() || now <= root.child('student_quiz').child($exam).child('closesAt').val()) && (root.child('student_quiz').child($exam).child('oneAttempt').val() !== true || root.child('attempt_locks').child($exam).child(auth.uid).val() === $attempt))) && (root.child('answer_keys').child($exam).child(newData.child('examVersion').val()).child('examMinutes').exists() ? now <= newData.child('startedAt').val() + root.child('answer_keys').child($exam).child(newData.child('examVersion').val()).child('examMinutes').val() * 60000 + 120000 : (!root.child('student_quiz').child($exam).child('examMinutes').exists() || now <= newData.child('startedAt').val() + root.child('student_quiz').child($exam).child('examMinutes').val() * 60000 + 120000))",
           "attemptId":     { ".validate": "newData.isString() && newData.val() === $attempt" },
           "uid":           { ".validate": "newData.val() === auth.uid" },
           "status":        { ".validate": "newData.isString() && (newData.val() === 'in_progress' || newData.val() === 'done' || newData.val() === 'exited')" },
@@ -99,6 +99,18 @@
             }
           },
           "$other": { ".validate": false }
+        }
+      }
+    },
+
+    "attempt_locks": {
+      ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+      "$exam": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && (!data.exists() || data.val() === newData.val())",
+          ".validate": "newData.isString() && newData.val().length <= 40"
         }
       }
     },
@@ -138,7 +150,7 @@
           ".read": true,
           "$uid": {
             "profile": {
-              ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'kmrnhsynov@gmail.com')",
+              ".write": "auth != null && ((auth.uid === $uid && !root.child('live_rooms').child($pin).child('banned').child($uid).exists()) || auth.token.email === 'kmrnhsynov@gmail.com')",
               ".validate": "newData.hasChildren(['displayName', 'joinedAt'])",
               "displayName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60" },
               "joinedAt":    { ".validate": "newData.isNumber()" },
@@ -165,7 +177,7 @@
           "$i": {
             "$uid": {
               ".read": "auth != null && auth.uid === $uid",
-              ".write": "auth != null && auth.uid === $uid && !data.exists() && root.child('live_rooms').child($pin).child('meta').child('status').val() === 'QUESTION' && (root.child('live_rooms').child($pin).child('meta').child('currentIndex').val() + '') === $i && now <= root.child('live_rooms').child($pin).child('meta').child('questionStartedAt').val() + root.child('live_rooms').child($pin).child('meta').child('questionSeconds').val() * 1000 + 15000",
+              ".write": "auth != null && auth.uid === $uid && !data.exists() && !root.child('live_rooms').child($pin).child('banned').child($uid).exists() && root.child('live_rooms').child($pin).child('meta').child('status').val() === 'QUESTION' && (root.child('live_rooms').child($pin).child('meta').child('currentIndex').val() + '') === $i && now <= root.child('live_rooms').child($pin).child('meta').child('questionStartedAt').val() + root.child('live_rooms').child($pin).child('meta').child('questionSeconds').val() * 1000 + 15000",
               ".validate": "newData.hasChildren(['responseTimeMs', 'submittedAt'])",
               "responseTimeMs": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 600000" },
               "submittedAt":    { ".validate": "newData.isNumber() && newData.val() === now" },
@@ -185,6 +197,12 @@
               ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'kmrnhsynov@gmail.com')"
             }
           }
+        },
+
+        "banned": {
+          ".read": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          ".write": "auth != null && auth.token.email === 'kmrnhsynov@gmail.com'",
+          "$uid": { ".validate": "newData.val() === true" }
         },
 
         "rejoin_requests": {

@@ -56,7 +56,7 @@ function lookupHtml(){
 
 function resultCardHtml(r){
   const n = v => Number(v) || 0;
-  return `<div style="padding:12px 14px;border-radius:12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25)">
+  return `<div class="result-card">
     <div style="font-size:26px;font-weight:800;color:var(--correct)">${n(r.pct)}%</div>
     <div style="font-weight:600">${esc(r.studentName)}</div>
     <div style="color:var(--text2)">${esc(r.topic)}</div>
@@ -94,7 +94,7 @@ function persistState(finishing){
   try{
     localStorage.setItem(STORAGE_KEY_ATTEMPT, JSON.stringify({
       v: 2, finishing: !!finishing, autoReason, attemptId, attemptCreated, examKey, examVersion, topicName, studentName, quizQs, quizAns, quizIdx,
-      startedAt, examSeconds: EXAM_SECONDS, leaveLimit,
+      startedAt, examSeconds: EXAM_SECONDS, leaveLimit, oneAttempt: examOneAttempt,
       monitor: monitor ? { ...monitor.stats(), elapsed: Math.floor((Date.now() - startedAt) / 1000) } : null
     }));
   }catch(e){}
@@ -116,6 +116,25 @@ function markExamTaken(key){
   try{ const t = takenExams(); t[key] = Date.now(); localStorage.setItem(STORAGE_KEY_TAKEN, JSON.stringify(t)); }catch(e){}
 }
 function blockedAsRetake(){ return examOneAttempt && examTakenHere(examKey); }
+
+// The database's own record of a one-attempt exam: attempt_locks/<exam>/<sign-in id> = attempt id.
+// It can be written once, and the rules only let an attempt be created if it names that attempt, so
+// the same sign-in cannot start a second one (clearing localStorage or editing it does not help).
+// A private tab or fully cleared site data gives a new anonymous sign-in, which this cannot stop;
+// Analytics still flags those (same name from several devices).
+// Resolves to true (this attempt holds the lock), false (another attempt already holds it), or null
+// (could not tell: no connection, or rules without locks yet; the attempt save decides then).
+function claimAttemptLock(){
+  if(!examOneAttempt || !attemptId) return Promise.resolve(true);
+  return authReady.then(u => {
+    const ref = db.ref('attempt_locks/' + analyticsKey() + '/' + u.uid);
+    return ref.set(attemptId).then(() => true, e => {
+      if(!e || e.code !== 'PERMISSION_DENIED') return null;
+      // Refused: either another attempt holds the lock, or the rules do not know about locks yet.
+      return ref.once('value').then(s => (s.val() && s.val() !== attemptId) ? false : null, () => null);
+    });
+  }).catch(() => null);
+}
 
 function readLeaveLimit(exam){
   const n = parseInt(exam && exam.leaveLimit, 10);
@@ -325,7 +344,7 @@ function showLobby(){
   const count = Math.min(examQCount, MAX_QUESTIONS);
   const closing = examClosesAt ? `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
   const notice = leaveLimit > 0 ? `
-      <p style="font-size:12px;color:var(--wrong);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:10px 12px;margin-bottom:16px;line-height:1.6;text-align:left">
+      <p class="notice-danger">
         ⚠ Diqqət: Bu səhifədən çıxmaq (başqa tab və ya pəncərə) qeydə alınır. ${leaveLimit} dəfə çıxsanız və ya brauzeri bağlasanız, imtahan avtomatik göndəriləcək.
       </p>` : '';
   document.getElementById('lobby-view').innerHTML = `
@@ -409,6 +428,12 @@ async function startExam(){
   startedAt = Date.now();
   attemptCreated = false;
   attemptId = db.ref('analytics/'+analyticsKey()).push().key;
+  if(examOneAttempt){
+    startingExam = true;
+    const lock = await claimAttemptLock();
+    startingExam = false;
+    if(lock === false){ markExamTaken(examKey); attemptId = ''; showLobby(); return; }
+  }
   monitor = leaveLimit > 0 ? createMonitor(leaveLimit) : null;
   autoReason = null;
   examActive = true;
@@ -471,10 +496,10 @@ function buildQuizCard(q){
       <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false)">✗ Yanlış</div>
     </div>`;
   } else if(q.type === 'short'){
-    body = `<textarea class="quiz-short-input" id="short-inp" oninput="liveShort(${q.id})" placeholder="Cavabınızı buraya yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px;transition:border-color .2s"></textarea>
+    body = `<textarea class="quiz-short-input" id="short-inp" oninput="liveShort(${q.id})" placeholder="Cavabınızı buraya yazın…"></textarea>
     <div id="ans-status" style="margin-top:8px;min-height:18px;font-size:12px;color:var(--muted)"></div>`;
   } else if(q.type === 'fill'){
-    const rendered = (q.fillText||'').replace(/\[blank\]/gi, () => `<input class="blank-inp" type="text"/>`);
+    const rendered = esc(q.fillText).replace(/\[blank\]/gi, () => `<input class="blank-inp" type="text"/>`);
     body = `<div class="fill-text-render" oninput="liveFill(${q.id})">${rendered}</div>
     <div id="ans-status" style="margin-top:12px;min-height:18px;font-size:12px;color:var(--muted)"></div>`;
   }
@@ -601,7 +626,9 @@ function saveAttempt(status){
     return authReady
       .then(u => {
         data.uid = u.uid;
-        return first ? db.ref(path).set({ ...data, startedAt: SERVER_TIME }) : db.ref(path).update(data);
+        if(!first) return db.ref(path).update(data);
+        // Claimed again before creating: the first try may have failed on a bad connection.
+        return claimAttemptLock().then(() => db.ref(path).set({ ...data, startedAt: SERVER_TIME }));
       })
       .then(() => { lastSaveError = ''; return true; }, e => {
         if(first) attemptCreated = false;
@@ -703,7 +730,7 @@ function resumeExam(s){
   examKey = s.examKey; examVersion = s.examVersion || 0; attemptCreated = !!s.attemptCreated;
   topicName = s.topicName; studentName = s.studentName;
   quizQs = s.quizQs; quizAns = s.quizAns || {}; quizIdx = s.quizIdx || 0;
-  EXAM_SECONDS = s.examSeconds; leaveLimit = s.leaveLimit;
+  EXAM_SECONDS = s.examSeconds; leaveLimit = s.leaveLimit; examOneAttempt = s.oneAttempt === true;
   attemptId = s.attemptId; startedAt = s.startedAt; autoReason = s.finishing ? (s.autoReason || null) : null;
   timeLeft = EXAM_SECONDS - Math.floor((Date.now() - startedAt) / 1000);
   monitor = leaveLimit > 0 ? createMonitor(leaveLimit, null, s.monitor || undefined) : null;
@@ -817,7 +844,7 @@ function showView(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-function esc(s){ return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ══════════════════════════════════════════════════════
 //  LIVE GAME (Kahoot-style, host-paced — separate state from the exam above, prefixed `live*`
@@ -829,6 +856,7 @@ let liveCurrentQuestion = null, liveQuestionStartedLocal = 0, liveAnswered = fal
 let liveMonitor = null, liveLeaveLimit = 0, liveJoined = false, liveStatus = '';
 let liveCountdownTimer = null;
 let liveRenderGen = 0;
+let liveTimeUp = false;   // the question's time ran out on this screen: no more answers
 
 // ── JOIN ──────────────────────────────────────────────
 function showLiveJoinError(msg){
@@ -885,9 +913,15 @@ async function joinLiveRoom(){
       if(!resume) rejoinTargetUid = null;
     }
 
-    await db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile').set({
-      displayName: liveDisplayName, joinedAt: firebase.database.ServerValue.TIMESTAMP, connected: true
-    });
+    try{
+      await db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile').set({
+        displayName: liveDisplayName, joinedAt: firebase.database.ServerValue.TIMESTAMP, connected: true
+      });
+    }catch(e){
+      // The rules refuse a player the teacher removed from this game (live_rooms/<pin>/banned).
+      if(e && e.code === 'PERMISSION_DENIED'){ showLiveJoinError('Müəllim sizi bu oyundan çıxarıb.'); return; }
+      throw e;
+    }
     db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile/connected').onDisconnect().set(false);
     if(rejoinTargetUid){
       await db.ref('live_rooms/' + livePin + '/rejoin_requests/' + liveUid).set({
@@ -910,6 +944,16 @@ async function joinLiveRoom(){
     btn.disabled = false; btn.textContent = '▶ Qoşul';
   }
 }
+
+// Firebase runs an onDisconnect write only once. After a short connection drop (a locked phone
+// screen, school Wi-Fi) the player was left marked as gone for the rest of the game. Every time the
+// connection comes back, mark them present again and set up the disconnect write again.
+db.ref('.info/connected').on('value', snap => {
+  if(snap.val() !== true || !liveJoined || !livePin || !liveUid) return;
+  const ref = db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/profile/connected');
+  ref.onDisconnect().set(false).catch(() => {});
+  ref.set(true).catch(() => {});   // refused once the player was removed from the game
+});
 
 // ── ROOM STATE ────────────────────────────────────────
 function attachLiveRoomListener(){
@@ -949,7 +993,7 @@ function handleLiveMetaUpdate(meta){
   liveStatus = meta.status;
   const gen = ++liveRenderGen;
   if(meta.status === 'LOBBY') renderLiveWaiting(meta);
-  else if(meta.status === 'QUESTION'){ liveAnswered = false; loadAndRenderLiveQuestion(meta, gen); }
+  else if(meta.status === 'QUESTION'){ liveAnswered = false; liveTimeUp = false; loadAndRenderLiveQuestion(meta, gen); }
   else if(meta.status === 'REVEAL') renderLiveReveal(gen);
   else renderLiveFinished(meta, gen);
 }
@@ -1028,10 +1072,10 @@ function liveAnswerInputHtml(q){
     <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:true}, this)">✓ Doğru</div>
     <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:false}, this)">✗ Yanlış</div>
   </div>`;
-  if(q.type === 'short') return `<textarea id="live-short-inp" class="quiz-short-input" placeholder="Cavabınızı yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px"></textarea>
+  if(q.type === 'short') return `<textarea id="live-short-inp" class="quiz-short-input" placeholder="Cavabınızı yazın…"></textarea>
     <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="submitLiveShort()">Göndər</button>`;
   if(q.type === 'fill'){
-    const rendered = (q.fillText || '').replace(/\[blank\]/gi, () => '<input class="blank-inp" type="text"/>');
+    const rendered = esc(q.fillText).replace(/\[blank\]/gi, () => '<input class="blank-inp" type="text"/>');
     return `<div class="fill-text-render">${rendered}</div>
     <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="submitLiveFill()">Göndər</button>`;
   }
@@ -1052,18 +1096,18 @@ function unlockLiveAnswerUI(){
 }
 
 function submitLiveAnswer(fields, el){
-  if(liveAnswered) return;
+  if(liveAnswered || liveTimeUp) return;
   el?.classList.add('sel');
   writeLiveAnswer(fields);
 }
 function submitLiveShort(){
-  if(liveAnswered) return;
+  if(liveAnswered || liveTimeUp) return;
   const val = (document.getElementById('live-short-inp')?.value || '').trim();
   if(!val) return;
   writeLiveAnswer({ shortAnswer: val.slice(0, 500) });
 }
 function submitLiveFill(){
-  if(liveAnswered) return;
+  if(liveAnswered || liveTimeUp) return;
   const vals = [...document.querySelectorAll('.blank-inp')].map(i => i.value.trim());
   if(!vals.length || !vals.every(Boolean)) return;
   writeLiveAnswer({ fillAnswers: vals.map(v => v.slice(0, 200)) });
@@ -1098,7 +1142,17 @@ function startLiveCountdown(meta){
     const left = Math.max(0, Math.ceil((deadline - serverNow()) / 1000));
     const pill = document.getElementById('live-q-timer');
     if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
-    if(left <= 0) clearInterval(liveCountdownTimer);
+    if(left <= 0){
+      clearInterval(liveCountdownTimer);
+      // Answers stop here, on the same clock the teacher's screen uses. The teacher's screen waits a
+      // moment before scoring, so an answer sent just before this point still arrives in time.
+      if(!liveAnswered){
+        liveTimeUp = true;
+        lockLiveAnswerUI();
+        const status = document.getElementById('live-answer-status');
+        if(status) status.textContent = '⌛ Vaxt bitdi';
+      }
+    }
   };
   tick();
   liveCountdownTimer = setInterval(tick, 500);

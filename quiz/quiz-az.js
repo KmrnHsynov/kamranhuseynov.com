@@ -273,6 +273,10 @@ function addQuestion(type='mc'){
 }
 
 function deleteQ(id){
+  // The ✕ is always visible on touch screens, so a stray tap must not delete a question by itself.
+  const q=getQ(id);
+  const label=q&&q.text&&q.text.trim()?`"${q.text.trim().slice(0,60)}"`:'Bu sual';
+  if(!confirm(`${label} silinsin?`)) return;
   questions=questions.filter(q=>q.id!==id);
   if(activeQId===id) activeQId=questions.length?questions[questions.length-1].id:null;
   saveQs();renderSidebar();renderEditor();
@@ -382,8 +386,8 @@ function renderTopics(){
           ${isActive?'✓ Göndərilib':'📤 Göndər'}
         </button>
         ${isActive?`<button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>`:''}
-        ${isActive?`<button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>`:''}
-        <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="deleteTopic(this.dataset.topic)">🗑</button>
+        ${isActive?`<button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>`:''}
+        <button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="deleteTopic(this.dataset.topic)">🗑</button>
       </div>
     </div>`;
   }).join('') : (!remoteOnlyTopics.length ? '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>' : '');
@@ -403,7 +407,7 @@ function renderTopics(){
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-sm btn-accent3" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Sualları serverdən bu redaktora yüklə">✎ Redaktə et</button>
           <button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>
-          <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--wrong);border-color:rgba(239,68,68,.3)" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
+          <button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
         </div>
       </div>`;
     }).join('')
@@ -481,7 +485,7 @@ function assignBulkTopic(){
   // Show confirmation
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
-  banner.style.cssText='padding:10px 16px;background:rgba(67,232,176,.12);border-bottom:1px solid rgba(67,232,176,.2);font-size:12px;color:var(--accent3);font-weight:600';
+  banner.className='notice-banner';
   banner.textContent=`✓ ${changed} sual əlavə edildi${skipped?` · ${skipped} artıq mövzusu olan sual atlandı`:''}`;
   el.prepend(banner);
   setTimeout(()=>banner.remove(), 3000);
@@ -516,7 +520,7 @@ function publishTopic(topicName){
 
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
-  banner.style.cssText='padding:10px 16px;background:rgba(67,232,176,.12);border-bottom:1px solid rgba(67,232,176,.2);font-size:12px;color:var(--accent3);font-weight:600';
+  banner.className='notice-banner';
   banner.textContent='⏳ Göndərilir…';
   el.prepend(banner);
 
@@ -558,8 +562,7 @@ function publishTopic(topicName){
       setTimeout(()=>banner.remove(), 3000);
     })
     .catch(err=>{
-      banner.style.background='rgba(239,68,68,.12)';
-      banner.style.color='var(--wrong)';
+      banner.classList.add('err');
       banner.textContent='❌ Xəta: '+err.message;
       setTimeout(()=>banner.remove(), 4000);
     });
@@ -772,7 +775,7 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
           const dateStr = date.toLocaleDateString('az-AZ',{day:'2-digit',month:'2-digit',year:'numeric'});
           const timeStr = date.toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
           return`<div class="an-row">
-            <div class="an-name"${reviewableRecords([r]).length?` style="cursor:pointer" title="Cavablarına bax" onclick="showAttemptReview(this.dataset.attempt,true)" data-attempt="${esc(r.attemptId)}"`:''}>${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var" style="padding:1px 7px;font-size:10px">×${r.repeatCount}</span>`:''}${deviceBadgesHtml(r)}</div>
+            <div class="an-name"${reviewableRecords([r]).length?` style="cursor:pointer" title="Cavablarına bax" onclick="showAttemptReview(this.dataset.attempt,true)" data-attempt="${esc(r.attemptId)}"`:''}>${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-badge-sm an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var">×${r.repeatCount}</span>`:''}${deviceBadgesHtml(r)}</div>
             <div style="font-size:12px;color:var(--text2)">${esc(r.topic||'—')}</div>
             <div style="font-size:11px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
             <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
@@ -862,11 +865,23 @@ function retractResults(){
   db.ref().update(updates).then(renderAnalytics).catch(err=>alert('Xəta: '+err.message));
 }
 
+// Rules deployed before attempt_locks existed refuse the lock paths: then delete without them.
+function removeWithLocks(updates){
+  return db.ref().update(updates).catch(err=>{
+    if(!err || err.code !== 'PERMISSION_DENIED') throw err;
+    return db.ref().update(Object.fromEntries(Object.entries(updates).filter(([k])=>!k.startsWith('attempt_locks'))));
+  });
+}
+
 function deleteAttempt(exam, id){
   if(!exam || !id) return;
   if(!confirm('Bu cəhd silinsin?')) return;
-  // The released result goes with it, so a deleted attempt cannot still be looked up.
-  db.ref().update({['analytics/'+exam+'/'+id]: null, ['results/'+id]: null})
+  // The released result goes with it, so a deleted attempt cannot still be looked up. So does its
+  // one-attempt lock, so deleting an attempt is how the teacher lets that student take the exam again.
+  const updates = {['analytics/'+exam+'/'+id]: null, ['results/'+id]: null};
+  const rec = lastRecords.find(r=>r._exam===exam && r.attemptId===id);
+  if(rec && rec.uid) updates['attempt_locks/'+exam+'/'+rec.uid] = null;
+  removeWithLocks(updates)
     .then(renderAnalytics)
     .catch(err=>alert('Xəta: '+err.message));
 }
@@ -892,7 +907,7 @@ function toggleLeaveSort(){
 
 // Hints about who sat the exam, from the device id saved with each attempt (see markDeviceFlags).
 function deviceBadgesHtml(r){
-  const badge = (text, title) => ` <span class="an-badge an-warn" title="${esc(title)}" style="padding:1px 7px;font-size:10px">${text}</span>`;
+  const badge = (text, title) => ` <span class="an-badge an-badge-sm an-warn" title="${esc(title)}">${text}</span>`;
   let html = '';
   if(r.deviceTotal > 1) html += badge(`📱 ${r.deviceAttempt}/${r.deviceTotal}`, `Bu cihazdan bu testə ${r.deviceTotal} cəhd var, bu ${r.deviceAttempt}-cidir${r.quickRetry ? '. Əvvəlkindən 10 dəqiqədən az sonra başlayıb.' : '.'}`);
   if(r.quickRetry) html += badge('⚡', 'Eyni cihazdan əvvəlki cəhdlə 10 dəqiqədən az fasilə ilə başlayıb');
@@ -922,7 +937,8 @@ function clearAnalytics(){
   // Released results for those attempts go too, so a cleared attempt cannot still be looked up by its code.
   const updates = { [analyticsFilter==='all' ? 'analytics' : 'analytics/'+analyticsFilter]: null };
   lastRecords.forEach(r=>{ if(r.attemptId) updates['results/'+r.attemptId] = null; });
-  db.ref().update(updates)
+  updates[analyticsFilter==='all' ? 'attempt_locks' : 'attempt_locks/'+analyticsFilter] = null;
+  removeWithLocks(updates)
     .then(()=>{ analyticsFilter='all'; renderAnalytics(); })
     .catch(err=>alert('Xəta: '+err.message));
 }
@@ -947,7 +963,7 @@ function buildQCard(q,i){
         <option value="short" ${q.type==='short'?'selected':''}>Qısa Cavab</option>
         <option value="fill" ${q.type==='fill'?'selected':''}>Boşluq Doldurun</option>
       </select>
-      ${q._fromPdf?'<span style="font-size:10px;color:var(--accent4);padding:2px 7px;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.2);border-radius:5px">PDF</span>':''}
+      ${q._fromPdf?'<span class="pdf-badge">PDF</span>':''}
       ${q.needsReview?`<button class="review-tag btn btn-ghost btn-sm" style="font-size:11px;color:var(--warn)" onclick="confirmReview(${q.id})">⚠ Düzgün cavab müəyyən edilməyib — təsdiq et</button>`:''}
     </div>
     <div style="margin-bottom:12px">
@@ -966,7 +982,7 @@ function buildQCard(q,i){
 
 function buildMC(q){
   const L=['A','B','C','D','E'];
-  return`<div class="field-lbl">Cavab Variantları <span style="font-size:9px;color:var(--muted)">(● = düzgün)</span></div>
+  return`<div class="field-lbl">Cavab Variantları <span style="font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0">(● = düzgün)</span></div>
   <div class="mc-options">${q.options.map((o,i)=>`
     <div class="mc-opt">
       <span class="mc-ltr">${L[i]}</span>
@@ -1011,7 +1027,7 @@ function updF(id,f,v){const q=getQ(id);if(q){q[f]=v;if(f==='correctOption'||f===
 function updOpt(id,i,v){const q=getQ(id);if(q){q.options[i]=v;saveQs();}}
 function updFill(id,v){const q=getQ(id);if(q){q.fillAnswers=v.split(';').map(s=>s.trim());saveQs();clearReview(id);}}
 function getQ(id){return questions.find(q=>q.id===id);}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function esc(s){return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 // ══════════════════════════════════════════════════════
 //  QUIZ ENGINE
@@ -1080,10 +1096,10 @@ function buildQuizCard(q){
       <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false,${q.tfAnswer})">✗ Yanlış</div>
     </div>`;
   } else if(q.type==='short'){
-    body=`<textarea class="quiz-short-input" id="short-inp" placeholder="Cavabınızı buraya yazın…" style="width:100%;background:var(--surface2);border:2px solid var(--border);border-radius:12px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;padding:13px 15px;outline:none;resize:vertical;min-height:80px;transition:border-color .2s"></textarea>
+    body=`<textarea class="quiz-short-input" id="short-inp" placeholder="Cavabınızı buraya yazın…"></textarea>
     <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="submitShort(${q.id})">Cavabı Göndər</button></div>`;
   } else if(q.type==='fill'){
-    const rendered=(q.fillText||'').replace(/\[blank\]/gi,()=>`<input class="blank-inp" type="text"/>`);
+    const rendered=esc(q.fillText).replace(/\[blank\]/gi,()=>`<input class="blank-inp" type="text"/>`);
     body=`<div class="fill-text-render">${rendered}</div>
     <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="submitFill(${q.id})">Cavabı Göndər</button></div>`;
   }
