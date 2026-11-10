@@ -4,38 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Slaydlar — Kamran Huseynov</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="slaydlar.css" />
 </head>
 <body>
 
-  <nav>
-    <a href="index.html" class="nav-logo">KH<span>.dev</span></a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html">Haqqımda</a></li>
-      <li><a href="dərslər.html">Dərslər</a></li>
-      <li><a href="slaydlar.html" class="active">Slaydlar</a></li>
-      <li><a href="məqalələr.html">Məqalələr</a></li>
-      <li><a href="proyektlər.html">Proyektlər</a></li>
-      <li><a href="index.html#contact">Əlaqə</a></li>
-    </ul>
-    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
+  <div class="page">
+    <aside class="side">
+      <div class="site-name"><a href="index.html">Kamran Huseynov</a></div>
+      <p class="site-role">Müəllim &amp; Mühəndis</p>
 
-  <div class="page-header">
-    <div class="page-header-grid"></div>
-    <div class="page-header-content">
-      <div class="page-tag">Tədris Materialları</div>
-      <h1>Slaydlar &amp;<br>Təqdimatlar</h1>
-      <p>Dərslər üçün hazırladığım bütün slaydlar, PDF materiallar və təqdimatlar burada toplanıb.</p>
-    </div>
-  </div>
+      <nav class="menu" aria-label="Əsas menyu">
+        <ul>
+        <li><a href="index.html#home">Haqqımda</a></li>
+        <li><a href="dərslər.html">Dərslər</a></li>
+        <li><a href="slaydlar.html" class="active" aria-current="page">Slaydlar</a></li>
+        <li><a href="məqalələr.html">Məqalələr</a></li>
+        <li><a href="proyektlər.html">Proyektlər</a></li>
+        <li><a href="index.html#contact">Əlaqə</a></li>
+        </ul>
+      </nav>
 
-  <!-- FILTER BAR -->
-  <div class="filters-bar">
+      <h2 class="side-title">Layihələr</h2>
+      <ul class="side-links">
+        <li><a href="sozle.html">SÖZLƏ</a></li>
+        <li><a href="quiz/quiz-az.html">QuizCraft AZ</a></li>
+        <li><a href="pythonbolt.html">PythonBolt</a> və <a href="JSbolt.html">JSBolt</a></li>
+      </ul>
+
+      <h2 class="side-title">Əlaqə</h2>
+      <ul class="side-links">
+        <li><a href="mailto:kmrnhsynov@gmail.com">kmrnhsynov@gmail.com</a></li>
+        <li><a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a></li>
+        <li><a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a></li>
+        <li><a href="https://orcid.org/0009-0003-6951-4966" target="_blank">ORCID: 0009-0003-6951-4966</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <h1>Slaydlar &amp; Təqdimatlar</h1>
+      <p class="lead">Dərslər üçün hazırladığım bütün slaydlar, PDF materiallar və təqdimatlar burada toplanıb.</p>
+
+      <div class="filters-bar">
     <span class="filter-label">Filtrlə:</span>
     <button class="filter-btn active" data-filter="all">Hamısı</button>
     <button class="filter-btn" data-filter="veb-sistemler">Veb sistemləri</button>
@@ -48,8 +57,6 @@
     <button class="filter-btn" data-filter="kompüter-şəbəkə">Kompüter şəbəkələri</button>
     <button class="filter-btn" data-filter="veb-təhlükəsizlik">Veb təhlükəsizlik</button>
   </div>
-
-  <main>
     <div class="slides-grid" id="slidesGrid">
 
       <!-- ═══════════════════════════════════════════════════════
@@ -650,28 +657,20 @@
     </div><!-- /slides-grid -->
 
     <div class="empty-state" id="emptyState">
-      <div class="empty-state-icon">📂</div>
       <p>Bu kateqoriyada hələ material yoxdur.</p>
     </div>
-  </main>
+  
+    </main>
+  </div>
 
-  <footer>
-    <div class="footer-copy">© 2025 Kamran Huseynov.</div>
-    <div class="footer-links">
-      <a href="index.html">Haqqımda</a>
-      <a href="dərslər.html">Dərslər</a>
-      <a href="slaydlar.html">Slaydlar</a>
-      <a href="məqalələr.html">Məqalələr</a>
-      <a href="proyektlər.html">Proyektlər</a>
-      <a href="index.html#contact">Əlaqə</a>
-      <a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a>
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-copy">© 2025 Kamran Huseynov.</div>
     </div>
   </footer>
 
   <script>
-    function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
-
+    
     // Filter logic
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -687,18 +686,6 @@
         });
         document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
       });
-    });
-
-    // Fade-in on scroll
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
-      });
-    }, { threshold: 0.08 });
-    document.querySelectorAll('.slide-card').forEach((el, i) => {
-      el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
-      el.style.transition = `opacity 0.5s ease ${i * 0.07}s, transform 0.5s ease ${i * 0.07}s, border-color 0.3s, box-shadow 0.3s`;
-      observer.observe(el);
     });
   </script>
 </body>

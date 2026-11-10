@@ -4,37 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dərslər — Kamran Huseynov</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="dərslər.css" />
 </head>
 <body>
 
-  <nav>
-    <a href="index.html" class="nav-logo">KH<span>.dev</span></a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html">Haqqımda</a></li>
-      <li><a href="dərslər.html" class="active">Dərslər</a></li>
-      <li><a href="slaydlar.html">Slaydlar</a></li>
-      <li><a href="məqalələr.html">Məqalələr</a></li>
-      <li><a href="proyektlər.html">Proyektlər</a></li>
-      <li><a href="index.html#contact">Əlaqə</a></li>
-    </ul>
-    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
+  <div class="page">
+    <aside class="side">
+      <div class="site-name"><a href="index.html">Kamran Huseynov</a></div>
+      <p class="site-role">Müəllim &amp; Mühəndis</p>
 
-  <div class="page-header">
-    <div class="page-header-grid"></div>
-    <div class="page-header-content">
-      <div class="page-tag">Tədris Proqramı</div>
+      <nav class="menu" aria-label="Əsas menyu">
+        <ul>
+        <li><a href="index.html#home">Haqqımda</a></li>
+        <li><a href="dərslər.html" class="active" aria-current="page">Dərslər</a></li>
+        <li><a href="slaydlar.html">Slaydlar</a></li>
+        <li><a href="məqalələr.html">Məqalələr</a></li>
+        <li><a href="proyektlər.html">Proyektlər</a></li>
+        <li><a href="index.html#contact">Əlaqə</a></li>
+        </ul>
+      </nav>
+
+      <h2 class="side-title">Layihələr</h2>
+      <ul class="side-links">
+        <li><a href="sozle.html">SÖZLƏ</a></li>
+        <li><a href="quiz/quiz-az.html">QuizCraft AZ</a></li>
+        <li><a href="pythonbolt.html">PythonBolt</a> və <a href="JSbolt.html">JSBolt</a></li>
+      </ul>
+
+      <h2 class="side-title">Əlaqə</h2>
+      <ul class="side-links">
+        <li><a href="mailto:kmrnhsynov@gmail.com">kmrnhsynov@gmail.com</a></li>
+        <li><a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a></li>
+        <li><a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a></li>
+        <li><a href="https://orcid.org/0009-0003-6951-4966" target="_blank">ORCID: 0009-0003-6951-4966</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
       <h1>Dərslər</h1>
-      <p>Tədris etdiyim kurslar — hər dərs üzrə materiallar, slaydlar və resurslar.</p>
-    </div>
-  </div>
+      <p class="lead">Tədris etdiyim kurslar — hər dərs üzrə materiallar, slaydlar və resurslar.</p>
 
-  <div class="filters-bar">
+      <div class="filters-bar">
     <span class="filter-label">Filtrlə:</span>
     <button class="filter-btn active" data-filter="all">Hamısı</button>
     <button class="filter-btn" data-filter="web">Veb</button>
@@ -44,17 +54,15 @@
     <button class="filter-btn" data-filter="os">Sistem</button>
     <button class="filter-btn" data-filter="iot">IoT</button>
   </div>
-
-  <main>
-    <div class="courses-grid" id="coursesGrid">
+    <div class="course-list" id="coursesGrid">
 
       <div class="course-card" data-category="web" onclick="location.href='slaydlar.html?ders=veb-sistemler'">
         <div class="course-card-header">
           <span class="course-num">01</span>
-          <span class="course-category-tag tag-web">Veb</span>
+          <span class="course-category-tag">Veb</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Veb sistemləri və texnologiyaları</div>
+          <div class="course-title"><a href="slaydlar.html?ders=veb-sistemler" onclick="event.stopPropagation()">Veb sistemləri və texnologiyaları</a></div>
           <div class="course-desc">HTML, CSS, JavaScript, backend texnologiyaları və müasir veb arxitekturası. Statik saytdan dinamik tətbiqlərə keçid.</div>
         </div>
         <div class="course-card-footer">
@@ -66,10 +74,10 @@
       <div class="course-card" data-category="data" onclick="location.href='slaydlar.html?ders=verilənlər-bazası'">
         <div class="course-card-header">
           <span class="course-num">02</span>
-          <span class="course-category-tag tag-data">Data</span>
+          <span class="course-category-tag">Data</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Verilənlər bazası sistemləri</div>
+          <div class="course-title"><a href="slaydlar.html?ders=verilənlər-bazası" onclick="event.stopPropagation()">Verilənlər bazası sistemləri</a></div>
           <div class="course-desc">SQL, NoSQL, verilənlər modelləşdirməsi, sorğu optimallaşdırması və tranzaksiya idarəetməsi.</div>
         </div>
         <div class="course-card-footer">
@@ -81,10 +89,10 @@
       <div class="course-card" data-category="network" onclick="location.href='slaydlar.html?ders=şəbəkə-əsasları'">
         <div class="course-card-header">
           <span class="course-num">03</span>
-          <span class="course-category-tag tag-network">Şəbəkə</span>
+          <span class="course-category-tag">Şəbəkə</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Şəbəkənin əsasları</div>
+          <div class="course-title"><a href="slaydlar.html?ders=şəbəkə-əsasları" onclick="event.stopPropagation()">Şəbəkənin əsasları</a></div>
           <div class="course-desc">OSI modeli, TCP/IP protokolları, IP ünvanlaması, marşrutlaşdırma və şəbəkə konfiqurasiyasının əsasları.</div>
         </div>
         <div class="course-card-footer">
@@ -96,10 +104,10 @@
       <div class="course-card" data-category="security" onclick="location.href='slaydlar.html?ders=nüfuzetmə'">
         <div class="course-card-header">
           <span class="course-num">04</span>
-          <span class="course-category-tag tag-security">Təhlükəsizlik</span>
+          <span class="course-category-tag">Təhlükəsizlik</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Nüfuzetmə sınaqlarının əsasları</div>
+          <div class="course-title"><a href="slaydlar.html?ders=nüfuzetmə" onclick="event.stopPropagation()">Nüfuzetmə sınaqlarının əsasları</a></div>
           <div class="course-desc">Etik hacking metodologiyası, kəşfiyyat, skan, istismar mərhələləri və pentest hesabatı hazırlama.</div>
         </div>
         <div class="course-card-footer">
@@ -111,10 +119,10 @@
       <div class="course-card" data-category="iot" onclick="location.href='slaydlar.html?ders=iot'">
         <div class="course-card-header">
           <span class="course-num">05</span>
-          <span class="course-category-tag tag-iot">IoT</span>
+          <span class="course-category-tag">IoT</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Elektraonika və IoT cihazların təhlükəsizliyi</div>
+          <div class="course-title"><a href="slaydlar.html?ders=iot" onclick="event.stopPropagation()">Elektraonika və IoT cihazların təhlükəsizliyi</a></div>
           <div class="course-desc">Mikrokontrollerlər, sensor şəbəkələri, IoT protokolları və qoşulu cihazların kibertəhlükəsizliyi.</div>
         </div>
         <div class="course-card-footer">
@@ -126,10 +134,10 @@
       <div class="course-card" data-category="data" onclick="location.href='slaydlar.html?ders=intellektual-analiz'">
         <div class="course-card-header">
           <span class="course-num">06</span>
-          <span class="course-category-tag tag-data">Data</span>
+          <span class="course-category-tag">Data</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Verilənin intellektual analizi</div>
+          <div class="course-title"><a href="slaydlar.html?ders=intellektual-analiz" onclick="event.stopPropagation()">Verilənin intellektual analizi</a></div>
           <div class="course-desc">Maşın öyrənməsi, data mining, statistik analiz, vizuallaşdırma alətləri və proqnozlaşdırma modelləri.</div>
         </div>
         <div class="course-card-footer">
@@ -141,10 +149,10 @@
       <div class="course-card" data-category="os" onclick="location.href='slaydlar.html?ders=əməliyyat-sistemlər'">
         <div class="course-card-header">
           <span class="course-num">07</span>
-          <span class="course-category-tag tag-os">Sistem</span>
+          <span class="course-category-tag">Sistem</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Əməliyyat sistemləri</div>
+          <div class="course-title"><a href="slaydlar.html?ders=əməliyyat-sistemlər" onclick="event.stopPropagation()">Əməliyyat sistemləri</a></div>
           <div class="course-desc">Linux/Windows arxitekturası, proseslər, fayl sistemləri, əmr sətri idarəetməsi və sistem administrasiyası.</div>
         </div>
         <div class="course-card-footer">
@@ -156,10 +164,10 @@
       <div class="course-card" data-category="network" onclick="location.href='slaydlar.html?ders=kompüter-şəbəkə'">
         <div class="course-card-header">
           <span class="course-num">08</span>
-          <span class="course-category-tag tag-network">Şəbəkə</span>
+          <span class="course-category-tag">Şəbəkə</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Kompüter şəbəkələri</div>
+          <div class="course-title"><a href="slaydlar.html?ders=kompüter-şəbəkə" onclick="event.stopPropagation()">Kompüter şəbəkələri</a></div>
           <div class="course-desc">LAN/WAN konfiqurasiyası, Cisco cihazları, VLAN, şəbəkə diaqnostikası və praktiki laboratoriya işləri.</div>
         </div>
         <div class="course-card-footer">
@@ -171,10 +179,10 @@
       <div class="course-card" data-category="security" onclick="location.href='slaydlar.html?ders=veb-təhlükəsizlik'">
         <div class="course-card-header">
           <span class="course-num">09</span>
-          <span class="course-category-tag tag-security">Təhlükəsizlik</span>
+          <span class="course-category-tag">Təhlükəsizlik</span>
         </div>
         <div class="course-card-body">
-          <div class="course-title">Veb təhlükəsizlik</div>
+          <div class="course-title"><a href="slaydlar.html?ders=veb-təhlükəsizlik" onclick="event.stopPropagation()">Veb təhlükəsizlik</a></div>
           <div class="course-desc">OWASP Top 10, XSS, SQL injection, CSRF, autentifikasiya zəiflikləri və müdafiə metodologiyaları.</div>
         </div>
         <div class="course-card-footer">
@@ -186,28 +194,20 @@
     </div><!-- /courses-grid -->
 
     <div class="empty-state" id="emptyState">
-      <div class="empty-state-icon">📚</div>
       <p>Bu kateqoriyada hələ dərs yoxdur.</p>
     </div>
-  </main>
+  
+    </main>
+  </div>
 
-  <footer>
-    <div class="footer-copy">© 2025 Kamran Huseynov.</div>
-    <div class="footer-links">
-      <a href="index.html">Haqqımda</a>
-      <a href="dərslər.html">Dərslər</a>
-      <a href="slaydlar.html">Slaydlar</a>
-      <a href="məqalələr.html">Məqalələr</a>
-      <a href="proyektlər.html">Proyektlər</a>
-      <a href="index.html#contact">Əlaqə</a>
-      <a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a>
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-copy">© 2025 Kamran Huseynov.</div>
     </div>
   </footer>
 
   <script>
-    function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
-
+    
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -222,17 +222,6 @@
         });
         document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
       });
-    });
-
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
-      });
-    }, { threshold: 0.06 });
-    document.querySelectorAll('.course-card').forEach((el, i) => {
-      el.style.opacity = '0'; el.style.transform = 'translateY(20px)';
-      el.style.transition = `opacity 0.5s ease ${i * 0.07}s, transform 0.5s ease ${i * 0.07}s, border-color 0.3s, box-shadow 0.3s`;
-      observer.observe(el);
     });
   </script>
 </body>

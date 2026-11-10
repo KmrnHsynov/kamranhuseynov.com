@@ -4,38 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Məqalələr — Kamran Huseynov</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="məqalələr.css" />
 </head>
 <body>
 
-  <nav>
-    <a href="index.html" class="nav-logo">KH<span>.dev</span></a>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html">Haqqımda</a></li>
-      <li><a href="dərslər.html">Dərslər</a></li>
-      <li><a href="slaydlar.html">Slaydlar</a></li>
-      <li><a href="məqalələr.html" class="active">Məqalələr</a></li>
-      <li><a href="proyektlər.html">Proyektlər</a></li>
-      <li><a href="index.html#contact">Əlaqə</a></li>
-    </ul>
-    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
+  <div class="page">
+    <aside class="side">
+      <div class="site-name"><a href="index.html">Kamran Huseynov</a></div>
+      <p class="site-role">Müəllim &amp; Mühəndis</p>
 
-  <div class="page-header">
-    <div class="page-header-grid"></div>
-    <div class="page-header-content">
-      <div class="page-tag">Yazılar</div>
+      <nav class="menu" aria-label="Əsas menyu">
+        <ul>
+        <li><a href="index.html#home">Haqqımda</a></li>
+        <li><a href="dərslər.html">Dərslər</a></li>
+        <li><a href="slaydlar.html">Slaydlar</a></li>
+        <li><a href="məqalələr.html" class="active" aria-current="page">Məqalələr</a></li>
+        <li><a href="proyektlər.html">Proyektlər</a></li>
+        <li><a href="index.html#contact">Əlaqə</a></li>
+        </ul>
+      </nav>
+
+      <h2 class="side-title">Layihələr</h2>
+      <ul class="side-links">
+        <li><a href="sozle.html">SÖZLƏ</a></li>
+        <li><a href="quiz/quiz-az.html">QuizCraft AZ</a></li>
+        <li><a href="pythonbolt.html">PythonBolt</a> və <a href="JSbolt.html">JSBolt</a></li>
+      </ul>
+
+      <h2 class="side-title">Əlaqə</h2>
+      <ul class="side-links">
+        <li><a href="mailto:kmrnhsynov@gmail.com">kmrnhsynov@gmail.com</a></li>
+        <li><a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a></li>
+        <li><a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a></li>
+        <li><a href="https://orcid.org/0009-0003-6951-4966" target="_blank">ORCID: 0009-0003-6951-4966</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
       <h1>Məqalələr</h1>
-      <p>IT, proqramlaşdırma, təhlükəsizlik və texnologiya haqqında yazdığım məqalələr.</p>
-    </div>
-  </div>
+      <p class="lead">IT, proqramlaşdırma, təhlükəsizlik və texnologiya haqqında yazdığım məqalələr.</p>
 
-  <!-- FILTER BAR -->
-  <div class="filters-bar">
+      <div class="filters-bar">
     <span class="filter-label">Filtrlə:</span>
     <button class="filter-btn active" data-filter="all">Hamısı</button>
     <button class="filter-btn" data-filter="proqramlaşdırma">Proqramlaşdırma</button>
@@ -44,9 +53,6 @@
     <button class="filter-btn" data-filter="web">Web</button>
     <button class="filter-btn" data-filter="karyera">Karyera</button>
   </div>
-
-  <main>
-
     <div class="featured-carousel">
       <a href="https://www.atlantis-press.com/proceedings/iccpeas-25/126024224" target="_blank" class="featured-article active" data-category="təhlükəsizlik">
         <div class="featured-left">
@@ -60,17 +66,6 @@
             <span class="article-tag">Milli Sistem</span>
             <span class="article-date">ICCPEAS 2025</span>
             <span class="read-time">oxumaq üçün →</span>
-          </div>
-        </div>
-        <div class="featured-right">
-          <div class="code-graphic">
-            <span class="cm">// Milli əməliyyat sistemi</span><br>
-            <span class="cm">// Kiber təhlükəsizlik prioriteti</span><br><br>
-            <span class="kw">enum</span> <span class="fn">ThreatVector</span> {<br>
-            &nbsp;&nbsp;<span class="str">FOREIGN_DEPENDENCY</span>,<br>
-            &nbsp;&nbsp;<span class="str">UNDISCLOSED_VULNERABILITIES</span>,<br>
-            &nbsp;&nbsp;<span class="str">EXTERNAL_INTERFERENCE</span><br>
-            }
           </div>
         </div>
       </a>
@@ -89,17 +84,6 @@
             <span class="read-time">oxumaq üçün →</span>
           </div>
         </div>
-        <div class="featured-right">
-          <div class="code-graphic">
-            <span class="cm">// Rəqəmsal suverenlik</span><br>
-            <span class="cm">// İctimai idarəetmə sistemi</span><br><br>
-            <span class="kw">class</span> <span class="fn">PublicAdmin</span> {<br>
-            &nbsp;&nbsp;<span class="str">national_os</span>: System,<br>
-            &nbsp;&nbsp;<span class="str">cyber_resilience</span>: bool,<br>
-            &nbsp;&nbsp;<span class="str">sovereignty</span>: true<br>
-            }
-          </div>
-        </div>
       </a>
 
       <a href="https://medium.com/@kmrnhsynov/linux-%C9%99m%C9%99liyyat-sistemind%C9%99-initramfs-probleminin-h%C9%99lli-77bda7d9758c" target="_blank" class="featured-article" data-category="proqramlaşdırma">
@@ -114,16 +98,6 @@
             <span class="article-tag">Linux</span>
             <span class="article-date">Medium</span>
             <span class="read-time">oxumaq üçün →</span>
-          </div>
-        </div>
-        <div class="featured-right">
-          <div class="code-graphic">
-            <span class="cm"># initramfs xətası</span><br>
-            <span class="str">BusyBox v1.30.1</span><br>
-            <span class="cm"># Enter 'help' for a list</span><br><br>
-            <span class="kw">(initramfs)</span> <span class="fn">fsck</span> /dev/sda1<br>
-            <span class="cm"># fayl sistemini yoxla</span><br><br>
-            <span class="kw">(initramfs)</span> <span class="fn">exit</span>
           </div>
         </div>
       </a>
@@ -187,29 +161,21 @@
       </div><!-- /articles-list -->
 
       <div class="empty-state" id="emptyState">
-        <div class="empty-state-icon">📝</div>
         <p>Bu kateqoriyada hələ məqalə yoxdur.</p>
       </div>
     </div>
-  </main>
+  
+    </main>
+  </div>
 
-  <footer>
-    <div class="footer-copy">© 2025 Kamran Huseynov.</div>
-    <div class="footer-links">
-      <a href="index.html">Haqqımda</a>
-      <a href="dərslər.html">Dərslər</a>
-      <a href="slaydlar.html">Slaydlar</a>
-      <a href="məqalələr.html">Məqalələr</a>
-      <a href="proyektlər.html">Proyektlər</a>
-      <a href="index.html#contact">Əlaqə</a>
-      <a href="https://github.com/KmrnHsynov" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/kamran-h%C3%BCseynov/" target="_blank">LinkedIn</a>
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-copy">© 2025 Kamran Huseynov.</div>
     </div>
   </footer>
 
   <script>
-    function toggleNav() { document.getElementById('navLinks').classList.toggle('open'); }
-
+    
     // Featured carousel logic
     const carousel = document.querySelector('.featured-carousel');
     if (carousel) {
@@ -263,18 +229,6 @@
           }
         });
       });
-    });
-
-    // Fade-in on scroll
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
-      });
-    }, { threshold: 0.05 });
-    document.querySelectorAll('.article-item').forEach((el, i) => {
-      el.style.opacity = '0'; el.style.transform = 'translateY(16px)';
-      el.style.transition = `opacity 0.4s ease ${i * 0.06}s, transform 0.4s ease ${i * 0.06}s`;
-      observer.observe(el);
     });
   </script>
 </body>
