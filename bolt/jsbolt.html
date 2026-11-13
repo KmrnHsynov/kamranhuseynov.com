@@ -3,21 +3,19 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>WebBolt</title>
+  <title>JSBolt</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
-  <link rel="stylesheet" href="webbolt.css"/>
+  <link rel="stylesheet" href="jsbolt.css"/>
 </head>
 <body>
 
 <div id="topbar">
   <button id="menu-btn" onclick="toggleSidebar()">☰</button>
-  <a href="proyektlər.html" id="home-link">← Proyektlər</a>
-  <h1>⚡ WebBolt</h1>
+  <a href="../proyektlər.html" id="home-link">← Proyektlər</a>
+  <h1>⚡ JSBolt</h1>
   <button class="lang-btn active" id="btn-az" onclick="setLang('az')">AZ</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
   <div id="progress-bar-wrap"><div id="progress-bar-fill" style="width:0%"></div></div>
@@ -47,16 +45,6 @@
           <p id="task-text"></p>
         </div>
         <button id="to-code-btn" onclick="switchTab('code')">💻 Kodu yaz →</button>
-        <div id="jsbolt-cta">
-          <div class="jsbolt-banner">
-            <div class="jsbolt-banner-text">
-              <span id="jsbolt-cta-label"></span>
-              <strong>⚡ JSBolt</strong>
-              <span id="jsbolt-cta-desc"></span>
-            </div>
-            <a href="JSbolt.html" id="jsbolt-cta-btn" class="jsbolt-cta-btn"></a>
-          </div>
-        </div>
       </div>
 
       <div id="exercise-panel">
@@ -65,20 +53,20 @@
           <div id="ex-nav"></div>
         </div>
         <div id="editor-wrap"><textarea id="editor"></textarea></div>
-        <div id="preview-bar">
+        <div id="output-bar">
           <div id="run-row">
             <button id="run-btn" onclick="runCode()">▶ Run</button>
             <button id="reset-btn" onclick="resetCode()">↺</button>
             <button id="hint-btn" onclick="showHint()">💡</button>
             <span id="feedback"></span>
           </div>
-          <iframe id="preview" title="preview"></iframe>
+          <div id="output"><span class="out-info">▶ Run your code...</span></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script src="webbolt.js"></script>
+<script src="jsbolt.js"></script>
 </body>
 </html>
