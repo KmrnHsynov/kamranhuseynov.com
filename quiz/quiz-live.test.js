@@ -105,3 +105,60 @@ test('a player removed for leaving too often cannot be taken over by a rejoin', 
   const me = { profile: { displayName: 'Aysel' } };
   assert.strictEqual(liveRejoinAllowed(me, { profile: { displayName: 'Aysel', connected: false }, flags: { flagged: true } }), false);
 });
+
+// ── reading phase, streaks, ranking and round facts ──
+const { LIVE_READ_MS, liveNextStreak, liveBoard, liveRoundFacts, livePickFact } = require('./quiz-live.js');
+
+test('the answer clock starts after the 3s reading phase, never below 0', () => {
+  assert.strictEqual(LIVE_READ_MS, 3000);
+  assert.strictEqual(liveResponseTimeMs({ submittedAt: 15000 }, 10000, LIVE_READ_MS), 2000);
+  assert.strictEqual(liveResponseTimeMs({ submittedAt: 11000 }, 10000, LIVE_READ_MS), 0);
+  assert.strictEqual(liveResponseTimeMs({ submittedAt: 15000 }, 10000), 5000);   // old callers unchanged
+});
+
+test('a streak grows on a correct answer and resets on anything else; best streak is kept', () => {
+  assert.deepStrictEqual(liveNextStreak(0, 0, true), { streak: 1, bestStreak: 1 });
+  assert.deepStrictEqual(liveNextStreak(3, 3, true), { streak: 4, bestStreak: 4 });
+  assert.deepStrictEqual(liveNextStreak(3, 5, false), { streak: 0, bestStreak: 5 });
+  assert.deepStrictEqual(liveNextStreak(undefined, undefined, false), { streak: 0, bestStreak: 0 });
+});
+
+const P = (name, score, extra = {}) => ({ profile: { displayName: name }, score, ...extra });
+
+test('liveBoard ranks by score, ties share a rank, nameless entries are skipped', () => {
+  const board = liveBoard({ a: P('Ali', 500), b: P('Leyla', 900), c: P('Vüsal', 500), d: { score: 5 }, e: P('Nigar', 100) });
+  assert.deepStrictEqual(board.map(p => [p.name, p.rank]), [['Leyla', 1], ['Ali', 2], ['Vüsal', 2], ['Nigar', 4]]);
+});
+
+test('round facts: streaks, fastest answer, percent correct, climbing, gap to the player above', () => {
+  const board = liveBoard({
+    a: P('Ali', 2000, { streak: 4, bestStreak: 4, lastRound: 2, lastCorrect: true, lastPoints: 900, lastMs: 1500 }),
+    b: P('Leyla', 1800, { streak: 1, bestStreak: 3, lastRound: 2, lastCorrect: true, lastPoints: 800, lastMs: 4000 }),
+    c: P('Vüsal', 700, { streak: 0, bestStreak: 1, lastRound: 2, lastCorrect: false, lastPoints: 0 })
+  });
+  const texts = liveRoundFacts(board, 2, 'c').map(f => f.text).join('\n');
+  assert.match(texts, /Ali 4 sual ardıcıl/);
+  assert.match(texts, /ən sürətli düzgün cavabı: Ali \(1\.5 san\)/);
+  assert.match(texts, /67%/);
+  assert.match(texts, /yuxarıdakı ilə fərq: 1100 xal/);
+  assert.match(texts, /Ali liderdir və ikinci yerdən 200 xal/);
+  assert.ok(!/Sizin seriyanız/.test(texts));   // c has no streak
+  assert.match(liveRoundFacts(board, 2, 'a').map(f => f.text).join('\n'), /Sizin seriyanız: 4/);
+});
+
+test('round facts: a player who jumped ahead is called out', () => {
+  // Vüsal had 100 before this round (score 1100 - 1000), so was last; now second.
+  const board = liveBoard({
+    a: P('Ali', 2000, { lastRound: 0, lastCorrect: true, lastPoints: 100, lastMs: 100 }),
+    b: P('Leyla', 1000, { lastRound: 0, lastCorrect: false, lastPoints: 0 }),
+    c: P('Vüsal', 1100, { lastRound: 0, lastCorrect: true, lastPoints: 1000, lastMs: 200 })
+  });
+  assert.match(liveRoundFacts(board, 0).map(f => f.text).join('\n'), /Vüsal bu sualda 1 pillə yüksəldi/);
+});
+
+test('livePickFact returns null for nothing and picks by the random value', () => {
+  assert.strictEqual(livePickFact([]), null);
+  const facts = [{ text: 'a' }, { text: 'b' }, { text: 'c' }];
+  assert.strictEqual(livePickFact(facts, () => 0).text, 'a');
+  assert.strictEqual(livePickFact(facts, () => 0.99).text, 'c');
+});

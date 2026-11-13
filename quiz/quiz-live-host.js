@@ -6,7 +6,7 @@
 // Reuses: `questions`/`publishedTopics`/`refreshPublishedTopics`/`normalizeImportedQuestion` (quiz-az.js /
 // quiz-backup.js), `db`/`auth` (firebase-config.js), `esc`/`shuffleList` (quiz-az.js),
 // `isCorrectAnswer`/`correctAnswerText`/`questionProblems`/`publicQuestion`/`answerKeyEntry` (quiz-grading.js),
-// `generatePin`/`liveScore`/`sortLeaderboard` (quiz-live.js).
+// `generatePin`/`liveScore`/`sortLeaderboard`/`liveBoard`/`liveRoundFacts` (quiz-live.js).
 
 const LIVE_MAX_QUESTIONS   = 30;
 const LIVE_DEFAULT_SECONDS = 20;
@@ -23,6 +23,7 @@ let liveQuestionEligibleUids = [];  // players present when this question launch
 let liveQuestions      = [];    // public shape, in-memory copy used for rendering
 let liveAnswerKeyMap   = {};    // id -> answerKeyEntry, in-memory copy used for scoring
 let liveLastRevealStats = null;
+let liveRevealFact = null;   // { round, fact }: the random fact picked for a round, kept so a re-render shows the same one
 let liveRevealing = false;  // guards against the timer and the manual button both calling
                              // revealLiveQuestion() at once
 let liveFinishing = false;  // guards against a double-click on an end-game button
@@ -354,6 +355,8 @@ function processLiveRejoinRequest(pin, newUid, req){
     const updates = {};
     updates['players/' + newUid + '/score'] = (oldPlayer && Number(oldPlayer.score)) || 0;
     if(oldPlayer && oldPlayer.flags) updates['players/' + newUid + '/flags'] = oldPlayer.flags;
+    if(oldPlayer && oldPlayer.streak) updates['players/' + newUid + '/streak'] = oldPlayer.streak;
+    if(oldPlayer && oldPlayer.bestStreak) updates['players/' + newUid + '/bestStreak'] = oldPlayer.bestStreak;
     updates['players/' + targetUid] = null;
     updates['rejoin_requests/' + newUid] = null;
     return db.ref('live_rooms/' + pin).update(updates);
@@ -397,7 +400,7 @@ function detachLiveRoom(){
   clearTimeout(liveRevealDelay);
   liveRoomPin = null; liveMeta = null; livePlayersMap = {}; liveAnswersMap = {}; liveQuestionEligibleUids = [];
   liveRemovedUids = new Set();
-  liveRevealing = false; liveFinishing = false; liveQuestionLocalStart = null;
+  liveRevealing = false; liveFinishing = false; liveQuestionLocalStart = null; liveRevealFact = null;
 }
 
 // ── ROOM STATE → SCREEN ──────────────────────────────────────────────────
@@ -487,7 +490,7 @@ function renderLiveQuestionActive(){
     <div style="padding:28px;max-width:640px;margin:0 auto">
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length}</div>
       <div style="font-size:20px;font-weight:700;margin-bottom:16px">${esc(q.text)}</div>
-      ${liveQuestionOptionsHtml(q)}
+      <div id="live-options-area"><div id="live-read-note" style="font-size:13px;color:var(--muted)">⏳ Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılır…</div></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px">
         <span id="live-answered-count" style="font-size:13px;color:var(--muted)">0 / 0 cavab verdi</span>
         <div class="timer-pill" id="live-timer-pill">${liveMeta.questionSeconds}</div>
@@ -517,15 +520,24 @@ function startLiveQuestionTimer(){
   const index = liveMeta.currentIndex;
   const total = liveMeta.questionSeconds;
   const local = liveQuestionLocalStart && liveQuestionLocalStart.index === index ? liveQuestionLocalStart.t : null;
-  const deadline = (liveMeta.questionStartedAt || liveHostNow()) + total * 1000;
-  // Seen starting here: the local stopwatch. Otherwise (a reload mid-question): server time, never more than the full time.
-  const msLeft = () => local != null
-    ? total * 1000 - (performance.now() - local)
-    : Math.min(total * 1000, deadline - liveHostNow());
+  const startedAt = liveMeta.questionStartedAt || liveHostNow();
+  // Seen starting here: the local stopwatch. Otherwise (a reload mid-question): server time, never less than 0.
+  const elapsedMs = () => local != null
+    ? performance.now() - local
+    : Math.max(0, liveHostNow() - startedAt);
+  const q = liveQuestions[index];
   const tick = () => {
-    const left = Math.max(0, Math.ceil(msLeft() / 1000));
+    const elapsed = elapsedMs();
+    // The first LIVE_READ_MS show only the question; the options appear (and the answer timer starts) after it.
+    if(elapsed >= LIVE_READ_MS) showLiveOptions(q);
+    else {
+      const note = document.getElementById('live-read-note');
+      if(note) note.textContent = `⏳ Cavablar ${Math.ceil((LIVE_READ_MS - elapsed) / 1000)} saniyə sonra açılır…`;
+    }
+    const left = Math.max(0, Math.ceil((LIVE_READ_MS + total * 1000 - elapsed) / 1000));
+    const shown = Math.min(total, left);
     const pill = document.getElementById('live-timer-pill');
-    if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
+    if(pill){ pill.textContent = shown; pill.className = 'timer-pill' + liveTimerUrgencyClass(shown, total); }
     if(left <= 0){
       clearInterval(liveQuestionTimer);
       // Tied to this question, so a late timeout can never end the next one.
@@ -534,6 +546,13 @@ function startLiveQuestionTimer(){
   };
   tick();
   liveQuestionTimer = setInterval(tick, 500);
+}
+
+function showLiveOptions(q){
+  const el = document.getElementById('live-options-area');
+  if(!el || el.dataset.shown) return;
+  el.dataset.shown = '1';
+  el.innerHTML = liveQuestionOptionsHtml(q);
 }
 
 // Called whenever either the answers for this question or the roster changes, from both
@@ -581,19 +600,39 @@ async function revealLiveQuestion(expectedIndex){
   liveAnswersMap = answers;
   const updates = { 'meta/status': 'REVEAL' };
   let correctCount = 0;
-  Object.entries(answers).forEach(([uid, a]) => {
+  // Everyone still in the game gets their streak / last-round fields written (a player who did not
+  // answer loses the streak), plus anyone who answered.
+  const uids = new Set([...Object.keys(answers), ...Object.keys(livePlayersMap)]);
+  uids.forEach(uid => {
     if(liveIsRemoved(uid)) return;   // removed for leaving the page: no more points
-    const ans = extractLiveAnswer(key, a);
-    const correct = isCorrectAnswer(key, ans);
-    if(correct) correctCount++;
-    const earned = liveScore(key, ans, liveResponseTimeMs(a, liveMeta.questionStartedAt), liveMeta.questionSeconds);
-    updates['players/' + uid + '/score'] = firebase.database.ServerValue.increment(earned);
-    updates['results/' + i + '/' + uid] = { correct, pointsEarned: earned };
+    const a = answers[uid];
+    const player = livePlayersMap[uid] || {};
+    if(!a && !(player.profile || {}).displayName) return;
+    let correct = false, earned = 0, ms = null;
+    if(a){
+      const ans = extractLiveAnswer(key, a);
+      correct = isCorrectAnswer(key, ans);
+      ms = liveResponseTimeMs(a, liveMeta.questionStartedAt, LIVE_READ_MS);
+      earned = liveScore(key, ans, ms, liveMeta.questionSeconds);
+      if(correct) correctCount++;
+      updates['players/' + uid + '/score'] = firebase.database.ServerValue.increment(earned);
+      updates['results/' + i + '/' + uid] = { correct, pointsEarned: earned };
+    }
+    const st = liveNextStreak(player.streak, player.bestStreak, correct);
+    updates['players/' + uid + '/streak'] = st.streak;
+    updates['players/' + uid + '/bestStreak'] = st.bestStreak;
+    updates['players/' + uid + '/lastRound'] = i;
+    updates['players/' + uid + '/lastCorrect'] = correct;
+    updates['players/' + uid + '/lastPoints'] = earned;
+    updates['players/' + uid + '/lastMs'] = ms;   // null (no answer) removes it
     // Applied locally too, not just sent to the server: meta/status and players/*/score are two
     // separate listeners, and nothing guarantees the players one's round-trip confirmation lands
     // before the meta one flips to REVEAL and renders the leaderboard - without this, the board
     // shown right at reveal reflects last round's scores, not this one's, until the next render.
-    if(livePlayersMap[uid]) livePlayersMap[uid].score = (livePlayersMap[uid].score || 0) + earned;
+    if(livePlayersMap[uid]) Object.assign(livePlayersMap[uid], {
+      score: (livePlayersMap[uid].score || 0) + earned, streak: st.streak, bestStreak: st.bestStreak,
+      lastRound: i, lastCorrect: correct, lastPoints: earned, lastMs: ms
+    });
   });
   liveLastRevealStats = { answeredCount: Object.keys(answers).filter(uid => !liveIsRemoved(uid)).length, correctCount };
   // Reset on failure so a network hiccup doesn't permanently wedge the round: without this, every
@@ -608,16 +647,18 @@ function renderLiveReveal(){
   const key = liveAnswerKeyMap[String(q.id)] || {};
   const stats = liveLastRevealStats || {};
   const isLast = i >= liveQuestions.length - 1;
-  const leaderboard = liveLeaderboard().slice(0, 5);
+  const board = liveBoard(livePlayersMap);
+  if(!liveRevealFact || liveRevealFact.round !== i) liveRevealFact = { round: i, fact: livePickFact(liveRoundFacts(board, i)) };
+  const fact = liveRevealFact.fact;
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length} — Nəticə</div>
       <div style="font-size:18px;font-weight:700;margin-bottom:10px">${esc(q.text)}</div>
       <div style="font-size:13px;color:var(--correct);margin-bottom:18px">✓ Düzgün cavab: ${esc(correctAnswerText(key))}</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:20px">${stats.correctCount || 0} / ${stats.answeredCount || 0} şagird düzgün cavab verdi</div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Liderlik Cədvəli</div>
-      ${leaderboard.length ? leaderboard.map((p, idx) =>
-        `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border)"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('')
+      ${fact ? `<div class="live-fact"><span>${fact.icon}</span> ${esc(fact.text)}</div>` : ''}
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Top 5</div>
+      ${board.length ? `<div class="live-top-list">${liveTopRowsHtml(board, undefined, 5)}</div>`
         : '<div style="font-size:12px;color:var(--muted)">Heç kim cavab vermədi.</div>'}
       <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="${isLast ? 'finishLiveRoom()' : 'launchLiveQuestion(' + (i + 1) + ')'}">${isLast ? '🏁 Oyunu Bitir' : 'Növbəti Sual →'}</button>
       ${isLast ? '' : '<button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu İndi Bitir</button>'}

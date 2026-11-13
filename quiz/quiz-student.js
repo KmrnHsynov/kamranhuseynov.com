@@ -861,6 +861,13 @@ let liveTimeUp = false;   // the question's time ran out on this screen: no more
 // or changing phone clock cannot affect. Server time (serverNow) is only used for a question that was
 // already running when the phone joined or reloaded.
 let liveLastMeta = null, liveQuestionLocalStart = null;   // { index, t }
+// This player's place and total, refreshed at every reveal and shown in the question header meanwhile.
+let liveMyRank = 0, liveMyTotal = 0, liveMyScore = 0;
+let liveRevealFact = null;   // { round, fact }: the random fact for a round, kept so a re-render shows the same one
+
+function liveRankChipHtml(){
+  return liveMyRank ? `<span class="live-rank-chip" title="Yeriniz və xalınız">🏅 ${liveMyRank} / ${liveMyTotal} · ${liveMyScore} xal</span>` : '';
+}
 
 // ── JOIN ──────────────────────────────────────────────
 function showLiveJoinError(msg){
@@ -938,6 +945,7 @@ async function joinLiveRoom(){
     serverOffset = Number(offsetSnap.val()) || 0;
     liveMonitor = liveLeaveLimit > 0 ? createMonitor(liveLeaveLimit) : null;
     liveJoined = true;
+    liveMyRank = 0; liveMyTotal = 0; liveMyScore = 0; liveRevealFact = null;
 
     showView('live-game-view');
     attachLiveRoomListener();
@@ -1059,6 +1067,7 @@ function renderLiveQuestion(meta, i){
     <div class="quiz-topbar">
       <span class="quiz-title-lbl">${esc(meta.topic || 'Canlı Oyun')}</span>
       <div class="quiz-meta">
+        ${liveRankChipHtml()}
         <span class="quiz-prog-txt">${i + 1} / ${meta.questionCount}</span>
         <div class="timer-pill" id="live-q-timer">${meta.questionSeconds}</div>
       </div>
@@ -1067,7 +1076,7 @@ function renderLiveQuestion(meta, i){
     <div class="quiz-card" id="live-q-card">
       <div class="quiz-q-label">Sual ${i + 1}</div>
       <div class="quiz-q-text">${esc(q.text)}</div>
-      ${liveAnswerInputHtml(q)}
+      <div id="live-answer-area"><div id="live-read-note" class="live-read-note">⏳ Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılacaq…</div></div>
     </div>
     <div id="live-answer-status" style="margin-top:14px;font-size:13px;color:var(--muted);text-align:center"></div>`;
 }
@@ -1094,6 +1103,14 @@ function liveAnswerInputHtml(q){
 
 // The click handlers stay in place: `liveAnswered` already blocks a second submit, and keeping
 // them lets the player try again if the send fails.
+// The question shows alone for LIVE_READ_MS; the options are only put on the page after that.
+function openLiveAnswers(){
+  const area = document.getElementById('live-answer-area');
+  if(!area || area.dataset.shown || liveAnswered || !liveCurrentQuestion) return;
+  area.dataset.shown = '1';
+  area.innerHTML = liveAnswerInputHtml(liveCurrentQuestion);
+}
+
 function lockLiveAnswerUI(){
   document.querySelectorAll('.quiz-mc-opt,.quiz-tf-btn').forEach(el => el.classList.add('locked'));
   const btn = document.querySelector('#live-q-card .btn-primary');
@@ -1127,7 +1144,8 @@ function writeLiveAnswer(fields){
   liveAnswered = true;
   lockLiveAnswerUI();
   const gen = liveRenderGen; // a reveal/next-question can arrive while this write is in flight
-  const responseTimeMs = Math.max(0, serverNow() - liveQuestionStartedLocal);
+  // Counted from when the options opened, same as the host does for the stored answer time.
+  const responseTimeMs = Math.max(0, serverNow() - liveQuestionStartedLocal - LIVE_READ_MS);
   const data = { ...fields, responseTimeMs, submittedAt: firebase.database.ServerValue.TIMESTAMP };
   const status = document.getElementById('live-answer-status');
   if(status) status.textContent = '⏳ Göndərilir…';
@@ -1147,15 +1165,22 @@ function writeLiveAnswer(fields){
 function startLiveCountdown(meta){
   clearInterval(liveCountdownTimer);
   const total = meta.questionSeconds;
-  const deadline = liveQuestionStartedLocal + total * 1000;
   const local = liveQuestionLocalStart && liveQuestionLocalStart.index === meta.currentIndex ? liveQuestionLocalStart.t : null;
-  const msLeft = () => local != null
-    ? total * 1000 - (performance.now() - local)
-    : Math.min(total * 1000, deadline - serverNow());
+  const elapsedMs = () => local != null
+    ? performance.now() - local
+    : Math.max(0, serverNow() - liveQuestionStartedLocal);
   const tick = () => {
-    const left = Math.max(0, Math.ceil(msLeft() / 1000));
+    const elapsed = elapsedMs();
+    // The first LIVE_READ_MS show only the question; the options appear (and the answer timer starts) after it.
+    if(elapsed >= LIVE_READ_MS) openLiveAnswers();
+    else {
+      const note = document.getElementById('live-read-note');
+      if(note) note.textContent = `⏳ Cavablar ${Math.ceil((LIVE_READ_MS - elapsed) / 1000)} saniyə sonra açılacaq…`;
+    }
+    const left = Math.max(0, Math.ceil((LIVE_READ_MS + total * 1000 - elapsed) / 1000));
+    const shown = Math.min(total, left);
     const pill = document.getElementById('live-q-timer');
-    if(pill){ pill.textContent = left; pill.className = 'timer-pill' + liveTimerUrgencyClass(left, total); }
+    if(pill){ pill.textContent = shown; pill.className = 'timer-pill' + liveTimerUrgencyClass(shown, total); }
     if(left <= 0){
       clearInterval(liveCountdownTimer);
       // Answers stop here when this phone saw the question start: its stopwatch started a moment after
@@ -1175,24 +1200,40 @@ function startLiveCountdown(meta){
 }
 
 // ── REVEAL ────────────────────────────────────────────
+// Shows this player's result, place and total, the top 5 and one random fact about the round. The
+// host writes everyone's streak / last-round fields in the same update that flips the room to REVEAL,
+// and the whole players/ node is readable, so the ranking is built here from that node.
 async function renderLiveReveal(gen){
   const i = liveLastIndex;
   const wrap = document.getElementById('live-game-wrap');
   wrap.innerHTML = liveGameMessageHtml('⏳', 'Nəticə yüklənir…', '');
   try{
-    const [resSnap, scoreSnap] = await Promise.all([
+    const [resSnap, playersSnap] = await Promise.all([
       db.ref('live_rooms/' + livePin + '/results/' + i + '/' + liveUid).once('value'),
-      db.ref('live_rooms/' + livePin + '/players/' + liveUid + '/score').once('value')
+      db.ref('live_rooms/' + livePin + '/players').once('value')
     ]);
     if(gen !== liveRenderGen) return;
     const res = resSnap.val();
-    const score = Number(scoreSnap.val()) || 0;
+    const board = liveBoard(playersSnap.val());
+    const me = board.find(p => p.uid === liveUid);
+    if(me){ liveMyRank = me.rank; liveMyTotal = board.length; liveMyScore = me.score; }
     const ok = res && res.correct;
     const pts = res ? (res.pointsEarned || 0) : 0;
-    wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:440px">
+    if(!liveRevealFact || liveRevealFact.round !== i) liveRevealFact = { round: i, fact: livePickFact(liveRoundFacts(board, i, liveUid)) };
+    const fact = liveRevealFact.fact;
+    wrap.innerHTML = `<div class="lock-card live-reveal-card">
       <div class="lock-icon">${res ? (ok ? '✅' : '❌') : '⌛'}</div>
       <h2>${res ? (ok ? 'Düzgün!' : 'Səhv') : 'Cavab vermədiniz'}</h2>
-      <p>${res && ok ? `+${pts} xal qazandınız.` : 'Bu sual üçün xal qazanmadınız.'}<br/>Ümumi xalınız: <strong>${score}</strong></p>
+      <p style="margin-bottom:16px">${res && ok ? `+${pts} xal qazandınız.` : 'Bu sual üçün xal qazanmadınız.'}</p>
+      <div class="live-me-stats">
+        <div class="live-me-stat"><div class="v">${me ? me.rank : '—'}<small> / ${board.length}</small></div><div class="l">Yeriniz</div></div>
+        <div class="live-me-stat"><div class="v">${me ? me.score : liveMyScore}</div><div class="l">Xalınız</div></div>
+        ${me && me.streak >= 2 ? `<div class="live-me-stat"><div class="v">🔥 ${me.streak}</div><div class="l">Seriya</div></div>` : ''}
+      </div>
+      ${fact ? `<div class="live-fact"><span>${fact.icon}</span> ${esc(fact.text)}</div>` : ''}
+      <div class="live-top-title">Top 5</div>
+      <div class="live-top-list">${liveTopRowsHtml(board, liveUid, 5)}</div>
+      <p style="margin:16px 0 0;font-size:12px">Növbəti sualı gözləyin…</p>
     </div>`;
   }catch(e){
     if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('⚠️', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
@@ -1214,18 +1255,17 @@ async function renderLiveFinished(meta, gen){
     const snap = await db.ref('live_rooms/' + livePin + '/players').once('value');
     if(gen !== liveRenderGen) return;
     const players = snap.val() || {};
-    const board = sortLeaderboard(Object.entries(players).map(([pid, p]) =>
-      ({ uid: pid, name: (p.profile || {}).displayName || '?', score: p.score || 0 })));
+    const board = liveBoard(players);
     const myEntry = board.find(p => p.uid === liveUid);
-    const rank = board.findIndex(p => p.uid === liveUid) + 1;
+    const rank = myEntry ? myEntry.rank : 0;
     const rest = board.slice(3, 10);
     wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:460px">
       <div class="lock-icon">🏁</div>
       <h2>${esc(meta.topic || 'Canlı Oyun')} — Bitdi</h2>
-      <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong></p>
+      <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong>${myEntry ? ` · <strong>${myEntry.score}</strong> xal` : ''}</p>
       ${livePodiumHtml(board, myEntry ? myEntry.uid : undefined)}
       ${rest.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
-        <span>${idx + 4}. ${esc(p.name)}</span><strong>${p.score}</strong>
+        <span>${p.rank}. ${esc(p.name)}</span><strong>${p.score}</strong>
       </div>`).join('')}
     </div>`;
   }catch(e){

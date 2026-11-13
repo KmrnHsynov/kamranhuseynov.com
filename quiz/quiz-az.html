@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<link rel="stylesheet" href="quiz-az.css?v=12"/>
+<link rel="stylesheet" href="quiz-az.css?v=13"/>
 </head>
 <body>
 
@@ -31,7 +31,7 @@
 ═══════════════════════════════ -->
 <div id="editor-view" class="view">
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="editor-sidebar">
     <div class="sidebar-logo">
       <h1>Quiz<span>Craft</span></h1>
       <p>Sinif Test Sistemi · AZ</p>
@@ -156,7 +156,10 @@
   <!-- Editor main -->
   <main class="editor-main">
     <div class="editor-header">
-      <h2>Sual Redaktoru</h2>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-ghost btn-sm sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" aria-expanded="true" aria-controls="editor-sidebar" title="Sol menyunu gizlət / göstər">☰ Menyu</button>
+        <h2>Sual Redaktoru</h2>
+      </div>
       <div style="display:flex;align-items:center;gap:14px;">
         <span class="q-counter" id="q-counter">0 sual</span>
       </div>
@@ -234,8 +237,8 @@
 <script src="quiz-export.js?v=11"></script>
 <script src="quiz-schedule.js?v=10"></script>
 <script src="quiz-examcodec.js?v=11"></script>
-<script src="quiz-live.js?v=15"></script>
-<script src="quiz-live-host.js?v=16"></script>
-<script src="quiz-az.js?v=14"></script>
+<script src="quiz-live.js?v=16"></script>
+<script src="quiz-live-host.js?v=17"></script>
+<script src="quiz-az.js?v=15"></script>
 </body>
 </html>
