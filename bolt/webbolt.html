@@ -10,9 +10,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
-  <link rel="stylesheet" href="webbolt.css"/>
+  <link rel="stylesheet" href="bolt.css"/>
 </head>
-<body>
+<body data-course="web">
 
 <div id="topbar">
   <button id="menu-btn" onclick="toggleSidebar()">☰</button>
@@ -47,14 +47,14 @@
           <p id="task-text"></p>
         </div>
         <button id="to-code-btn" onclick="switchTab('code')">💻 Kodu yaz →</button>
-        <div id="jsbolt-cta">
-          <div class="jsbolt-banner">
-            <div class="jsbolt-banner-text">
-              <span id="jsbolt-cta-label"></span>
+        <div id="cta">
+          <div class="cta-banner">
+            <div class="cta-text">
+              <span id="cta-label"></span>
               <strong>⚡ JSBolt</strong>
-              <span id="jsbolt-cta-desc"></span>
+              <span id="cta-desc"></span>
             </div>
-            <a href="jsbolt.html" id="jsbolt-cta-btn" class="jsbolt-cta-btn"></a>
+            <a href="jsbolt.html" id="cta-btn" class="cta-btn"></a>
           </div>
         </div>
       </div>
@@ -65,20 +65,20 @@
           <div id="ex-nav"></div>
         </div>
         <div id="editor-wrap"><textarea id="editor"></textarea></div>
-        <div id="preview-bar">
+        <div id="output-bar">
           <div id="run-row">
             <button id="run-btn" onclick="runCode()">▶ Run</button>
             <button id="reset-btn" onclick="resetCode()">↺</button>
             <button id="hint-btn" onclick="showHint()">💡</button>
             <span id="feedback"></span>
           </div>
-          <iframe id="preview" title="preview"></iframe>
+          <div id="output"><iframe id="preview" title="preview"></iframe></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script src="webbolt.js"></script>
+<script src="bolt.js"></script>
 </body>
 </html>
