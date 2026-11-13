@@ -230,6 +230,7 @@ textarea.quiz-short-input:focus{border-color:var(--accent);}
   overflow:hidden;
 }
 .sidebar-logo{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:22px 22px 18px;
   border-bottom:1px solid var(--border);
   flex-shrink:0;
@@ -688,7 +689,17 @@ textarea.quiz-short-input:focus{border-color:var(--accent);}
    SIDEBAR HIDE (teacher panel)
 ══════════════════════════════════ */
 #editor-view.sidebar-hidden .sidebar{display:none;}
-.sidebar-toggle{font-size:12px;white-space:nowrap;}
+.sidebar-toggle{
+  flex-shrink:0;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:20px;line-height:1;cursor:pointer;color:var(--text);
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  transition:background .15s,border-color .15s;
+}
+.sidebar-toggle:hover{background:var(--surface2);border-color:var(--accent);}
+.sidebar-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+/* The icon in the editor header only shows while the sidebar is hidden (it is the way back). */
+.sidebar-show-btn{display:none;}
+#editor-view.sidebar-hidden .sidebar-show-btn{display:inline-flex;}
 
 /* ══════════════════════════════════
    LIVE GAME: reading phase, rank chip, round recap (top 5, facts)

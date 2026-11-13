@@ -1313,17 +1313,13 @@ function showView(id){
 })();
 
 // ══════════════════════════════════════════════════════
-//  SIDEBAR SHOW / HIDE (the "☰ Menyu" button in the editor header)
+//  SIDEBAR SHOW / HIDE (☰ icon in the sidebar header; when hidden, the same icon in the editor header)
 // ══════════════════════════════════════════════════════
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'qc_sidebar_hidden';
 
 function setSidebarHidden(hidden){
   document.getElementById('editor-view').classList.toggle('sidebar-hidden', hidden);
-  const btn = document.getElementById('sidebar-toggle');
-  if(btn){
-    btn.setAttribute('aria-expanded', String(!hidden));
-    btn.textContent = hidden ? '☰ Menyunu göstər' : '☰ Menyunu gizlət';
-  }
+  document.getElementById('sidebar-toggle')?.setAttribute('aria-expanded', String(!hidden));
   try{ localStorage.setItem(STORAGE_KEY_SIDEBAR_HIDDEN, hidden ? '1' : '0'); }catch(e){}
 }
 function toggleSidebar(){
