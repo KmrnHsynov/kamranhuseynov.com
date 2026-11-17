@@ -81,14 +81,14 @@ function livePodiumHtml(leaderboard, highlightUid){
   if(!top3.length) return '';
   const order = [1, 0, 2];       // silver, gold, bronze, left to right
   const heights = [130, 96, 74]; // indexed by rank (0=1st..2=3rd), not by column
-  const medals = ['🥇', '🥈', '🥉'];
+  const medals = ['1', '2', '3'];
   return `<div class="live-podium">${order.map((rank, col) => {
     const p = top3[rank];
     if(!p) return '<div class="live-podium-slot"></div>';
     const mine = highlightUid != null && p.uid === highlightUid;
     return `<div class="live-podium-slot" style="animation-delay:${col * 0.15}s">
       <div class="live-podium-medal">${medals[rank]}</div>
-      <div class="live-podium-name"${mine ? ' style="color:var(--accent);font-weight:800"' : ''}>${esc(p.name)}</div>
+      <div class="live-podium-name"${mine ? ' style="color:var(--accent);font-weight:700"' : ''}>${esc(p.name)}</div>
       <div class="live-podium-bar" style="height:${heights[rank]}px">${p.score}</div>
     </div>`;
   }).join('')}</div>`;
@@ -130,19 +130,19 @@ function liveRoundFacts(board, round, myUid){
   const me = myUid != null ? board.find(p => p.uid === myUid) : null;
   const inRound = board.filter(p => p.lastRound === round);
 
-  if(me && me.streak >= 2) facts.push({ icon: '🔥', text: `Sizin seriyanız: ${me.streak} sual ardıcıl düzgün cavab!` });
+  if(me && me.streak >= 2) facts.push({ icon: '', text: `Sizin seriyanız: ${me.streak} sual ardıcıl düzgün cavab!` });
   const hot = board.filter(p => p.streak >= 2 && (!me || p.uid !== me.uid)).sort((a, b) => b.streak - a.streak)[0];
-  if(hot) facts.push({ icon: '🔥', text: `${hot.name} ${hot.streak} sual ardıcıl düzgün cavab verib!` });
+  if(hot) facts.push({ icon: '', text: `${hot.name} ${hot.streak} sual ardıcıl düzgün cavab verib!` });
   const bestEver = board.slice().sort((a, b) => b.bestStreak - a.bestStreak)[0];
-  if(bestEver && bestEver.bestStreak >= 3) facts.push({ icon: '🏆', text: `Oyunun ən uzun seriyası: ${bestEver.name} — ${bestEver.bestStreak} ardıcıl düzgün cavab.` });
+  if(bestEver && bestEver.bestStreak >= 3) facts.push({ icon: '', text: `Oyunun ən uzun seriyası: ${bestEver.name} — ${bestEver.bestStreak} ardıcıl düzgün cavab.` });
 
   if(board.length >= 2){
     const fast = inRound.filter(p => p.lastCorrect && p.lastMs != null).sort((a, b) => a.lastMs - b.lastMs)[0];
-    if(fast) facts.push({ icon: '⚡', text: `Bu sualın ən sürətli düzgün cavabı: ${fast.name} (${(fast.lastMs / 1000).toFixed(1)} san).` });
+    if(fast) facts.push({ icon: '', text: `Bu sualın ən sürətli düzgün cavabı: ${fast.name} (${(fast.lastMs / 1000).toFixed(1)} san).` });
   }
   if(inRound.length >= 2){
     const pct = Math.round(inRound.filter(p => p.lastCorrect).length / inRound.length * 100);
-    facts.push({ icon: '🎯', text: `Tələbələrin ${pct}%-i bu suala düzgün cavab verdi.` });
+    facts.push({ icon: '', text: `Tələbələrin ${pct}%-i bu suala düzgün cavab verdi.` });
   }
 
   // Who climbed the most this round: rank now vs. rank with last round's points taken off.
@@ -152,15 +152,15 @@ function liveRoundFacts(board, round, myUid){
     const prevRank = 1 + board.filter(o => prevScore(o) > prevScore(p)).length;
     if(prevRank - p.rank > climb){ climb = prevRank - p.rank; climber = p; }
   });
-  if(climber && (!me || climber.uid !== me.uid)) facts.push({ icon: '📈', text: `${climber.name} bu sualda ${climb} pillə yüksəldi.` });
-  if(me && climber && climber.uid === me.uid) facts.push({ icon: '📈', text: `Bu sualda ${climb} pillə yüksəldiniz!` });
+  if(climber && (!me || climber.uid !== me.uid)) facts.push({ icon: '', text: `${climber.name} bu sualda ${climb} pillə yüksəldi.` });
+  if(me && climber && climber.uid === me.uid) facts.push({ icon: '', text: `Bu sualda ${climb} pillə yüksəldiniz!` });
 
   if(me && me.rank > 1){
     const above = board.filter(p => p.score > me.score).sort((a, b) => a.score - b.score)[0];
-    if(above) facts.push({ icon: '👀', text: `Özünüzdən yuxarıdakı ilə fərq: ${above.score - me.score} xal.` });
+    if(above) facts.push({ icon: '', text: `Özünüzdən yuxarıdakı ilə fərq: ${above.score - me.score} xal.` });
   }
   if(board.length >= 2 && board[0].score > board[1].score){
-    facts.push({ icon: '👑', text: `${board[0].name} liderdir və ikinci yerdən ${board[0].score - board[1].score} xal öndədir.` });
+    facts.push({ icon: '', text: `${board[0].name} liderdir və ikinci yerdən ${board[0].score - board[1].score} xal öndədir.` });
   }
   return facts;
 }
@@ -181,7 +181,7 @@ function liveTopRowsHtml(board, highlightUid, limit){
     const mine = highlightUid != null && p.uid === highlightUid;
     return `<div class="live-top-row${mine ? ' mine' : ''}">
       <span class="live-top-rank">${p.rank}</span>
-      <span class="live-top-name">${esc(p.name)}${p.streak >= 2 ? ` <span class="live-top-streak" title="Ardıcıl düzgün cavab">🔥${p.streak}</span>` : ''}</span>
+      <span class="live-top-name">${esc(p.name)}${p.streak >= 2 ? ` <span class="live-top-streak" title="Ardıcıl düzgün cavab">seriya ${p.streak}</span>` : ''}</span>
       <strong>${p.score}</strong>
     </div>`;
   };

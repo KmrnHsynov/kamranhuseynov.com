@@ -47,17 +47,17 @@ function lastAttemptCode(){
 
 function lookupHtml(){
   return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);text-align:left">
-    <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Nəticəmə bax</div>
-    <input type="text" class="result-code-inp" placeholder="Nəticə kodu…" value="${esc(lastAttemptCode())}" maxlength="40" style="margin-bottom:8px;font-size:12px" onkeydown="if(event.key==='Enter')checkMyResult(this)"/>
+    <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Nəticəmə bax</div>
+    <input type="text" class="result-code-inp" placeholder="Nəticə kodu…" value="${esc(lastAttemptCode())}" maxlength="40" style="margin-bottom:8px;font-size:15px" onkeydown="if(event.key==='Enter')checkMyResult(this)"/>
     <button class="btn btn-ghost btn-full btn-sm" onclick="checkMyResult(this.previousElementSibling)">Yoxla</button>
-    <div class="result-lookup-out" style="margin-top:10px;font-size:13px;line-height:1.6"></div>
+    <div class="result-lookup-out" style="margin-top:10px;font-size:16px;line-height:1.6"></div>
   </div>`;
 }
 
 function resultCardHtml(r){
   const n = v => Number(v) || 0;
   return `<div class="result-card">
-    <div style="font-size:26px;font-weight:800;color:var(--correct)">${n(r.pct)}%</div>
+    <div style="font-size:30px;font-weight:700;color:var(--correct)">${n(r.pct)}%</div>
     <div style="font-weight:600">${esc(r.studentName)}</div>
     <div style="color:var(--text2)">${esc(r.topic)}</div>
     <div style="margin-top:6px">${n(r.score)} / ${n(r.maxScore)} xal · ${n(r.correct)} doğru · ${n(r.wrong)} yanlış · ${n(r.unanswered)} cavabsız</div>
@@ -68,7 +68,7 @@ async function checkMyResult(input){
   const out = input.closest('div').querySelector('.result-lookup-out');
   const code = (input.value || '').trim();
   if(!RESULT_CODE_RE.test(code)){ out.innerHTML = '<span style="color:var(--wrong)">Kod düzgün deyil.</span>'; return; }
-  out.textContent = '⏳ Yoxlanır…';
+  out.textContent = 'Yoxlanır…';
   try{
     const snap = await db.ref('results/' + code).once('value');
     const r = snap.val();
@@ -157,9 +157,8 @@ function startExamMode(){
   // Show loading state while fetching from Firebase
   document.getElementById('lobby-view').innerHTML=`
     <div class="lock-card" style="max-width:460px">
-      <div class="lock-icon">⏳</div>
       <h2>Yüklənir…</h2>
-      <p style="font-size:13px;color:var(--text2)">Test məlumatları alınır</p>
+      <p style="font-size:16px;color:var(--text2)">Test məlumatları alınır</p>
     </div>`;
   showView('lobby-view');
 
@@ -233,8 +232,7 @@ function useExam(e){
 function showNoQuiz(){
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
-      <div class="lock-icon">📭</div>
-      <h2>Aktiv Test Yoxdur</h2>
+      <h2>Aktiv test yoxdur</h2>
       <p>Hazırda aktiv test yoxdur. Müəllim test göndərdikdə bu səhifədə görünəcək.</p>
       <button class="btn btn-ghost btn-full" onclick="location.reload()">↻ Yenilə</button>
       ${lookupHtml()}
@@ -245,7 +243,6 @@ function showNoQuiz(){
 function showLoadError(){
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
-      <div class="lock-icon">⚠️</div>
       <h2>Yüklənmədi</h2>
       <p>Test məlumatları alına bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin.</p>
       <button class="btn btn-primary btn-full" onclick="location.reload()">↻ Yenidən cəhd et</button>
@@ -257,13 +254,12 @@ function showExamList(exams){
   _examList = exams;
   document.getElementById('lobby-view').innerHTML=`
     <div class="lock-card" style="max-width:460px">
-      <div class="lock-icon">📋</div>
-      <h2 style="font-family:'Nunito',sans-serif">Test Seçin</h2>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Müəllim ${exams.length} test göndərib. Birini seçin:</p>
+      <h2 style="font-family:var(--serif)">Test seçin</h2>
+      <p style="font-size:16px;color:var(--text2);margin-bottom:16px">Müəllim ${exams.length} test göndərib. Birini seçin:</p>
       ${exams.map((e,i)=>`
         <button class="btn btn-ghost btn-full" style="margin-bottom:8px;text-align:left;padding:12px 16px;display:block" onclick="selectExam(${i})">
           <div style="font-weight:700;margin-bottom:2px">${esc(e.topic||e.key)}</div>
-          <div style="font-size:11px;color:var(--muted)">${e.qCount || legacyQuestionCount(e)} sual${examScheduleLabel(e)?' · '+esc(examScheduleLabel(e)):''}</div>
+          <div style="font-size:14px;color:var(--muted)">${e.qCount || legacyQuestionCount(e)} sual${examScheduleLabel(e)?' · '+esc(examScheduleLabel(e)):''}</div>
         </button>
       `).join('')}
       ${lookupHtml()}
@@ -284,8 +280,8 @@ function showClosedLobby(state){
   const before = state === 'before';
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
-      <div class="lock-icon">${before ? '⏳' : '🔒'}</div>
-      <h2>${before ? 'Test Hələ Açılmayıb' : 'Test Bağlanıb'}</h2>
+      
+      <h2>${before ? 'Test hələ açılmayıb' : 'Test bağlanıb'}</h2>
       <p>${esc(topicName||'İmtahan')}<br/>${before
         ? 'Açılış vaxtı: <strong>' + esc(formatWhen(examOpensAt)) + '</strong>'
         : 'Başlamaq üçün son vaxt <strong>' + esc(formatWhen(examClosesAt)) + '</strong> idi.'}</p>
@@ -321,7 +317,6 @@ function showLobby(){
     document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card" style="max-width:460px">
       ${backToListHtml()}
-      <div class="lock-icon">🚫</div>
       <h2>Bu brauzer dəstəklənmir</h2>
       <p>${esc(topicName||'İmtahan')}<br/>Bu imtahanı Firefox-da açmaq olmur. Zəhmət olmasa linki <strong>Chrome</strong> brauzerində açın.</p>
       ${lookupHtml()}
@@ -333,7 +328,6 @@ function showLobby(){
     document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card" style="max-width:460px">
       ${backToListHtml()}
-      <div class="lock-icon">✅</div>
       <h2>Bu testi artıq vermisiniz</h2>
       <p>${esc(topicName||'İmtahan')}<br/>Bu test üçün hər cihazdan yalnız bir cəhd icazəlidir. Nəticə elan olunanda kodunuzla baxa bilərsiniz.</p>
       ${lookupHtml()}
@@ -342,28 +336,27 @@ function showLobby(){
     return;
   }
   const count = Math.min(examQCount, MAX_QUESTIONS);
-  const closing = examClosesAt ? `<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
+  const closing = examClosesAt ? `<p style="font-size:15px;color:var(--muted);margin-bottom:12px">Başlamaq üçün son vaxt: <strong>${esc(formatWhen(examClosesAt))}</strong></p>` : '';
   const notice = leaveLimit > 0 ? `
       <p class="notice-danger">
-        ⚠ Diqqət: Bu səhifədən çıxmaq (başqa tab və ya pəncərə) qeydə alınır. ${leaveLimit} dəfə çıxsanız və ya brauzeri bağlasanız, imtahan avtomatik göndəriləcək.
+        Diqqət: Bu səhifədən çıxmaq (başqa tab və ya pəncərə) qeydə alınır. ${leaveLimit} dəfə çıxsanız və ya brauzeri bağlasanız, imtahan avtomatik göndəriləcək.
       </p>` : '';
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card" style="max-width:460px">
       ${backToListHtml()}
-      <div class="lock-icon">📝</div>
       <h2 id="lobby-topic">${esc(topicName||'İmtahan')}</h2>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:6px">
+      <p style="font-size:16px;color:var(--text2);margin-bottom:6px">
         Suallar: <strong>${count}</strong> &nbsp;·&nbsp; Vaxt: <strong>${Math.round(EXAM_SECONDS/60)} dəqiqə</strong>
       </p>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7">
+      <p style="font-size:15px;color:var(--muted);margin-bottom:20px;line-height:1.7">
         Suallar və cavablar avtomatik qarışdırılacaq.<br/>
         Vaxt bitdikdə test avtomatik göndəriləcək.
       </p>
       ${closing}
       ${notice}
       <input type="text" id="student-name-inp" placeholder="Adınızı daxil edin…" style="margin-bottom:14px" maxlength="60"/>
-      <p id="name-error" style="display:none;font-size:12px;color:var(--wrong);margin:-6px 0 12px;text-align:left">Zəhmət olmasa adınızı daxil edin.</p>
-      <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana Başla</button>
+      <p id="name-error" style="display:none;font-size:15px;color:var(--wrong);margin:-6px 0 12px;text-align:left">Zəhmət olmasa adınızı daxil edin.</p>
+      <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana başla</button>
       ${lookupHtml()}
     </div>`;
   showView('lobby-view');
@@ -405,7 +398,7 @@ async function startExam(){
   studentName = typedName;
   startingExam = true;
   const btn = document.querySelector('#lobby-view .btn-primary');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Suallar yüklənir…'; }
+  if(btn){ btn.disabled = true; btn.textContent = 'Suallar yüklənir…'; }
   const loaded = sourceQs.length ? true : await loadExamQuestions();
   startingExam = false;
   if(!loaded){ showLobby(); return; }
@@ -497,11 +490,11 @@ function buildQuizCard(q){
     </div>`;
   } else if(q.type === 'short'){
     body = `<textarea class="quiz-short-input" id="short-inp" oninput="liveShort(${q.id})" placeholder="Cavabınızı buraya yazın…"></textarea>
-    <div id="ans-status" style="margin-top:8px;min-height:18px;font-size:12px;color:var(--muted)"></div>`;
+    <div id="ans-status" style="margin-top:8px;min-height:18px;font-size:15px;color:var(--muted)"></div>`;
   } else if(q.type === 'fill'){
     const rendered = esc(q.fillText).replace(/\[blank\]/gi, () => `<input class="blank-inp" type="text"/>`);
     body = `<div class="fill-text-render" oninput="liveFill(${q.id})">${rendered}</div>
-    <div id="ans-status" style="margin-top:12px;min-height:18px;font-size:12px;color:var(--muted)"></div>`;
+    <div id="ans-status" style="margin-top:12px;min-height:18px;font-size:15px;color:var(--muted)"></div>`;
   }
   return `<div class="quiz-card" id="quiz-card-main">
     <div class="quiz-q-label">Sual ${quizIdx+1} / ${quizQs.length}</div>
@@ -653,7 +646,7 @@ function setSaveState(state){
     failed: 'Cavablarınız göndərilə bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin. Səhifəni bağlamayın.',
     rejected: 'İmtahan vaxtı bitdiyi üçün son cavablar artıq qəbul olunmur. Vaxt bitənə qədər saxlanılmış cavablarınız müəllimdə qalır.'
   };
-  set('result-icon', { pending: '⏳', slow: '⏳', ok: '✅', failed: '⚠️', rejected: '⌛' }[state]);
+  set('result-icon', { pending: '', slow: '', ok: '✓', failed: '!', rejected: '' }[state]);
   set('result-heading', { pending: 'İmtahan göndərilir…', slow: 'İmtahan göndərilir…', ok: 'İmtahan göndərildi', failed: 'İmtahan göndərilmədi', rejected: 'İmtahan vaxtı bitib' }[state]);
   set('result-save', notes[state]);
   if(retry) retry.style.display = state === 'failed' ? 'inline-flex' : 'none';
@@ -708,8 +701,8 @@ function finishQuiz(){
 
   const extra = document.getElementById('result-extra');
   if(extra) extra.innerHTML = `<div class="lock-card" style="max-width:460px;margin:0 auto">
-    <h2 style="font-size:18px">Nəticə kodunuz</h2>
-    <p style="font-size:12px;margin-bottom:0">Bu kodu saxlayın. Müəllim nəticələri elan edəndə onunla xalınızı görə bilərsiniz.</p>
+    <h2 style="font-size:21px">Nəticə kodunuz</h2>
+    <p style="font-size:15px;margin-bottom:0">Bu kodu saxlayın. Müəllim nəticələri elan edəndə onunla xalınızı görə bilərsiniz.</p>
     ${lookupHtml()}
   </div>`;
 
@@ -773,7 +766,7 @@ function showLeaveWarning(count){
   el.id = 'leave-warning';
   el.className = 'overlay';
   el.innerHTML = `<div class="modal" style="text-align:center">
-    <div style="font-size:40px;margin-bottom:8px">⚠️</div>
+    <div style="font-size:40px;margin-bottom:8px"></div>
     <h2>Xəbərdarlıq ${count}/${leaveLimit}</h2>
     <p>İmtahan səhifəsini tərk etdiniz. Yenə ${leaveLimit-count} dəfə çıxsanız, imtahan avtomatik göndəriləcək.</p>
     <button class="btn btn-primary btn-full" onclick="document.getElementById('leave-warning').remove();enterFullscreen()">Davam et</button>
@@ -866,7 +859,7 @@ let liveMyRank = 0, liveMyTotal = 0, liveMyScore = 0;
 let liveRevealFact = null;   // { round, fact }: the random fact for a round, kept so a re-render shows the same one
 
 function liveRankChipHtml(){
-  return liveMyRank ? `<span class="live-rank-chip" title="Yeriniz və xalınız">🏅 ${liveMyRank} / ${liveMyTotal} · ${liveMyScore} xal</span>` : '';
+  return liveMyRank ? `<span class="live-rank-chip" title="Yeriniz və xalınız">Yer ${liveMyRank} / ${liveMyTotal} · ${liveMyScore} xal</span>` : '';
 }
 
 // ── JOIN ──────────────────────────────────────────────
@@ -884,7 +877,7 @@ async function joinLiveRoom(){
   if(!nameVal){ showLiveJoinError('Zəhmət olmasa adınızı daxil edin.'); return; }
 
   const btn = document.getElementById('live-join-btn');
-  btn.disabled = true; btn.textContent = '⏳ Yoxlanılır…';
+  btn.disabled = true; btn.textContent = 'Yoxlanılır…';
   try{
     const snap = await db.ref('live_rooms/' + pinVal + '/meta').once('value');
     const meta = snap.val();
@@ -973,7 +966,7 @@ function attachLiveRoomListener(){
   liveRoomMetaRef = db.ref('live_rooms/' + livePin + '/meta');
   liveRoomMetaRef.on('value', snap => {
     const meta = snap.val();
-    if(!meta){ liveJoined = false; leaveFullscreen(); renderLiveGameMessage('🚫', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
+    if(!meta){ liveJoined = false; leaveFullscreen(); renderLiveGameMessage('', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
     handleLiveMetaUpdate(meta);
   });
   // The teacher can only kick from the lobby roster, so this only ever fires once the player's
@@ -984,7 +977,7 @@ function attachLiveRoomListener(){
     if(snap.exists() || !liveJoined) return;
     liveJoined = false;
     leaveFullscreen();
-    renderLiveGameMessage('🚫', 'Oyundan çıxarıldınız', 'Müəllim sizi oyundan çıxarıb.');
+    renderLiveGameMessage('', 'Oyundan çıxarıldınız', 'Müəllim sizi oyundan çıxarıb.');
     detachLiveRoomListener();
   });
 }
@@ -1028,7 +1021,7 @@ function renderLiveGameMessage(icon, title, sub){
 }
 
 function renderLiveWaiting(meta){
-  renderLiveGameMessage('⏳', esc(meta.topic || 'Canlı Oyun'), `Salam, ${esc(liveDisplayName)}! Oyun başlayana qədər gözləyin…`);
+  renderLiveGameMessage('', esc(meta.topic || 'Canlı oyun'), `Salam, ${esc(liveDisplayName)}! Oyun başlayana qədər gözləyin…`);
 }
 
 // ── QUESTION ──────────────────────────────────────────
@@ -1058,14 +1051,14 @@ async function loadAndRenderLiveQuestion(meta, gen){
 function renderLiveQuestion(meta, i){
   const q = liveCurrentQuestion;
   const wrap = document.getElementById('live-game-wrap');
-  if(!q){ wrap.innerHTML = liveGameMessageHtml('⚠️', 'Sual yüklənmədi', 'Səhifəni yeniləyin.'); return; }
+  if(!q){ wrap.innerHTML = liveGameMessageHtml('', 'Sual yüklənmədi', 'Səhifəni yeniləyin.'); return; }
   if(liveAnswered){
     wrap.innerHTML = liveGameMessageHtml('✓', `Sual ${i + 1} / ${meta.questionCount}`, 'Bu suala artıq cavab vermisiniz. Növbəti addımı gözləyin…');
     return;
   }
   wrap.innerHTML = `
     <div class="quiz-topbar">
-      <span class="quiz-title-lbl">${esc(meta.topic || 'Canlı Oyun')}</span>
+      <span class="quiz-title-lbl">${esc(meta.topic || 'Canlı oyun')}</span>
       <div class="quiz-meta">
         ${liveRankChipHtml()}
         <span class="quiz-prog-txt">${i + 1} / ${meta.questionCount}</span>
@@ -1076,9 +1069,9 @@ function renderLiveQuestion(meta, i){
     <div class="quiz-card" id="live-q-card">
       <div class="quiz-q-label">Sual ${i + 1}</div>
       <div class="quiz-q-text">${esc(q.text)}</div>
-      <div id="live-answer-area"><div id="live-read-note" class="live-read-note">⏳ Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılacaq…</div></div>
+      <div id="live-answer-area"><div id="live-read-note" class="live-read-note">Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılacaq…</div></div>
     </div>
-    <div id="live-answer-status" style="margin-top:14px;font-size:13px;color:var(--muted);text-align:center"></div>`;
+    <div id="live-answer-status" style="margin-top:14px;font-size:16px;color:var(--muted);text-align:center"></div>`;
 }
 
 function liveAnswerInputHtml(q){
@@ -1148,17 +1141,17 @@ function writeLiveAnswer(fields){
   const responseTimeMs = Math.max(0, serverNow() - liveQuestionStartedLocal - LIVE_READ_MS);
   const data = { ...fields, responseTimeMs, submittedAt: firebase.database.ServerValue.TIMESTAMP };
   const status = document.getElementById('live-answer-status');
-  if(status) status.textContent = '⏳ Göndərilir…';
+  if(status) status.textContent = 'Göndərilir…';
   db.ref('live_rooms/' + livePin + '/answers/' + liveLastIndex + '/' + liveUid).set(data).then(() => {
     // Without this check, a reveal that already rendered while this write was still in flight gets
     // clobbered by this stale "waiting" screen, and nothing re-renders it until the next question.
     if(gen !== liveRenderGen) return;
-    document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml('✅', 'Cavab göndərildi!', 'Digər tələbələri gözləyin…');
+    document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml('✓', 'Cavab göndərildi!', 'Digər tələbələri gözləyin…');
   }).catch(() => {
     liveAnswered = false;
     if(gen !== liveRenderGen) return;
     unlockLiveAnswerUI();
-    if(status) status.textContent = '⚠️ Göndərilmədi, yenidən cəhd edin.';
+    if(status) status.textContent = 'Göndərilmədi, yenidən cəhd edin.';
   });
 }
 
@@ -1175,7 +1168,7 @@ function startLiveCountdown(meta){
     if(elapsed >= LIVE_READ_MS) openLiveAnswers();
     else {
       const note = document.getElementById('live-read-note');
-      if(note) note.textContent = `⏳ Cavablar ${Math.ceil((LIVE_READ_MS - elapsed) / 1000)} saniyə sonra açılacaq…`;
+      if(note) note.textContent = `Cavablar ${Math.ceil((LIVE_READ_MS - elapsed) / 1000)} saniyə sonra açılacaq…`;
     }
     const left = Math.max(0, Math.ceil((LIVE_READ_MS + total * 1000 - elapsed) / 1000));
     const shown = Math.min(total, left);
@@ -1191,7 +1184,7 @@ function startLiveCountdown(meta){
         liveTimeUp = true;
         lockLiveAnswerUI();
         const status = document.getElementById('live-answer-status');
-        if(status) status.textContent = '⌛ Vaxt bitdi';
+        if(status) status.textContent = 'Vaxt bitdi';
       }
     }
   };
@@ -1206,7 +1199,7 @@ function startLiveCountdown(meta){
 async function renderLiveReveal(gen){
   const i = liveLastIndex;
   const wrap = document.getElementById('live-game-wrap');
-  wrap.innerHTML = liveGameMessageHtml('⏳', 'Nəticə yüklənir…', '');
+  wrap.innerHTML = liveGameMessageHtml('', 'Nəticə yüklənir…', '');
   try{
     const [resSnap, playersSnap] = await Promise.all([
       db.ref('live_rooms/' + livePin + '/results/' + i + '/' + liveUid).once('value'),
@@ -1222,21 +1215,21 @@ async function renderLiveReveal(gen){
     if(!liveRevealFact || liveRevealFact.round !== i) liveRevealFact = { round: i, fact: livePickFact(liveRoundFacts(board, i, liveUid)) };
     const fact = liveRevealFact.fact;
     wrap.innerHTML = `<div class="lock-card live-reveal-card">
-      <div class="lock-icon">${res ? (ok ? '✅' : '❌') : '⌛'}</div>
+      <div class="lock-icon" style="color:var(--${res ? (ok ? 'correct' : 'wrong') : 'muted'})">${res ? (ok ? '✓' : '✗') : ''}</div>
       <h2>${res ? (ok ? 'Düzgün!' : 'Səhv') : 'Cavab vermədiniz'}</h2>
       <p style="margin-bottom:16px">${res && ok ? `+${pts} xal qazandınız.` : 'Bu sual üçün xal qazanmadınız.'}</p>
       <div class="live-me-stats">
         <div class="live-me-stat"><div class="v">${me ? me.rank : '—'}<small> / ${board.length}</small></div><div class="l">Yeriniz</div></div>
         <div class="live-me-stat"><div class="v">${me ? me.score : liveMyScore}</div><div class="l">Xalınız</div></div>
-        ${me && me.streak >= 2 ? `<div class="live-me-stat"><div class="v">🔥 ${me.streak}</div><div class="l">Seriya</div></div>` : ''}
+        ${me && me.streak >= 2 ? `<div class="live-me-stat"><div class="v">${me.streak}</div><div class="l">Seriya</div></div>` : ''}
       </div>
-      ${fact ? `<div class="live-fact"><span>${fact.icon}</span> ${esc(fact.text)}</div>` : ''}
+      ${fact ? `<div class="live-fact">${esc(fact.text)}</div>` : ''}
       <div class="live-top-title">Top 5</div>
       <div class="live-top-list">${liveTopRowsHtml(board, liveUid, 5)}</div>
-      <p style="margin:16px 0 0;font-size:12px">Növbəti sualı gözləyin…</p>
+      <p style="margin:16px 0 0;font-size:15px">Növbəti sualı gözləyin…</p>
     </div>`;
   }catch(e){
-    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('⚠️', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
+    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
   }
 }
 
@@ -1250,7 +1243,7 @@ async function renderLiveFinished(meta, gen){
   // final-rank screen with a "room deleted" message.
   detachLiveRoomListener();
   const wrap = document.getElementById('live-game-wrap');
-  wrap.innerHTML = liveGameMessageHtml('⏳', 'Yekun nəticələr yüklənir…', '');
+  wrap.innerHTML = liveGameMessageHtml('', 'Yekun nəticələr yüklənir…', '');
   try{
     const snap = await db.ref('live_rooms/' + livePin + '/players').once('value');
     if(gen !== liveRenderGen) return;
@@ -1260,8 +1253,7 @@ async function renderLiveFinished(meta, gen){
     const rank = myEntry ? myEntry.rank : 0;
     const rest = board.slice(3, 10);
     wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:460px">
-      <div class="lock-icon">🏁</div>
-      <h2>${esc(meta.topic || 'Canlı Oyun')} — Bitdi</h2>
+      <h2>${esc(meta.topic || 'Canlı oyun')} — Bitdi</h2>
       <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong>${myEntry ? ` · <strong>${myEntry.score}</strong> xal` : ''}</p>
       ${livePodiumHtml(board, myEntry ? myEntry.uid : undefined)}
       ${rest.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
@@ -1269,7 +1261,7 @@ async function renderLiveFinished(meta, gen){
       </div>`).join('')}
     </div>`;
   }catch(e){
-    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('⚠️', 'Yekun nəticə yüklənmədi', '');
+    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('', 'Yekun nəticə yüklənmədi', '');
   }
 }
 
@@ -1319,7 +1311,7 @@ function removeSelfFromLive(){
   detachLiveRoomListener();
   leaveFullscreen();
   document.getElementById('live-leave-warning')?.remove();
-  renderLiveGameMessage('🚫', 'Oyundan çıxarıldınız', `Oyun səhifəsini ${liveLeaveLimit} dəfə tərk etdiyiniz üçün oyun sizin üçün bitdi. Bu müəllimə bildirilib.`);
+  renderLiveGameMessage('', 'Oyundan çıxarıldınız', `Oyun səhifəsini ${liveLeaveLimit} dəfə tərk etdiyiniz üçün oyun sizin üçün bitdi. Bu müəllimə bildirilib.`);
 }
 function onLiveReturn(){
   if(!liveMonitoring()) return;
@@ -1335,7 +1327,7 @@ function showLiveLeaveWarning(count){
   el.id = 'live-leave-warning';
   el.className = 'overlay';
   el.innerHTML = `<div class="modal" style="text-align:center">
-    <div style="font-size:40px;margin-bottom:8px">⚠️</div>
+    <div style="font-size:40px;margin-bottom:8px"></div>
     <h2>Xəbərdarlıq ${count}/${liveLeaveLimit}</h2>
     <p>Oyun səhifəsini tərk etdiniz. Bu müəllimə bildirilir. Yenə ${liveLeaveLimit - count} dəfə çıxsanız, oyundan çıxarılacaqsınız.</p>
     <button class="btn btn-primary btn-full" onclick="document.getElementById('live-leave-warning').remove();enterFullscreen()">Davam et</button>

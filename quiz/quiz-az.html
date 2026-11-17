@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>QuizCraft — Sinif Testləri</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<title>QuizCraft — Sinif testləri</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<link rel="stylesheet" href="quiz-az.css?v=14"/>
+<link rel="stylesheet" href="quiz-az.css?v=17"/>
 </head>
 <body>
 
@@ -16,12 +16,11 @@
 ═══════════════════════════════ -->
 <div id="lock-view" class="view active">
   <div class="lock-card">
-    <div class="lock-icon">🔐</div>
-    <h2>Müəllim Paneli</h2>
+    <h2>Müəllim paneli</h2>
     <p>Redaktor panelini açmaq üçün müəllim hesabı ilə daxil olun.</p>
     <input type="email" id="email-input" placeholder="E-poçt…" autocomplete="username" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()"/>
     <input type="password" id="pw-input" placeholder="Şifrəni daxil edin…" autocomplete="current-password" onkeydown="if(event.key==='Enter')signInTeacher()"/>
-    <div class="lock-error" id="pw-error">❌ E-poçt və ya şifrə yanlışdır.</div>
+    <div class="lock-error" id="pw-error">E-poçt və ya şifrə yanlışdır.</div>
     <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="signInTeacher()">Daxil ol →</button>
   </div>
 </div>
@@ -35,7 +34,7 @@
     <div class="sidebar-logo">
       <div>
         <h1>Quiz<span>Craft</span></h1>
-        <p>Sinif Test Sistemi · AZ</p>
+        <p>Sinif test sistemi · AZ</p>
       </div>
       <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menyunu gizlət" aria-expanded="true" aria-controls="editor-sidebar" title="Menyunu gizlət">☰</button>
     </div>
@@ -46,42 +45,42 @@
       <div class="sidebar-tab" data-tab="pdf" onclick="switchTab('pdf')">PDF</div>
       <div class="sidebar-tab" data-tab="topics" onclick="switchTab('topics')">Mövzular</div>
       <div class="sidebar-tab" data-tab="analytics" onclick="switchTab('analytics')">Analitika</div>
-      <div class="sidebar-tab" data-tab="live" onclick="switchTab('live')">Canlı Oyun</div>
+      <div class="sidebar-tab" data-tab="live" onclick="switchTab('live')">Canlı oyun</div>
     </div>
 
     <!-- Questions panel -->
     <div class="sidebar-panel active" id="tab-questions">
       <div class="q-list" id="q-list"></div>
       <div style="padding:10px 12px 0;border-top:1px solid var(--border);display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:12px" onclick="exportQuestions()" title="Sualları fayla saxla">⬇ Ehtiyat nüsxə</button>
-        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:12px" onclick="document.getElementById('import-file').click()" title="Ehtiyat nüsxə faylından sualları əlavə et">⬆ Ehtiyatı yüklə</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:15px" onclick="exportQuestions()" title="Sualları fayla saxla">⬇ Ehtiyat nüsxə</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:15px" onclick="document.getElementById('import-file').click()" title="Ehtiyat nüsxə faylından sualları əlavə et">⬆ Ehtiyatı yüklə</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importQuestions(this.files[0])"/>
       </div>
       <div style="padding:8px 12px 0;display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:12px" onclick="document.getElementById('csv-file').click()" title="Kahoot formatında CSV və ya Excel (.xlsx) faylından sualları əlavə et">⬆ CSV / Excel yüklə</button>
-        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:12px" onclick="downloadCsvTemplate()" title="Doldurmaq üçün nümunə CSV faylı">⬇ CSV şablonu</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:15px" onclick="document.getElementById('csv-file').click()" title="Kahoot formatında CSV və ya Excel (.xlsx) faylından sualları əlavə et">⬆ CSV / Excel yüklə</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;font-size:15px" onclick="downloadCsvTemplate()" title="Doldurmaq üçün nümunə CSV faylı">⬇ CSV şablonu</button>
         <input type="file" id="csv-file" accept=".csv,.txt,.xlsx,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none" onchange="importCsvFile(this.files[0])"/>
       </div>
       <div style="padding:10px 12px">
-        <button class="btn btn-ghost btn-full btn-sm" onclick="deleteAllQuestions()" style="color:var(--wrong);font-size:12px">🗑 Bütün Sualları Sil</button>
+        <button class="btn btn-ghost btn-full btn-sm" onclick="deleteAllQuestions()" style="color:var(--wrong);font-size:15px">Bütün sualları sil</button>
       </div>
     </div>
 
     <!-- Settings panel -->
     <div class="sidebar-panel" id="tab-settings">
       <div class="sidebar-section">
-        <label>Test Başlığı</label>
-        <input type="text" id="quiz-title" placeholder="Məs: Verilənlər Bazası — 5-ci Həftə"/>
+        <label>Test başlığı</label>
+        <input type="text" id="quiz-title" placeholder="Məs: Verilənlər bazası — 5-ci Həftə"/>
       </div>
       <div class="sidebar-section">
-        <label>İmtahan Müddəti (dəqiqə)</label>
+        <label>İmtahan müddəti (dəqiqə)</label>
         <div class="timer-row">
           <input type="number" id="exam-minutes" min="1" max="180" value="30"/>
           <span>dəqiqə</span>
         </div>
       </div>
       <div class="sidebar-section">
-        <label>Səhifədən Çıxış Limiti</label>
+        <label>Səhifədən çıxış limiti</label>
         <div class="timer-row">
           <input type="number" id="leave-limit" min="0" max="20" value="3"/>
           <span>0 = nəzarət yoxdur</span>
@@ -89,18 +88,18 @@
       </div>
       <div class="sidebar-section">
         <div class="toggle-row"><span>Hər cihazdan yalnız bir cəhd</span><label class="toggle"><input type="checkbox" id="one-attempt"/><span class="toggle-slider"></span></label></div>
-        <p class="hint-text">Tələbə testi bitirdikdən (və ya çıxdıqdan) sonra eyni brauzerdən yenidən başlaya bilməz. Brauzer məlumatlarını silməklə keçmək olar; belə cəhdlər Analitikada 📱 ilə işarələnir.</p>
+        <p class="hint-text">Tələbə testi bitirdikdən (və ya çıxdıqdan) sonra eyni brauzerdən yenidən başlaya bilməz. Brauzer məlumatlarını silməklə keçmək olar; belə cəhdlər Analitikada “Cihaz” nişanı ilə işarələnir.</p>
       </div>
       <div class="sidebar-section">
-        <label>Testin Açılış Vaxtı</label>
+        <label>Testin açılış vaxtı</label>
         <input type="datetime-local" id="opens-at"/>
         <p class="hint-text">Boş buraxsanız, göndərilən kimi açıq olur.</p>
-        <label style="margin-top:10px;display:block">Başlamaq üçün Son Vaxt</label>
+        <label style="margin-top:10px;display:block">Başlamaq üçün Son vaxt</label>
         <input type="datetime-local" id="closes-at"/>
         <p class="hint-text">Bu vaxtdan sonra yeni tələbə başlaya bilməz. Artıq başlayanlar öz vaxtlarını tamamlayır.</p>
       </div>
       <div class="sidebar-section">
-        <label>Hər Suala Vaxt (san)</label>
+        <label>Hər suala vaxt (san)</label>
         <div class="timer-row">
           <input type="number" id="timer-sec" min="0" max="600" value="0"/>
           <span>0 = vaxt yoxdur</span>
@@ -111,13 +110,13 @@
         <div class="toggle-row"><span>Sualları qarışdır</span><label class="toggle"><input type="checkbox" id="shuffle-q"/><span class="toggle-slider"></span></label></div>
       </div>
       <div class="sidebar-section">
-        <label>Bu Brauzerdə Saxlama</label>
+        <label>Bu brauzerdə saxlama</label>
         <div class="toggle-row"><span>Göndərdikdən sonra sualları bu brauzerdən çıxar</span><label class="toggle"><input type="checkbox" id="clear-after-publish" onchange="setClearAfterPublish(this.checked)"/><span class="toggle-slider"></span></label></div>
         <p class="hint-text">Test serverdə qalır. Sualları sonra Mövzular tabından "✎ Redaktə et" ilə geri yükləyə bilərsiniz.</p>
       </div>
       <div class="sidebar-section">
         <label>Hesab</label>
-        <p id="teacher-email" style="font-size:12px;color:var(--text2);margin-bottom:8px;word-break:break-all"></p>
+        <p id="teacher-email" style="font-size:15px;color:var(--text2);margin-bottom:8px;word-break:break-all"></p>
         <button class="btn btn-ghost btn-sm btn-full" onclick="signOutTeacher()">Çıxış</button>
       </div>
     </div>
@@ -126,13 +125,12 @@
     <div class="sidebar-panel" id="tab-pdf">
       <div class="pdf-drop" id="pdf-drop" onclick="document.getElementById('pdf-file-inp').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handlePdfDrop(event)">
         <input type="file" id="pdf-file-inp" accept=".pdf" onchange="handlePdfFile(this.files[0])"/>
-        <div class="pdf-drop-icon">📄</div>
         <p>PDF faylını bura sürükləyin<br/>və ya seçmək üçün klikləyin</p>
-        <p style="font-size:11px;color:var(--muted);margin-top:8px">Dəstəklənən format: Nömrəli sual siyahısı (1. Sual…)</p>
+        <p style="font-size:14px;color:var(--muted);margin-top:8px">Dəstəklənən format: Nömrəli sual siyahısı (1. Sual…)</p>
       </div>
       <div class="pdf-status" id="pdf-status"></div>
       <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:8px;">
-        <button class="btn btn-ghost btn-full btn-sm" id="btn-clear-pdf" onclick="clearPdfQuestions()" style="display:none">🗑 PDF Suallarını Sil</button>
+        <button class="btn btn-ghost btn-full btn-sm" id="btn-clear-pdf" onclick="clearPdfQuestions()" style="display:none">PDF suallarını sil</button>
       </div>
     </div>
 
@@ -150,9 +148,9 @@
     <div class="sidebar-panel" id="tab-live"></div>
 
     <div class="sidebar-footer">
-      <button class="btn btn-ghost btn-full" onclick="addQuestion()">＋ Sual Əlavə Et</button>
-      <button class="btn btn-success btn-full" onclick="startQuiz()">▶ Testi Başlat</button>
-      <button class="btn btn-ghost btn-full btn-sm" onclick="signOutTeacher()" style="font-size:11px;color:var(--muted)">🔒 Kilidlə &amp; Çıx</button>
+      <button class="btn btn-ghost btn-full" onclick="addQuestion()">＋ Sual əlavə et</button>
+      <button class="btn btn-success btn-full" onclick="startQuiz()">▶ Testi başlat</button>
+      <button class="btn btn-ghost btn-full btn-sm" onclick="signOutTeacher()" style="font-size:14px;color:var(--muted)">Kilidlə və çıx</button>
     </div>
   </aside>
 
@@ -161,7 +159,7 @@
     <div class="editor-header">
       <div style="display:flex;align-items:center;gap:12px;">
         <button class="sidebar-toggle sidebar-show-btn" onclick="toggleSidebar()" aria-label="Menyunu göstər" title="Menyunu göstər">☰</button>
-        <h2 id="editor-title">Sual Redaktoru</h2>
+        <h2 id="editor-title">Sual redaktoru</h2>
       </div>
       <div style="display:flex;align-items:center;gap:14px;">
         <span class="q-counter" id="q-counter">0 sual</span>
@@ -222,8 +220,8 @@
 
     <div class="results-actions no-print">
       <button class="btn btn-primary" onclick="retakeQuiz()">↺ Yenidən</button>
-      <button class="btn btn-accent3" onclick="printResults()">🖨 Çap Et / PDF</button>
-      <button class="btn btn-ghost" onclick="exitQuiz()">← Redaktora Qayıt</button>
+      <button class="btn btn-accent3" onclick="printResults()">Çap et / PDF</button>
+      <button class="btn btn-ghost" onclick="exitQuiz()">← Redaktora qayıt</button>
     </div>
   </div>
 </div>
@@ -240,8 +238,8 @@
 <script src="quiz-export.js?v=11"></script>
 <script src="quiz-schedule.js?v=10"></script>
 <script src="quiz-examcodec.js?v=11"></script>
-<script src="quiz-live.js?v=16"></script>
-<script src="quiz-live-host.js?v=17"></script>
-<script src="quiz-az.js?v=16"></script>
+<script src="quiz-live.js?v=17"></script>
+<script src="quiz-live-host.js?v=19"></script>
+<script src="quiz-az.js?v=18"></script>
 </body>
 </html>

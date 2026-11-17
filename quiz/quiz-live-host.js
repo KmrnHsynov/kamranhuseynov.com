@@ -67,7 +67,7 @@ function renderLiveTab(){
   const saved = loadLiveRoomMarker();
   if(!saved){ refreshPublishedTopics(renderLiveTopicPicker); return; }
   document.getElementById('questions-container').innerHTML =
-    '<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Canlı oyun yoxlanılır…</p></div>';
+    '<div class="analytics-empty"><p>Canlı oyun yoxlanılır…</p></div>';
   db.ref('live_rooms/' + saved.pin + '/meta').once('value').then(snap => {
     const meta = snap.val();
     if(meta && meta.status !== 'FINISHED') resumeLiveRoom(saved.pin);
@@ -115,8 +115,8 @@ function renderLiveTopicPicker(){
   const firstCap = topics.length ? liveTopicCountCap(topics, topics[0].topic) : LIVE_MAX_QUESTIONS;
   main.innerHTML = `
     <div style="padding:28px;max-width:560px;margin:0 auto">
-      <h2 style="margin-bottom:6px">Canlı Oyun</h2>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:20px">Bir mövzu seçin, tələbələr PIN və ya QR kodla qoşulsun, suallar canlı göstərilsin.</p>
+      <h2 style="margin-bottom:6px">Canlı oyun</h2>
+      <p style="font-size:16px;color:var(--text2);margin-bottom:20px">Bir mövzu seçin, tələbələr PIN və ya QR kodla qoşulsun, suallar canlı göstərilsin.</p>
       ${topics.length ? `
         <div style="margin-bottom:16px">
           <label class="field-lbl">Mövzu</label>
@@ -133,11 +133,11 @@ function renderLiveTopicPicker(){
           <input type="number" id="live-seconds-input" min="5" max="300" value="${LIVE_DEFAULT_SECONDS}" style="width:100%"/>
         </div>
         <div style="margin-bottom:20px">
-          <label class="field-lbl">Səhifədən Çıxış Limiti</label>
+          <label class="field-lbl">Səhifədən çıxış limiti</label>
           <input type="number" id="live-leave-limit-input" min="0" max="20" value="${LIVE_DEFAULT_LEAVE_LIMIT}" style="width:100%"/>
         </div>
-        <button class="btn btn-primary btn-full" onclick="startLiveGame()">▶ Canlı Oyun Başlat</button>
-      ` : '<div style="font-size:13px;color:var(--muted)">Hələ heç bir mövzuda sual yoxdur. Əvvəlcə Suallar bölməsində sual əlavə edin, ya da bir mövzu göndərin.</div>'}
+        <button class="btn btn-primary btn-full" onclick="startLiveGame()">▶ Canlı oyun başlat</button>
+      ` : '<div style="font-size:16px;color:var(--muted)">Hələ heç bir mövzuda sual yoxdur. Əvvəlcə suallar bölməsində sual əlavə edin, ya da bir mövzu göndərin.</div>'}
       <div id="live-history-list" style="margin-top:28px"></div>
     </div>`;
   renderLiveHistoryList();
@@ -147,7 +147,7 @@ function renderLiveTopicPicker(){
 function renderLiveHistoryList(){
   const el = document.getElementById('live-history-list');
   if(!el) return;
-  el.innerHTML = '<div style="font-size:11px;color:var(--muted)">⏳ Keçmiş oyunlar yüklənir…</div>';
+  el.innerHTML = '<div style="font-size:14px;color:var(--muted)">Keçmiş oyunlar yüklənir…</div>';
   db.ref('live_history').limitToLast(10).once('value').then(snap => {
     const el2 = document.getElementById('live-history-list');
     if(!el2) return; // the teacher navigated to another tab while this was loading
@@ -155,7 +155,7 @@ function renderLiveHistoryList(){
     const list = Object.entries(val).map(([id, h]) => ({ id, ...h })).sort((a, b) => (b.finishedAt || 0) - (a.finishedAt || 0));
     if(!list.length){ el2.innerHTML = ''; return; }
     el2.innerHTML = `
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Son Oyunlar</div>
+      <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Son oyunlar</div>
       ${list.map(liveHistoryRowHtml).join('')}`;
   }).catch(() => { const el2 = document.getElementById('live-history-list'); if(el2) el2.innerHTML = ''; });
 }
@@ -163,14 +163,14 @@ function renderLiveHistoryList(){
 function liveHistoryRowHtml(h){
   const top = (h.leaderboard || [])[0];
   const when = new Date(h.finishedAt || h.createdAt || 0).toLocaleString('az-AZ', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  return `<div style="padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+  return `<div style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
     <div>
-      <div style="font-size:13px;font-weight:600">${esc(h.topic || '')}</div>
-      <div style="font-size:11px;color:var(--muted)">${esc(when)} · ${h.playerCount || 0} tələbə${top ? ' · 🥇 ' + esc(top.name) + ' (' + top.score + ')' : ''}</div>
+      <div style="font-size:16px;font-weight:600">${esc(h.topic || '')}</div>
+      <div style="font-size:14px;color:var(--muted)">${esc(when)} · ${h.playerCount || 0} tələbə${top ? ' · 1-ci: ' + esc(top.name) + ' (' + top.score + ')' : ''}</div>
     </div>
     <div style="display:flex;gap:6px;flex-shrink:0">
-      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 8px" data-id="${esc(h.id)}" onclick="showLiveHistoryDetail(this.dataset.id)">Bax</button>
-      <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 8px;color:var(--wrong)" data-id="${esc(h.id)}" onclick="deleteLiveHistory(this.dataset.id)">🗑</button>
+      <button class="btn btn-ghost btn-sm" style="font-size:14px;padding:7px 12px" data-id="${esc(h.id)}" onclick="showLiveHistoryDetail(this.dataset.id)">Bax</button>
+      <button class="btn btn-ghost btn-sm" style="font-size:14px;padding:7px 12px;color:var(--wrong)" data-id="${esc(h.id)}" onclick="deleteLiveHistory(this.dataset.id)">Sil</button>
     </div>
   </div>`;
 }
@@ -188,9 +188,9 @@ function showLiveHistoryDetail(id){
     // closed; clicking outside the box or pressing Esc closes it too.
     el.innerHTML = `<div class="modal modal-scroll" style="max-width:420px">
       <h2 style="margin-bottom:4px">${esc(h.topic || '')}</h2>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">${h.playerCount || 0} tələbə · ${h.questionCount || 0} sual</p>
+      <p style="font-size:15px;color:var(--muted);margin-bottom:16px">${h.playerCount || 0} tələbə · ${h.questionCount || 0} sual</p>
       <div class="modal-body">
-        ${board.length ? board.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">Nəticə yoxdur.</div>'}
+        ${board.length ? board.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 1}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('') : '<div style="font-size:15px;color:var(--muted)">Nəticə yoxdur.</div>'}
       </div>
       <button class="btn btn-primary btn-full" style="margin-top:16px;flex-shrink:0" onclick="closeLiveHistoryModal()">Bağla</button>
     </div>`;
@@ -240,12 +240,12 @@ async function startLiveGame(){
   const leaveLimitVal = parseInt(document.getElementById('live-leave-limit-input')?.value, 10);
   const leaveLimit = Number.isNaN(leaveLimitVal) ? LIVE_DEFAULT_LEAVE_LIMIT : Math.min(20, Math.max(0, leaveLimitVal));
   const btn = document.querySelector('#questions-container .btn-primary');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Yüklənir…'; }
+  if(btn){ btn.disabled = true; btn.textContent = 'Yüklənir…'; }
 
   const filtered = await fetchLiveTopicQuestions(topic).catch(() => []);
   if(!filtered.length){
     alert('Bu mövzunun sualları tapılmadı.');
-    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı Oyun Başlat'; }
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı oyun başlat'; }
     return;
   }
 
@@ -257,11 +257,11 @@ async function startLiveGame(){
     alert(`Canlı oyun başlamadı. ${problems.length} sualı düzəltmək lazımdır:\n\n` +
       problems.slice(0, 8).map(p => `S${p.n}: ${p.list.join(', ')}`).join('\n') +
       (problems.length > 8 ? `\n… və daha ${problems.length - 8} sual` : ''));
-    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı Oyun Başlat'; }
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı oyun başlat'; }
     return;
   }
 
-  if(btn) btn.textContent = '⏳ Otaq yaradılır…';
+  if(btn) btn.textContent = 'Otaq yaradılır…';
 
   try{
     const pin = await reserveLivePin();
@@ -278,7 +278,7 @@ async function startLiveGame(){
     attachLiveRoom(pin);
   }catch(err){
     alert('Xəta: ' + err.message);
-    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı Oyun Başlat'; }
+    if(btn){ btn.disabled = false; btn.textContent = '▶ Canlı oyun başlat'; }
   }
 }
 
@@ -417,13 +417,13 @@ function renderLiveLobby(){
   detachLiveAnswersListener();
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto;text-align:center">
-      <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${esc(liveMeta.topic)}</div>
-      <div style="font-size:48px;font-weight:800;letter-spacing:.08em;font-family:'DM Mono',monospace;margin-bottom:6px">${esc(liveRoomPin)}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Tələbələr quiz-student.html səhifəsində "Canlı Oyun"u seçib bu kodu daxil etsin, və ya QR kodu skan etsin.</div>
-      <div id="live-qr" style="display:inline-block;padding:12px;background:#fff;border-radius:12px;margin-bottom:20px"></div>
+      <div style="font-size:16px;color:var(--muted);margin-bottom:6px">${esc(liveMeta.topic)}</div>
+      <div style="font-size:56px;font-weight:700;letter-spacing:.08em;font-variant-numeric:lining-nums tabular-nums;margin-bottom:6px">${esc(liveRoomPin)}</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:20px">Tələbələr quiz-student.html səhifəsində "Canlı oyun"u seçib bu kodu daxil etsin, və ya QR kodu skan etsin.</div>
+      <div id="live-qr" style="display:inline-block;padding:12px;background:#fff;border-radius:8px;margin-bottom:20px"></div>
       <div id="live-player-list" style="text-align:left;margin-bottom:20px"></div>
-      <button class="btn btn-primary btn-full" id="live-start-btn" onclick="launchLiveQuestion(0)" disabled>▶ Oyunu Başlat</button>
-      <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="deleteLiveRoom()">🗑 Otağı Sil</button>
+      <button class="btn btn-primary btn-full" id="live-start-btn" onclick="launchLiveQuestion(0)" disabled>▶ Oyunu başlat</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="deleteLiveRoom()">Otağı sil</button>
     </div>`;
   renderLiveQr();
   renderLivePlayerList();
@@ -448,12 +448,12 @@ function renderLivePlayerList(){
     .filter(p => p.displayName);
   document.getElementById('live-start-btn')?.toggleAttribute('disabled', list.length === 0);
   el.innerHTML = list.length
-    ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px">${list.length} tələbə qoşulub</div>` +
+    ? `<div style="font-size:14px;color:var(--muted);margin-bottom:8px">${list.length} tələbə qoşulub</div>` +
       list.map(p => `<span class="an-badge" style="margin:3px;background:var(--surface2);border:1px solid var(--border);color:var(--text);display:inline-flex;align-items:center;gap:6px">
-        ${esc(p.displayName)}${p.flagged ? ' ⚠' : ''}
-        <button data-uid="${esc(p.uid)}" onclick="kickLivePlayer(this.dataset.uid)" title="Oyundan çıxar" style="background:none;border:none;color:var(--wrong);cursor:pointer;font-size:13px;padding:0;line-height:1">✕</button>
+        ${esc(p.displayName)}${p.flagged ? ' · şübhəli' : ''}
+        <button data-uid="${esc(p.uid)}" onclick="kickLivePlayer(this.dataset.uid)" title="Oyundan çıxar" style="background:none;border:none;color:var(--wrong);cursor:pointer;font-size:16px;padding:0;line-height:1">✕</button>
       </span>`).join('')
-    : '<div style="font-size:12px;color:var(--muted)">Hələ heç kim qoşulmayıb…</div>';
+    : '<div style="font-size:15px;color:var(--muted)">Hələ heç kim qoşulmayıb…</div>';
 }
 
 // Kick is only offered from the lobby (the roster shown here) - once the game starts, the screen
@@ -488,15 +488,15 @@ function renderLiveQuestionActive(){
     .map(([uid]) => uid);
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length}</div>
-      <div style="font-size:20px;font-weight:700;margin-bottom:16px">${esc(q.text)}</div>
-      <div id="live-options-area"><div id="live-read-note" style="font-size:13px;color:var(--muted)">⏳ Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılır…</div></div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length}</div>
+      <div style="font-size:24px;font-weight:700;margin-bottom:16px">${esc(q.text)}</div>
+      <div id="live-options-area"><div id="live-read-note" style="font-size:16px;color:var(--muted)">Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılır…</div></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:20px">
-        <span id="live-answered-count" style="font-size:13px;color:var(--muted)">0 / 0 cavab verdi</span>
+        <span id="live-answered-count" style="font-size:16px;color:var(--muted)">0 / 0 cavab verdi</span>
         <div class="timer-pill" id="live-timer-pill">${liveMeta.questionSeconds}</div>
       </div>
-      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="revealLiveQuestion()">Nəticəni Göstər →</button>
-      <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu İndi Bitir</button>
+      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="revealLiveQuestion()">Nəticəni göstər →</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu indi bitir</button>
     </div>`;
   startLiveQuestionTimer();
   detachLiveAnswersListener();
@@ -509,9 +509,9 @@ function liveQuestionOptionsHtml(q){
   // Letters follow the option's position in the teacher's list, same as the players' buttons and the key.
   if(q.type === 'mc') return `<div>${q.options.map((o, i) => o ?
     `<div style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px">${LIVE_OPT_LETTERS[i]}. ${esc(o)}</div>` : '').join('')}</div>`;
-  if(q.type === 'tf') return '<div style="font-size:13px;color:var(--muted)">Doğru / Yanlış sualı</div>';
-  if(q.type === 'fill') return `<div style="font-size:14px">${esc(q.fillText || '').replace(/\[blank\]/gi, '____')}</div>`;
-  return '<div style="font-size:13px;color:var(--muted)">Yazılı cavab sualı</div>';
+  if(q.type === 'tf') return '<div style="font-size:16px;color:var(--muted)">Doğru / Yanlış sualı</div>';
+  if(q.type === 'fill') return `<div style="font-size:17px">${esc(q.fillText || '').replace(/\[blank\]/gi, '____')}</div>`;
+  return '<div style="font-size:16px;color:var(--muted)">Yazılı cavab sualı</div>';
 }
 
 function startLiveQuestionTimer(){
@@ -532,7 +532,7 @@ function startLiveQuestionTimer(){
     if(elapsed >= LIVE_READ_MS) showLiveOptions(q);
     else {
       const note = document.getElementById('live-read-note');
-      if(note) note.textContent = `⏳ Cavablar ${Math.ceil((LIVE_READ_MS - elapsed) / 1000)} saniyə sonra açılır…`;
+      if(note) note.textContent = `Cavablar ${Math.ceil((LIVE_READ_MS - elapsed) / 1000)} saniyə sonra açılır…`;
     }
     const left = Math.max(0, Math.ceil((LIVE_READ_MS + total * 1000 - elapsed) / 1000));
     const shown = Math.min(total, left);
@@ -652,16 +652,16 @@ function renderLiveReveal(){
   const fact = liveRevealFact.fact;
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length} — Nəticə</div>
-      <div style="font-size:18px;font-weight:700;margin-bottom:10px">${esc(q.text)}</div>
-      <div style="font-size:13px;color:var(--correct);margin-bottom:18px">✓ Düzgün cavab: ${esc(correctAnswerText(key))}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">${stats.correctCount || 0} / ${stats.answeredCount || 0} şagird düzgün cavab verdi</div>
-      ${fact ? `<div class="live-fact"><span>${fact.icon}</span> ${esc(fact.text)}</div>` : ''}
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Top 5</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length} — Nəticə</div>
+      <div style="font-size:21px;font-weight:700;margin-bottom:10px">${esc(q.text)}</div>
+      <div style="font-size:16px;color:var(--correct);margin-bottom:18px">✓ Düzgün cavab: ${esc(correctAnswerText(key))}</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:20px">${stats.correctCount || 0} / ${stats.answeredCount || 0} şagird düzgün cavab verdi</div>
+      ${fact ? `<div class="live-fact">${esc(fact.text)}</div>` : ''}
+      <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Top 5</div>
       ${board.length ? `<div class="live-top-list">${liveTopRowsHtml(board, undefined, 5)}</div>`
-        : '<div style="font-size:12px;color:var(--muted)">Heç kim cavab vermədi.</div>'}
-      <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="${isLast ? 'finishLiveRoom()' : 'launchLiveQuestion(' + (i + 1) + ')'}">${isLast ? '🏁 Oyunu Bitir' : 'Növbəti Sual →'}</button>
-      ${isLast ? '' : '<button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu İndi Bitir</button>'}
+        : '<div style="font-size:15px;color:var(--muted)">Heç kim cavab vermədi.</div>'}
+      <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="${isLast ? 'finishLiveRoom()' : 'launchLiveQuestion(' + (i + 1) + ')'}">${isLast ? 'Oyunu bitir' : 'Növbəti sual →'}</button>
+      ${isLast ? '' : '<button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu indi bitir</button>'}
     </div>`;
 }
 
@@ -702,13 +702,13 @@ function renderLiveFinished(){
   const rest = leaderboard.slice(3, 10);
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto;text-align:center">
-      <div style="font-size:32px;margin-bottom:10px">🏁</div>
-      <h2 style="margin-bottom:18px">${esc(liveMeta.topic)} — Oyun Bitdi</h2>
+      
+      <h2 style="margin-bottom:18px">${esc(liveMeta.topic)} — Oyun bitdi</h2>
       ${leaderboard.length ? livePodiumHtml(leaderboard) + rest.map((p, idx) =>
         `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left"><span>${idx + 4}. ${esc(p.name)}</span><strong>${p.score}</strong></div>`).join('')
-        : '<div style="font-size:12px;color:var(--muted)">Heç kim qoşulmadı.</div>'}
-      <button class="btn btn-ghost btn-full" style="margin-top:20px" onclick="deleteLiveRoom()">🗑 Otağı Sil</button>
-      <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="startNewLiveGame()">＋ Yeni Oyun</button>
+        : '<div style="font-size:15px;color:var(--muted)">Heç kim qoşulmadı.</div>'}
+      <button class="btn btn-ghost btn-full" style="margin-top:20px" onclick="deleteLiveRoom()">Otağı sil</button>
+      <button class="btn btn-primary btn-full" style="margin-top:10px" onclick="startNewLiveGame()">＋ Yeni oyun</button>
     </div>`;
 }
 

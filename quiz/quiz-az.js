@@ -29,12 +29,12 @@ let answered = false;
 //  TEACHER SIGN-IN (Firebase Auth)
 // ══════════════════════════════════════════════════════
 const AUTH_ERRORS = {
-  'auth/invalid-credential':     '❌ E-poçt və ya şifrə yanlışdır.',
-  'auth/wrong-password':         '❌ E-poçt və ya şifrə yanlışdır.',
-  'auth/user-not-found':         '❌ E-poçt və ya şifrə yanlışdır.',
-  'auth/invalid-email':          '❌ E-poçt formatı yanlışdır.',
-  'auth/too-many-requests':      '❌ Çox cəhd edildi. Bir az gözləyib yenidən cəhd edin.',
-  'auth/network-request-failed': '❌ Şəbəkə xətası. İnternet bağlantısını yoxlayın.'
+  'auth/invalid-credential':     'E-poçt və ya şifrə yanlışdır.',
+  'auth/wrong-password':         'E-poçt və ya şifrə yanlışdır.',
+  'auth/user-not-found':         'E-poçt və ya şifrə yanlışdır.',
+  'auth/invalid-email':          'E-poçt formatı yanlışdır.',
+  'auth/too-many-requests':      'Çox cəhd edildi. Bir az gözləyib yenidən cəhd edin.',
+  'auth/network-request-failed': 'Şəbəkə xətası. İnternet bağlantısını yoxlayın.'
 };
 
 async function signInTeacher(){
@@ -47,7 +47,7 @@ async function signInTeacher(){
     document.getElementById('pw-input').value = '';
   } catch(e){
     document.getElementById('pw-input').value = '';
-    err.textContent = AUTH_ERRORS[e.code] || `❌ Giriş alınmadı (${e.code || e.message})`;
+    err.textContent = AUTH_ERRORS[e.code] || `Giriş alınmadı (${e.code || e.message})`;
     err.style.display = 'block';
   }
 }
@@ -115,9 +115,9 @@ async function importCsvFile(file){
     const clean = parsed.map(normalizeImportedQuestion).filter(Boolean);
     const flagged = clean.filter(q=>q.needsReview).length;
     let msg = `${clean.length} sual mövcud suallara əlavə edilsin?`;
-    if(encodingProblem) msg += '\n\n⚠ Fayl UTF-8 formatında deyil, ə, ş, ı kimi hərflər pozulub. Excel-də "CSV UTF-8" seçib yenidən saxlamaq daha yaxşıdır.';
+    if(encodingProblem) msg += '\n\nDiqqət: Fayl UTF-8 formatında deyil, ə, ş, ı kimi hərflər pozulub. Excel-də "CSV UTF-8" seçib yenidən saxlamaq daha yaxşıdır.';
     if(skipped) msg += `\n\n${skipped} sətir sual mətni olmadığı üçün atlandı.`;
-    if(flagged) msg += `\n\n${flagged} sualın cavabı yoxlanmalıdır (⚠ ilə işarələnəcək):\n` + warnings.slice(0,5).join('\n') + (warnings.length>5 ? '\n…' : '');
+    if(flagged) msg += `\n\n${flagged} sualın cavabı yoxlanmalıdır (“!” ilə işarələnəcək):\n` + warnings.slice(0,5).join('\n') + (warnings.length>5 ? '\n…' : '');
     if(!confirm(msg)) return;
     clean.forEach(q=>{ q.id = ++qId; questions.push(q); });
     if(!activeQId) activeQId = questions[0].id;
@@ -189,7 +189,7 @@ async function handlePdfFile(file){
   if(!file) return;
   const status = document.getElementById('pdf-status');
   status.className='pdf-status show';
-  status.innerHTML='⏳ PDF oxunur…';
+  status.innerHTML='PDF oxunur…';
 
   try{
     const arrBuf = await file.arrayBuffer();
@@ -212,7 +212,7 @@ async function handlePdfFile(file){
     }
     const parsed = parsePdfText(fullText);
     if(!parsed.length){
-      status.innerHTML='⚠️ Sual tapılmadı. Faylın formatını yoxlayın (nömrəli sual siyahısı).';
+      status.innerHTML='Sual tapılmadı. Faylın formatını yoxlayın (nömrəli sual siyahısı).';
       return;
     }
     // Replace previous PDF questions
@@ -221,13 +221,13 @@ async function handlePdfFile(file){
     if(!activeQId && questions.length) activeQId=questions[0].id;
     saveQs();
 
-    status.innerHTML=`✅ ${parsed.length} sual idxal edildi.`;
+    status.innerHTML=`${parsed.length} sual idxal edildi.`;
     document.getElementById('btn-clear-pdf').style.display='flex';
     renderSidebar();
     renderEditor();
     setActiveQ(questions.find(q=>q._fromPdf)?.id || activeQId);
   } catch(err){
-    status.innerHTML='❌ PDF oxunarkən xəta baş verdi: '+err.message;
+    status.innerHTML='PDF oxunarkən xəta baş verdi: '+err.message;
   }
 }
 
@@ -236,7 +236,7 @@ function clearPdfQuestions(){
   saveQs();
   const status=document.getElementById('pdf-status');
   status.className='pdf-status show';
-  status.innerHTML='🗑 PDF sualları silindi.';
+  status.innerHTML='PDF sualları silindi.';
   document.getElementById('btn-clear-pdf').style.display='none';
   if(activeQId && !questions.find(q=>q.id===activeQId)) activeQId=questions[0]?.id||null;
   renderSidebar();renderEditor();
@@ -254,7 +254,7 @@ function switchTab(name){
   if(name==='topics') refreshPublishedTopics(renderTopics);
   if(name==='analytics') renderAnalytics();
   if(name==='live') renderLiveTab();
-  // "Sual Redaktoru" and the question count only make sense while the editor is on screen;
+  // "Sual redaktoru" and the question count only make sense while the editor is on screen;
   // Analytics and the live game replace it with their own screen.
   const editorOpen = name !== 'analytics' && name !== 'live';
   document.getElementById('editor-title').classList.toggle('hidden', !editorOpen);
@@ -296,12 +296,12 @@ function setActiveQ(id){
 function renderSidebar(){
   const list=document.getElementById('q-list');
   document.getElementById('q-counter').textContent=`${questions.length} sual`;
-  if(!questions.length){list.innerHTML='<div style="padding:20px 20px;font-size:12px;color:var(--muted)">Hələ sual yoxdur.</div>';return;}
+  if(!questions.length){list.innerHTML='<div style="padding:20px 20px;font-size:15px;color:var(--muted)">Hələ sual yoxdur.</div>';return;}
   list.innerHTML=questions.map((q,i)=>`
     <div class="q-item ${q.id===activeQId?'active':''}" data-id="${q.id}" onclick="setActiveQ(${q.id})">
       <span class="q-num">${i+1}</span>
       <span class="q-preview">${esc(q.text)||'(sual mətni yoxdur)'}</span>
-      ${q.needsReview?'<span class="q-warn" title="Düzgün cavabı yoxlayın" style="color:var(--warn)">⚠</span>':''}
+      ${q.needsReview?'<span class="q-warn" title="Düzgün cavabı yoxlayın" style="color:var(--warn);font-weight:700">!</span>':''}
       <span class="q-type-badge">${tlbl(q.type)}</span>
       <button class="q-del" onclick="event.stopPropagation();deleteQ(${q.id})">✕</button>
     </div>`).join('');
@@ -316,7 +316,7 @@ function toKey(str){ return str.replace(/[.#$[\]/]/g,'_'); }
 // and the exams found there get their list entries.
 function refreshPublishedTopics(cb){
   const el = document.getElementById('topics-list');
-  if(el) el.innerHTML='<div style="padding:16px;font-size:12px;color:var(--muted)">⏳ Yüklənir…</div>';
+  if(el) el.innerHTML='<div style="padding:16px;font-size:15px;color:var(--muted)">Yüklənir…</div>';
   db.ref('exam_index').once('value').then(s=>s.val()||{}, ()=>null).then(index=>{
     if(index && Object.keys(index).length){
       publishedTopics = {};
@@ -364,13 +364,13 @@ function renderTopics(){
   // Bulk-assign section (always shown if there are any questions)
   const bulkHtml = questions.length ? `
     <div style="padding:14px 16px;border-bottom:2px solid var(--border);background:var(--surface2)">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">Boş Sualları Təyin Et</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${emptyCount} sualın mövzusu boşdur</div>
-      <input type="text" id="bulk-topic-input" placeholder="Mövzu adı…" style="font-size:12px;padding:7px 11px;margin-bottom:8px"
+      <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Boş sualları təyin et</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:8px">${emptyCount} sualın mövzusu boşdur</div>
+      <input type="text" id="bulk-topic-input" placeholder="Mövzu adı…" style="font-size:15px;padding:7px 11px;margin-bottom:8px"
         oninput="document.getElementById('bulk-topic-btn').disabled=!this.value.trim()"
         onkeydown="if(event.key==='Enter')assignBulkTopic()"/>
       <button id="bulk-topic-btn" class="btn btn-ghost btn-full btn-sm" onclick="assignBulkTopic()" disabled
-        style="font-size:12px">Boş sualları bu mövzuya əlavə et</button>
+        style="font-size:15px">Boş sualları bu mövzuya əlavə et</button>
     </div>` : '';
 
   const localListHtml = localTopics.length ? localTopics.map(topic=>{
@@ -379,40 +379,40 @@ function renderTopics(){
     const archived = isActive && publishedTopics[topic].active === false;
     return`<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;${archived?'opacity:.6':''}">
       <div>
-        <div style="font-size:13px;font-weight:600;color:${isActive?(archived?'var(--muted)':'var(--accent3)'):'var(--text)'}">${esc(topic)}${isActive?(archived?' 📦 Arxivdə':' ✓'):''}</div>
-        <div style="font-size:11px;color:var(--muted)">${count} sual${isActive&&topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
+        <div style="font-size:16px;font-weight:600;color:${isActive?(archived?'var(--muted)':'var(--accent3)'):'var(--text)'}">${esc(topic)}${isActive?(archived?' Arxivdə':' ✓'):''}</div>
+        <div style="font-size:14px;color:var(--muted)">${count} sual${isActive&&topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
         ${isActive?`<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Serverdəki versiyanı redaktora yüklə">⟳ Serverdən yüklə</button>
-          <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 8px" data-topic="${esc(topic)}" onclick="removeTopicFromEditor(this.dataset.topic)" title="Göndərilmiş test dəyişməz qalır">⌫ Redaktordan çıxar</button>
+          <button class="btn btn-ghost btn-sm" style="font-size:14px;padding:7px 12px" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Serverdəki versiyanı redaktora yüklə">⟳ Serverdən yüklə</button>
+          <button class="btn btn-ghost btn-sm" style="font-size:14px;padding:7px 12px" data-topic="${esc(topic)}" onclick="removeTopicFromEditor(this.dataset.topic)" title="Göndərilmiş test dəyişməz qalır">⌫ Redaktordan çıxar</button>
         </div>`:''}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm ${isActive?'btn-accent3':'btn-ghost'}" data-topic="${esc(topic)}" onclick="publishTopic(this.dataset.topic)">
-          ${isActive?'✓ Göndərilib':'📤 Göndər'}
+          ${isActive?'✓ Göndərilib':'Göndər'}
         </button>
-        ${isActive?`<button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>`:''}
-        ${isActive?`<button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>`:''}
-        <button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="deleteTopic(this.dataset.topic)">🗑</button>
+        ${isActive?`<button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'Aktivləşdir':'Arxivlə'}</button>`:''}
+        ${isActive?`<button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">Geri al</button>`:''}
+        <button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="deleteTopic(this.dataset.topic)">Sil</button>
       </div>
     </div>`;
-  }).join('') : (!remoteOnlyTopics.length ? '<div style="padding:16px;font-size:12px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>' : '');
+  }).join('') : (!remoteOnlyTopics.length ? '<div style="padding:16px;font-size:15px;color:var(--muted)">Hələ mövzu yoxdur.<br/>Sual kartlarında <strong>Mövzu</strong> sahəsini doldurun.</div>' : '');
 
   const remoteOnlyHtml = remoteOnlyTopics.length ? `
-    <div style="padding:10px 16px 6px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;border-top:2px solid var(--border)">
-      Firebase — Digər Cihazdan
+    <div style="padding:10px 16px 6px;font-size:15px;font-weight:600;color:var(--text2);border-top:2px solid var(--border)">
+      Firebase — Digər cihazdan
     </div>` +
     remoteOnlyTopics.map(topic=>{
       const info = publishedTopics[topic];
       const archived = info.active === false;
       return `<div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;${archived?'opacity:.6':''}">
         <div>
-          <div style="font-size:13px;font-weight:600;color:${archived?'var(--muted)':'var(--accent3)'}">${esc(topic)}${archived?' 📦 Arxivdə':' ✓'}</div>
-          <div style="font-size:11px;color:var(--muted)">${info.count||'?'} sual · yalnız serverdə${topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
+          <div style="font-size:16px;font-weight:600;color:${archived?'var(--muted)':'var(--accent3)'}">${esc(topic)}${archived?' Arxivdə':' ✓'}</div>
+          <div style="font-size:14px;color:var(--muted)">${info.count||'?'} sual · yalnız serverdə${topicScheduleLabel(topic)?' · '+esc(topicScheduleLabel(topic)):''}</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-sm btn-accent3" data-topic="${esc(topic)}" onclick="loadTopicFromServer(this.dataset.topic)" title="Sualları serverdən bu redaktora yüklə">✎ Redaktə et</button>
-          <button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'👁 Aktivləşdir':'📦 Arxivlə'}</button>
-          <button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">📤 Geri Al</button>
+          <button class="btn btn-sm btn-ghost" data-topic="${esc(topic)}" onclick="toggleTopicActive(this.dataset.topic)" title="${archived?'Yenidən tələbələrə göstər':'Firebase-də saxla, ancaq tələbələrdən gizlət'}">${archived?'Aktivləşdir':'Arxivlə'}</button>
+          <button class="btn btn-sm btn-danger" data-topic="${esc(topic)}" onclick="unpublishTopic(this.dataset.topic)">Geri al</button>
         </div>
       </div>`;
     }).join('')
@@ -526,7 +526,7 @@ function publishTopic(topicName){
   const el = document.getElementById('topics-list');
   const banner = document.createElement('div');
   banner.className='notice-banner';
-  banner.textContent='⏳ Göndərilir…';
+  banner.textContent='Göndərilir…';
   el.prepend(banner);
 
   const examMinutes = Math.max(1, parseInt(document.getElementById('exam-minutes')?.value)||30);
@@ -568,7 +568,7 @@ function publishTopic(topicName){
     })
     .catch(err=>{
       banner.classList.add('err');
-      banner.textContent='❌ Xəta: '+err.message;
+      banner.textContent='Xəta: '+err.message;
       setTimeout(()=>banner.remove(), 4000);
     });
 }
@@ -598,12 +598,12 @@ function deleteTopic(topicName){
 }
 
 // Clears this browser's editor only. Published tests stay on the server (also ones sent from other
-// devices); each one is taken down on its own from the Mövzular tab with "Geri Al".
+// devices); each one is taken down on its own from the Mövzular tab with "Geri al".
 function deleteAllQuestions(){
   if(!questions.length) return;
   const unsent = [...new Set(questions.map(q=>q.topic?.trim()).filter(t=>!publishedTopics[t]))].length;
   const warn = unsent || questions.some(q=>!q.topic?.trim()) ? '\n\nDiqqət: göndərilməmiş suallar tamamilə itəcək. Əvvəlcə "⬇ Ehtiyat nüsxə" ilə saxlaya bilərsiniz.' : '';
-  if(!confirm(`Bu brauzerdəki bütün ${questions.length} sual redaktordan silinsin?\nGöndərilmiş testlər tələbələr üçün qalır (onları Mövzular tabında "Geri Al" ilə silmək olar).${warn}`)) return;
+  if(!confirm(`Bu brauzerdəki bütün ${questions.length} sual redaktordan silinsin?\nGöndərilmiş testlər tələbələr üçün qalır (onları Mövzular tabında "Geri al" ilə silmək olar).${warn}`)) return;
   questions = []; qId = 0; activeQId = null;
   saveQs(); renderSidebar(); renderEditor();
 }
@@ -642,7 +642,7 @@ function renderAnalytics(){
   const sidebar = document.getElementById('analytics-sidebar');
   analyticsShown = true;
   main.classList.remove('hidden');
-  main.innerHTML='<div class="analytics-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><p>Yüklənir…</p></div>';
+  main.innerHTML='<div class="analytics-empty"><p>Yüklənir…</p></div>';
   sidebar.innerHTML='';
 
   Promise.all([db.ref('analytics').once('value'), db.ref('answer_keys').once('value'), db.ref('results').once('value'),
@@ -673,9 +673,9 @@ function renderAnalytics(){
     let selectorHtml = '';
     if(examKeys.length > 1){
       selectorHtml = `<div style="margin-bottom:14px;display:flex;align-items:center;gap:10px">
-        <label style="font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap">Test:</label>
-        <select onchange="switchAnalyticsExam(this.value)" style="font-size:13px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);flex:1;min-width:0">
-          <option value="all" ${analyticsFilter==='all'?'selected':''}>Bütün Testlər</option>
+        <label style="font-size:15px;color:var(--muted);font-weight:600;white-space:nowrap">Test:</label>
+        <select onchange="switchAnalyticsExam(this.value)" style="font-size:16px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);flex:1;min-width:0">
+          <option value="all" ${analyticsFilter==='all'?'selected':''}>Bütün testlər</option>
           ${examKeys.map(k=>{
             const examData = val[k]||{};
             const examName = (Object.values(examData)[0]?.topic)||k;
@@ -688,7 +688,7 @@ function renderAnalytics(){
 
     _drawAnalytics(records, main, sidebar, selectorHtml);
   }).catch(err=>{
-    main.innerHTML=`<div class="analytics-empty"><p style="color:var(--wrong)">❌ Yüklənmə xətası: ${err.message}</p></div>`;
+    main.innerHTML=`<div class="analytics-empty"><p style="color:var(--wrong)">Yüklənmə xətası: ${err.message}</p></div>`;
   });
 }
 
@@ -715,8 +715,8 @@ function switchAnalyticsExam(val){
 
 function _drawAnalytics(records, main, sidebar, selectorHtml=''){
   if(!records.length){
-    sidebar.innerHTML='<div style="padding:20px 16px;font-size:12px;color:var(--muted);line-height:1.7">Hələ nəticə yoxdur.<br/>Tələbələr testi bitirdikdə burada görünəcək.</div>';
-    main.innerHTML='<div class="analytics-empty"><div style="font-size:48px;margin-bottom:16px">📊</div><p>Hələ heç bir tələbə testi tamamlamamışdır.</p></div>';
+    sidebar.innerHTML='<div style="padding:20px 16px;font-size:15px;color:var(--muted);line-height:1.7">Hələ nəticə yoxdur.<br/>Tələbələr testi bitirdikdə burada görünəcək.</div>';
+    main.innerHTML='<div class="analytics-empty"><p>Hələ heç bir tələbə testi tamamlamamışdır.</p></div>';
     return;
   }
 
@@ -729,24 +729,24 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
 
   sidebar.innerHTML=`
     <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
-      <div class="an-stat"><span>${records.length}</span><small>Toplam Cəhd</small></div>
-      <div class="an-stat"><span>${avgPct}</span><small>Orta Nəticə</small></div>
-      <div class="an-stat"><span>${avgTime}</span><small>Orta Vaxt</small></div>
+      <div class="an-stat"><span>${records.length}</span><small>Toplam cəhd</small></div>
+      <div class="an-stat"><span>${avgPct}</span><small>Orta nəticə</small></div>
+      <div class="an-stat"><span>${avgTime}</span><small>Orta vaxt</small></div>
     </div>
     <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Mövzular</div>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:8px;font-weight:700">Mövzular</div>
       ${topics.map(t=>{
         const cnt=records.filter(r=>r.topic===t).length;
         const topicAvg=average(finished.filter(r=>r.topic===t), r=>r.pct);
         const avg=topicAvg==null?'—':topicAvg+'%';
-        return`<div style="font-size:12px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)">
+        return`<div style="font-size:15px;display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2)">
           <span style="color:var(--text2)">${esc(t)||'—'}</span>
           <span style="color:var(--accent4)">${cnt} cəhd · ${avg}</span>
         </div>`;
       }).join('')}
     </div>
     <div style="padding:12px 16px">
-      <button class="btn btn-ghost btn-full btn-sm" onclick="clearAnalytics()" style="color:var(--wrong)">🗑 Bütün Nəticələri Sil</button>
+      <button class="btn btn-ghost btn-full btn-sm" onclick="clearAnalytics()" style="color:var(--wrong)">Bütün nəticələri sil</button>
     </div>`;
 
   main.innerHTML=`
@@ -754,13 +754,13 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
       <div class="analytics-hdr">
         ${selectorHtml}
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <h2 style="font-family:'Nunito',sans-serif;font-size:20px;font-weight:800">Tələbə Nəticələri</h2>
+          <h2 style="font-family:var(--serif);font-size:24px;font-weight:700">Tələbə nəticələri</h2>
           <span style="display:flex;align-items:center;gap:10px">
             ${releaseButtonsHtml(records)}
             <button class="btn btn-sm btn-ghost" onclick="renderAnalytics()" title="Yeni nəticələri yüklə">↻</button>
             <button class="btn btn-sm btn-ghost" onclick="exportAnalyticsCsv()" title="Nəticələri CSV faylı kimi yüklə">⬇ CSV</button>
             <button class="btn btn-sm ${analyticsSortLeaves?'btn-accent3':'btn-ghost'}" onclick="toggleLeaveSort()">Çıxışa görə sırala</button>
-            <span style="font-size:12px;color:var(--muted)">${records.length} qeyd</span>
+            <span style="font-size:15px;color:var(--muted)">${records.length} qeyd</span>
           </span>
         </div>
       </div>
@@ -781,14 +781,14 @@ function _drawAnalytics(records, main, sidebar, selectorHtml=''){
           const timeStr = date.toLocaleTimeString('az-AZ',{hour:'2-digit',minute:'2-digit'});
           return`<div class="an-row">
             <div class="an-name"${reviewableRecords([r]).length?` style="cursor:pointer" title="Cavablarına bax" onclick="showAttemptReview(this.dataset.attempt,true)" data-attempt="${esc(r.attemptId)}"`:''}>${esc(r.studentName||'Anonim')}${r.repeatCount>1?` <span class="an-badge an-badge-sm an-warn" title="Bu testdə eyni adla ${r.repeatCount} cəhd var">×${r.repeatCount}</span>`:''}${deviceBadgesHtml(r)}</div>
-            <div style="font-size:12px;color:var(--text2)">${esc(r.topic||'—')}</div>
-            <div style="font-size:11px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
+            <div style="font-size:15px;color:var(--text2)">${esc(r.topic||'—')}</div>
+            <div style="font-size:14px;color:var(--muted)">${dateStr}<br/>${timeStr} · ${fmtTime(r.timeUsed)}</div>
             <div style="text-align:center;color:var(--correct);font-weight:700">${r.correct}</div>
             <div style="text-align:center;color:var(--wrong);font-weight:700">${r.wrong}</div>
             <div style="text-align:center;color:var(--muted);font-weight:700">${r.unanswered??r.totalQuestions-r.correct-r.wrong}</div>
             <div style="text-align:center">${r.ungraded?'<span class="an-badge an-grey" title="Cavab açarı tapılmadı">—</span>':`<span class="an-badge ${cls}">${r.pct}%</span>`}</div>
-            <div style="text-align:center;font-size:12px;color:var(--text2)">${r.tabSwitches||0} · ${fmtTime(r.timeAway||0)}${r.pastes?`<br/><span style="color:var(--wrong)">📋 ${r.pastes}</span>`:''}</div>
-            <div style="display:flex;align-items:center;gap:6px">${leaveBadge(r)}${r.released?'<span title="Nəticəsi elan olunub" style="font-size:12px">📢</span>':''}<button class="an-del" title="Bu cəhdi sil" data-exam="${esc(r._exam)}" data-attempt="${esc(r.attemptId)}" onclick="deleteAttempt(this.dataset.exam,this.dataset.attempt)">✕</button></div>
+            <div style="text-align:center;font-size:15px;color:var(--text2)">${r.tabSwitches||0} · ${fmtTime(r.timeAway||0)}${r.pastes?`<br/><span style="color:var(--wrong)">Yapışdırma: ${r.pastes}</span>`:''}</div>
+            <div style="display:flex;align-items:center;gap:6px">${leaveBadge(r)}${r.released?'<span class="an-badge an-badge-sm an-good" title="Nəticəsi elan olunub">Elan olunub</span>':''}<button class="an-del" title="Bu cəhdi sil" data-exam="${esc(r._exam)}" data-attempt="${esc(r.attemptId)}" onclick="deleteAttempt(this.dataset.exam,this.dataset.attempt)">✕</button></div>
           </div>`;
         }).join('')}
       </div>
@@ -807,7 +807,7 @@ function questionStatsHtml(records){
   return `<div class="an-qstats" id="an-review-box">
     <h3>Tələbənin cavabları</h3>
     <p class="hint-text">Bitmiş cəhdlərdən birini seçin (və ya cədvəldə adın üzərinə basın). Cavabsız sual düzgün sayılmır.</p>
-    <select id="an-review-pick" onchange="showAttemptReview(this.value)" style="width:100%;max-width:420px;margin:8px 0 4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;padding:9px 12px">
+    <select id="an-review-pick" onchange="showAttemptReview(this.value)" style="width:100%;max-width:420px;margin:8px 0 4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:16px;padding:9px 12px">
       <option value="">Tələbə seçin…</option>
       ${list.map(r=>`<option value="${esc(r.attemptId)}"${r.attemptId===analyticsReviewId?' selected':''}>${esc(label(r))}</option>`).join('')}
     </select>
@@ -847,7 +847,7 @@ function showAttemptReview(id, scroll){
 function releaseButtonsHtml(records){
   const pending = resultsToRelease(records, lastReleased).length;
   const releasedCount = records.filter(r=>r.released).length;
-  return `<button class="btn btn-sm ${pending?'btn-accent3':'btn-ghost'}" ${pending?'':'disabled'} onclick="releaseResults()" title="Tələbələr öz kodları ilə nəticəsini görəcək">📢 Elan et${pending?` (${pending})`:''}</button>`
+  return `<button class="btn btn-sm ${pending?'btn-accent3':'btn-ghost'}" ${pending?'':'disabled'} onclick="releaseResults()" title="Tələbələr öz kodları ilə nəticəsini görəcək">Elan et${pending?` (${pending})`:''}</button>`
     + (releasedCount ? `<button class="btn btn-sm btn-ghost" onclick="retractResults()" title="Elan olunmuş nəticələri gizlət">↩ Geri götür (${releasedCount})</button>` : '');
 }
 
@@ -914,15 +914,15 @@ function toggleLeaveSort(){
 function deviceBadgesHtml(r){
   const badge = (text, title) => ` <span class="an-badge an-badge-sm an-warn" title="${esc(title)}">${text}</span>`;
   let html = '';
-  if(r.deviceTotal > 1) html += badge(`📱 ${r.deviceAttempt}/${r.deviceTotal}`, `Bu cihazdan bu testə ${r.deviceTotal} cəhd var, bu ${r.deviceAttempt}-cidir${r.quickRetry ? '. Əvvəlkindən 10 dəqiqədən az sonra başlayıb.' : '.'}`);
-  if(r.quickRetry) html += badge('⚡', 'Eyni cihazdan əvvəlki cəhdlə 10 dəqiqədən az fasilə ilə başlayıb');
-  if(r.deviceNames && r.deviceNames.length > 1) html += badge(`👤 ${r.deviceNames.length}`, `Bu cihazdan fərqli adlar yazılıb: ${r.deviceNames.join(', ')}`);
-  if(r.nameDevices > 1) html += badge(`📲 ${r.nameDevices}`, `Bu ad bu testdə ${r.nameDevices} fərqli cihazdan yazılıb`);
+  if(r.deviceTotal > 1) html += badge(`Cihaz ${r.deviceAttempt}/${r.deviceTotal}`, `Bu cihazdan bu testə ${r.deviceTotal} cəhd var, bu ${r.deviceAttempt}-cidir${r.quickRetry ? '. Əvvəlkindən 10 dəqiqədən az sonra başlayıb.' : '.'}`);
+  if(r.quickRetry) html += badge('Sürətli təkrar', 'Eyni cihazdan əvvəlki cəhdlə 10 dəqiqədən az fasilə ilə başlayıb');
+  if(r.deviceNames && r.deviceNames.length > 1) html += badge(`${r.deviceNames.length} ad`, `Bu cihazdan fərqli adlar yazılıb: ${r.deviceNames.join(', ')}`);
+  if(r.nameDevices > 1) html += badge(`${r.nameDevices} cihaz`, `Bu ad bu testdə ${r.nameDevices} fərqli cihazdan yazılıb`);
   return html;
 }
 
 function leaveBadge(r){
-  if(r.qidProblem) return `<span class="an-badge an-low" title="${r.qidProblem==='dup'?'Eyni sual siyahıda bir neçə dəfə var':'Siyahıda testdəkindən az sual var'}: cəhdin məlumatı brauzerdə dəyişdirilmiş ola bilər. Nəticə elan olunmur.">⚠ Şübhəli</span>`;
+  if(r.qidProblem) return `<span class="an-badge an-low" title="${r.qidProblem==='dup'?'Eyni sual siyahıda bir neçə dəfə var':'Siyahıda testdəkindən az sual var'}: cəhdin məlumatı brauzerdə dəyişdirilmiş ola bilər. Nəticə elan olunmur.">Şübhəli</span>`;
   if(r.autoSubmitted) return '<span class="an-badge an-low">Avto-göndərildi</span>';
   if(r.status==='in_progress') return '<span class="an-badge an-mid">Tamamlanmayıb</span>';
   if(r.status==='expired') return '<span class="an-badge an-grey" title="Tələbə bitirmədən vaxt doldu (brauzer bağlanıb və ya internet kəsilib). Saxlanmış cavablar qiymətləndirilib.">Vaxtı bitib</span>';
@@ -951,7 +951,7 @@ function clearAnalytics(){
 function renderEditor(){
   const c=document.getElementById('questions-container');
   if(!questions.length){
-    c.innerHTML=`<div class="empty-state"><div class="icon">✏️</div><h3>Sual yoxdur</h3><p>Sol paneldən <strong>Sual Əlavə Et</strong> düyməsinə basın<br/>və ya PDF faylından idxal edin.</p></div>`;
+    c.innerHTML=`<div class="empty-state"><h3>Sual yoxdur</h3><p>Sol paneldən <strong>Sual əlavə et</strong> düyməsinə basın<br/>və ya PDF faylından idxal edin.</p></div>`;
     return;
   }
   c.innerHTML=questions.map((q,i)=>buildQCard(q,i)).join('');
@@ -961,19 +961,19 @@ function renderEditor(){
 function buildQCard(q,i){
   return`<div class="q-card" data-id="${q.id}">
     <div class="q-card-header">
-      <span class="q-num-badge">S${i+1}</span>
+      <span class="q-num-badge">Sual ${i+1}</span>
       <select class="q-type-sel" onchange="chgType(${q.id},this.value)">
         <option value="mc" ${q.type==='mc'?'selected':''}>Çoxseçimli</option>
         <option value="tf" ${q.type==='tf'?'selected':''}>Doğru / Yanlış</option>
-        <option value="short" ${q.type==='short'?'selected':''}>Qısa Cavab</option>
-        <option value="fill" ${q.type==='fill'?'selected':''}>Boşluq Doldurun</option>
+        <option value="short" ${q.type==='short'?'selected':''}>Qısa cavab</option>
+        <option value="fill" ${q.type==='fill'?'selected':''}>Boşluq doldurun</option>
       </select>
       ${q._fromPdf?'<span class="pdf-badge">PDF</span>':''}
-      ${q.needsReview?`<button class="review-tag btn btn-ghost btn-sm" style="font-size:11px;color:var(--warn)" onclick="confirmReview(${q.id})">⚠ Düzgün cavab müəyyən edilməyib — təsdiq et</button>`:''}
+      ${q.needsReview?`<button class="review-tag btn btn-ghost btn-sm" style="font-size:14px;color:var(--warn)" onclick="confirmReview(${q.id})">Düzgün cavab müəyyən edilməyib — təsdiq et</button>`:''}
     </div>
     <div style="margin-bottom:12px">
       <div class="field-lbl">Mövzu</div>
-      <input type="text" placeholder="Məs: Fəsil 1, Verilənlər Bazası…" value="${esc(q.topic||'')}" oninput="updF(${q.id},'topic',this.value)" style="font-size:12px;padding:7px 11px"/>
+      <input type="text" placeholder="Məs: Fəsil 1, Verilənlər bazası…" value="${esc(q.topic||'')}" oninput="updF(${q.id},'topic',this.value)" style="font-size:15px;padding:7px 11px"/>
     </div>
     <div class="field-lbl">Sualın mətni</div>
     <textarea rows="3" placeholder="Sualı buraya yazın…" oninput="updF(${q.id},'text',this.value)">${esc(q.text)}</textarea>
@@ -987,7 +987,7 @@ function buildQCard(q,i){
 
 function buildMC(q){
   const L=['A','B','C','D','E'];
-  return`<div class="field-lbl">Cavab Variantları <span style="font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0">(● = düzgün)</span></div>
+  return`<div class="field-lbl">Cavab variantları <span style="font-size:14px;color:var(--muted)">(● = düzgün)</span></div>
   <div class="mc-options">${q.options.map((o,i)=>`
     <div class="mc-opt">
       <span class="mc-ltr">${L[i]}</span>
@@ -998,7 +998,7 @@ function buildMC(q){
 }
 
 function buildTF(q){
-  return`<div class="field-lbl">Düzgün Cavab</div>
+  return`<div class="field-lbl">Düzgün cavab</div>
   <div class="tf-opts">
     <div class="tf-btn-editor ${q.tfAnswer===true?'sel-t':''}" onclick="updF(${q.id},'tfAnswer',true);renderEditor()">✓ Doğru</div>
     <div class="tf-btn-editor ${q.tfAnswer===false?'sel-f':''}" onclick="updF(${q.id},'tfAnswer',false);renderEditor()">✗ Yanlış</div>
@@ -1006,16 +1006,16 @@ function buildTF(q){
 }
 
 function buildShort(q){
-  return`<div class="field-lbl">Düzgün Cavab (avtomatik yoxlama üçün)</div>
+  return`<div class="field-lbl">Düzgün cavab (avtomatik yoxlama üçün)</div>
   <input type="text" placeholder="Gözlənilən cavab (həssaslıq yoxdur)" value="${esc(q.shortAnswer)}" oninput="updF(${q.id},'shortAnswer',this.value)"/>
   <p class="hint-text">Vergüllə ayırılmış alternativ cavablar qəbul edilir: <code>Paris,paris,PARİS</code></p>`;
 }
 
 function buildFill(q){
-  return`<div class="field-lbl">Boşluqlu Mətn</div>
+  return`<div class="field-lbl">Boşluqlu mətn</div>
   <textarea rows="3" placeholder='[blank] ilə boşluq göstərin. Məs: "Azərbaycanın paytaxtı [blank]-dır."' oninput="updF(${q.id},'fillText',this.value)">${esc(q.fillText)}</textarea>
   <p class="hint-text">Hər boşluq üçün <code>[blank]</code> yazın.</p>
-  <div class="field-lbl" style="margin-top:10px">Düzgün Cavablar</div>
+  <div class="field-lbl" style="margin-top:10px">Düzgün cavablar</div>
   <input type="text" placeholder='Məs: "Bakı" və ya "Bakı,bakı" — birdən çox boşluq üçün ";" ilə ayırın' value="${esc((q.fillAnswers||[]).join(';'))}" oninput="updFill(${q.id},this.value)"/>
   <p class="hint-text">Birdən çox boşluq varsa <code>;</code> ilə ayırın</p>`;
 }
@@ -1102,11 +1102,11 @@ function buildQuizCard(q){
     </div>`;
   } else if(q.type==='short'){
     body=`<textarea class="quiz-short-input" id="short-inp" placeholder="Cavabınızı buraya yazın…"></textarea>
-    <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="submitShort(${q.id})">Cavabı Göndər</button></div>`;
+    <div style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="submitShort(${q.id})">Cavabı göndər</button></div>`;
   } else if(q.type==='fill'){
     const rendered=esc(q.fillText).replace(/\[blank\]/gi,()=>`<input class="blank-inp" type="text"/>`);
     body=`<div class="fill-text-render">${rendered}</div>
-    <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="submitFill(${q.id})">Cavabı Göndər</button></div>`;
+    <div style="margin-top:16px"><button class="btn btn-primary btn-sm" onclick="submitFill(${q.id})">Cavabı göndər</button></div>`;
   }
   return`<div class="quiz-card" id="quiz-card-main">
     <div class="quiz-q-label">Sual ${quizIdx+1} / ${quizQs.length}</div>
@@ -1247,12 +1247,12 @@ function finishQuiz(){
   document.getElementById('stat-ok').textContent=ok;
   document.getElementById('stat-bad').textContent=bad;
   document.getElementById('stat-pts').textContent=`${earned}/${total}`;
-  const hdg=pct>=90?'🏆 Əla nəticə!':pct>=70?'👍 Yaxşı iş!':pct>=50?'📚 Daha çox çalışın':pct>0?'💪 Tərəddüd etmə!':'';
+  const hdg=pct>=90?'Əla nəticə!':pct>=70?'Yaxşı iş!':pct>=50?'Daha çox çalışın':pct>0?'Tərəddüd etmə!':'';
   document.getElementById('result-heading').textContent=hdg;
   document.getElementById('result-sub').textContent=`"${quizCfg.title}" testi üzrə ${total} xaldan ${earned} xal topladınız`;
   const rev=document.getElementById('review-sec');
   if(quizCfg.showAnswers){
-    rev.innerHTML=`<h3>📋 Sualların İcmalı</h3>`+quizQs.map(q=>buildReview(q)).join('');
+    rev.innerHTML=`<h3>Sualların icmalı</h3>`+quizQs.map(q=>buildReview(q)).join('');
   } else {rev.innerHTML='';}
   showView('results-view');
 }
