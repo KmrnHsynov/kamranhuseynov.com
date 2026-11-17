@@ -381,7 +381,7 @@ body.hub          { min-height: 100vh; }
 
 #feedback { font-size: 11px; display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .fb-pass { color: #3fb950; }
-.fb-hint { color: #d29922; }
+.fb-hint { color: #d29922; white-space: pre-wrap; }
 .btn-next {
   background: #238636;
   border: none;
@@ -405,6 +405,7 @@ body.hub          { min-height: 100vh; }
 }
 .out-ok   { color: #e6edf3; }
 .out-err  { color: #ff7b72; }
+.out-ok, .out-err { white-space: pre-wrap; }
 .out-info { color: #484f58; }
 
 /* WebBolt renders into an iframe instead of a text console */

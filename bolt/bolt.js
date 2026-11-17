@@ -18,6 +18,7 @@ let course, curriculum, cm;      // set in boot()
 let curLesson = 0, curExercise = 0;
 const done = {};                 // { lessonIndex: [exerciseIndex, …] }
 let lang = 'az';
+let activeTab = 'lesson';
 
 const t = (az, en) => lang === 'az' ? az : en;
 const isMobile = () => window.innerWidth <= 700;
@@ -48,6 +49,19 @@ function jsonStorage(key) {                // one JSON blob for everything
   };
 }
 
+// Completed exercises are remembered too, so the progress bar survives a reload.
+const doneKey = () => `bolt_done_${document.body.dataset.course}`;
+function loadDone() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(doneKey()) || '{}');
+    curriculum.forEach((l, i) => {       // ignore anything that no longer fits the curriculum
+      const ok = (Array.isArray(saved[i]) ? saved[i] : []).filter(n => Number.isInteger(n) && n >= 0 && n < l.exercises.length);
+      if (ok.length) done[i] = ok;
+    });
+  } catch {}
+}
+function saveDone() { try { localStorage.setItem(doneKey(), JSON.stringify(done)); } catch {} }
+
 // ── Mobile: drawer sidebar + lesson/code tabs ────────────
 function toggleSidebar() {
   $('sidebar').classList.toggle('open');
@@ -58,6 +72,7 @@ function closeSidebar() {
   $('sidebar-overlay').classList.remove('open');
 }
 function switchTab(tab) {
+  activeTab = tab;
   $('tab-lesson').classList.toggle('active', tab === 'lesson');
   $('tab-code').classList.toggle('active', tab === 'code');
   $('lesson-panel').classList.toggle('tab-active', tab === 'lesson');
@@ -94,6 +109,14 @@ function renderSidebar() {
 }
 
 // ── Lessons & exercises ──────────────────────────────────
+function renderLabels() {                // static text that the HTML ships in Azerbaijani
+  document.documentElement.lang = lang;
+  $('home-link').textContent    = t('← Proyektlər', '← Projects');
+  $('tab-lesson').textContent   = t('📖 Dərs', '📖 Lesson');
+  $('tab-code').textContent     = t('💻 Kod', '💻 Code');
+  $('to-code-btn').textContent  = t('💻 Kodu yaz →', '💻 Write code →');
+}
+
 function loadLesson(i) {
   curLesson = i;
   const l = curriculum[i];
@@ -101,6 +124,8 @@ function loadLesson(i) {
   $('lesson-meta').textContent  = l.meta[lang];
   $('lesson-body').innerHTML    = l.body[lang];
   $('task-label').textContent   = t('Tapşırıq', 'Exercise');
+  $('lesson-panel').scrollTop   = 0;
+  renderLabels();
   if (course.onLesson) course.onLesson(i);
   renderSidebar();
   loadExercise(0);
@@ -143,13 +168,19 @@ function resetCode() {
   $('feedback').textContent = '';
   course.onReset();
 }
-function hintHTML(ex) { return `<span class="fb-hint">💡 ${ex.hint[lang]}</span>`; }
-function showHint()   { $('feedback').innerHTML = hintHTML(currentExercise()); }
+function showHintFor(ex) {               // textContent: hints contain code like <h1>
+  const s = document.createElement('span');
+  s.className = 'fb-hint';
+  s.textContent = '💡 ' + ex.hint[lang];
+  $('feedback').replaceChildren(s);
+}
+function showHint() { showHintFor(currentExercise()); }
 
 // Called by a course when the current exercise's check() passes.
 function exercisePassed() {
   if (!done[curLesson]) done[curLesson] = [];
   if (!done[curLesson].includes(curExercise)) done[curLesson].push(curExercise);
+  saveDone();
   renderExNav();
   renderSidebar();
   const hasNext = curExercise + 1 < curriculum[curLesson].exercises.length || curLesson + 1 < curriculum.length;
@@ -169,7 +200,7 @@ function printLine(text, cls) {
 function checkConsole(output) {
   const ex = currentExercise();
   if (ex.check(output)) exercisePassed();
-  else $('feedback').innerHTML = hintHTML(ex);
+  else showHintFor(ex);
 }
 const consoleCourse = {
   onExerciseLoad() { setInfo(`▶ ${t('Kodu işlət', 'Run your code')}`); },
@@ -192,12 +223,13 @@ function boot() {
   cm.on('change', () => course.storage.set(curLesson, curExercise, cm.getValue()));
 
   window.addEventListener('resize', () => {
-    if (isMobile()) return;
+    if (isMobile()) return switchTab(activeTab);   // back to one panel at a time
     closeSidebar();
     $('lesson-panel').classList.add('tab-active');
     $('exercise-panel').classList.add('tab-active');
   });
 
+  loadDone();
   loadLesson(0);
   if (course.init) course.init();
 }
@@ -205,17 +237,69 @@ window.addEventListener('DOMContentLoaded', boot);
 
 
 /* ============================================================================
-   COURSE: JavaScript  (runs the code in the browser, checks console output)
+   COURSE: JavaScript  (runs the code in a Web Worker, checks console output)
+
+   A worker keeps the learner's code away from the page (no document access) and
+   lets us stop infinite loops. Timers and promises are awaited before reporting.
    ============================================================================ */
-function runJS(code) {
+const JS_WORKER = `
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+const fmt = a => {
+  if (a === null) return 'null';
+  if (a instanceof Error) return a.name + ': ' + a.message;
+  if (typeof a === 'function') return String(a);
+  if (a instanceof Map || a instanceof Set) {
+    try { return a.constructor.name + '(' + a.size + ') ' + JSON.stringify([...a]); } catch {}
+  }
+  if (typeof a === 'object') { try { return JSON.stringify(a); } catch { return String(a); } }
+  return String(a);
+};
+
+// track timers so we can wait for them before reporting back
+const live = new Set();
+const setT = self.setTimeout.bind(self), clearT = self.clearTimeout.bind(self);
+const setI = self.setInterval.bind(self), clearI = self.clearInterval.bind(self);
+self.setTimeout  = (fn, ms, ...a) => { const id = setT(() => { live.delete(id); if (typeof fn === 'function') fn(...a); }, ms); live.add(id); return id; };
+self.clearTimeout = id => { live.delete(id); clearT(id); };
+self.setInterval  = (fn, ms, ...a) => { const id = setI(() => { if (typeof fn === 'function') fn(...a); }, ms); live.add(id); return id; };
+self.clearInterval = id => { live.delete(id); clearI(id); };
+
+let err = null;
+self.onerror = (msg) => { err = err || String(msg).replace(/^Uncaught /, ''); return true; };
+self.onunhandledrejection = ev => { ev.preventDefault(); err = err || 'Uncaught (in promise) ' + fmt(ev.reason); };
+
+onmessage = async e => {
   const lines = [];
-  const show = a => a === null ? 'null'
-    : typeof a === 'object' ? (() => { try { return JSON.stringify(a); } catch { return String(a); } })()
-    : String(a);
-  const fakeConsole = { log: (...args) => lines.push(args.map(show).join(' ')) };
-  try { new Function('console', code)(fakeConsole); }
-  catch (e) { return { lines, error: e.message }; }
-  return { lines, error: null };
+  const log = (...a) => { if (lines.length < 1000) lines.push(a.map(fmt).join(' ')); };
+  const con = { log, info: log, debug: log, warn: log, error: log };
+  try { await new AsyncFunction('console', e.data)(con); }
+  catch (x) { err = (x && x.message) || String(x); }
+  const t0 = Date.now();
+  while (live.size && Date.now() - t0 < 2000) await new Promise(r => setT(r, 20));
+  await new Promise(r => setT(r, 30));          // let 'unhandledrejection' events fire
+  postMessage({ lines, error: err });
+};
+`;
+
+let jsAbort = null;     // cancels the run in progress (a new run, or a timeout, replaces it)
+function runJS(code) {
+  if (jsAbort) jsAbort({ cancelled: true });
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(new Blob([JS_WORKER], { type: 'text/javascript' }));
+    const worker = new Worker(url);
+    const finish = result => {
+      clearTimeout(timer);
+      worker.terminate();
+      URL.revokeObjectURL(url);
+      if (jsAbort === finish) jsAbort = null;
+      resolve(result);
+    };
+    const timer = setTimeout(() => finish({ lines: [], timedOut: true }), 3000);
+    worker.onmessage = e => finish(e.data);
+    worker.onerror   = e => finish({ lines: [], error: e.message });
+    jsAbort = finish;
+    worker.postMessage(code);
+  });
 }
 
 COURSES.js = {
@@ -224,14 +308,17 @@ COURSES.js = {
   indent: 2,
   storage: perExerciseStorage('jsb2'),
   init() { setInfo(t('Hazırdır. Kodu yazıb işlət!', 'Ready. Write and run!')); },
-  run(code) {
+  async run(code) {
+    const here = [curLesson, curExercise];
     $('output').innerHTML = '';
     $('feedback').textContent = '';
-    const { lines, error } = runJS(code);
-    lines.forEach(l => printLine(l, 'out-ok'));
-    if (error) return printLine('❌ ' + error, 'out-err');
-    if (!lines.length) setInfo(t('Çıxış yoxdur.', 'No output.'));
-    checkConsole(lines.join('\n'));
+    const r = await runJS(code);
+    if (r.cancelled || here[0] !== curLesson || here[1] !== curExercise) return;   // superseded
+    r.lines.forEach(l => printLine(l, 'out-ok'));
+    if (r.timedOut) return printLine(t('⏱ Kod çox uzun işlədi (sonsuz dövr ola bilər).', '⏱ Your code ran too long (possible infinite loop).'), 'out-err');
+    if (r.error)    return printLine('❌ ' + r.error, 'out-err');
+    if (!r.lines.length) setInfo(t('Çıxış yoxdur.', 'No output.'));
+    checkConsole(r.lines.join('\n'));
   },
   curriculum: [
 {id:0,section:{az:'Əsaslar',en:'Basics'},
@@ -673,20 +760,37 @@ p.<span class="fn">then</span>(v => <span class="fn">console</span>.<span class=
 /* ============================================================================
    COURSE: Python  (Pyodide — CPython compiled to WebAssembly — loaded on demand)
    ============================================================================ */
-let pyodide = null;
+let pyodide = null, pyRunning = false;
 
 function initPyodide() {
   const status = $('pyodide-status');
   const s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
   s.onload = async () => {
-    pyodide = await window.loadPyodide();
+    try {
+      pyodide = await window.loadPyodide();
+    } catch { status.textContent = '❌ Pyodide yüklənmədi'; return; }
     status.textContent = '✅ Python hazırdır';
     setTimeout(() => status.style.display = 'none', 2500);
     setInfo(t('Python hazırdır. Kodu yazıb işlət!', 'Python ready. Write and run your code!'));
   };
   s.onerror = () => { status.textContent = '❌ Pyodide yüklənmədi'; };
   document.head.appendChild(s);
+}
+
+// Pyodide reports stdout/stderr byte by byte; collect them and decode at the end
+// (its "batched" mode would drop a last line that has no newline).
+const collectBytes = () => {
+  const bytes = [];
+  return { bytes, handler: { raw: b => bytes.push(b) } };
+};
+const decodeBytes = bytes => new TextDecoder().decode(Uint8Array.from(bytes)).replace(/\n$/, '');
+
+// Drop Pyodide's own frames from a traceback; keep the part that is about the learner's code.
+function tidyTraceback(msg) {
+  const lines = msg.trimEnd().split('\n');
+  const i = lines.findIndex(l => l.includes('File "<exec>"'));
+  return i > 0 ? 'Traceback (most recent call last):\n' + lines.slice(i).join('\n') : lines.join('\n');
 }
 
 COURSES.py = {
@@ -697,17 +801,32 @@ COURSES.py = {
   init: initPyodide,
   async run(code) {
     if (!pyodide) return setInfo(`⏳ ${t('Python hələ hazır deyil...', 'Python not ready yet...')}`);
+    if (pyRunning) return;
+    pyRunning = true;
+    const here = [curLesson, curExercise];
     $('output').innerHTML = '';
     $('feedback').textContent = '';
-    const lines = [];
-    pyodide.globals.set('print', (...args) => {
-      const line = args.map(a => typeof a === 'boolean' ? (a ? 'True' : 'False') : String(a)).join(' ');
-      lines.push(line);
-      printLine(line, 'out-ok');
-    });
-    try { await pyodide.runPythonAsync(code); }
-    catch (err) { return printLine('❌ ' + err.message, 'out-err'); }
-    checkConsole(lines.join('\n'));
+
+    const out = collectBytes(), err = collectBytes();
+    pyodide.setStdout(out.handler);
+    pyodide.setStderr(err.handler);
+    const scope = pyodide.globals.get('dict')();     // fresh namespace: nothing leaks between runs
+    scope.set('__name__', '__main__');
+    let failure = null;
+    try { await pyodide.runPythonAsync(code, { globals: scope }); }
+    catch (e) { failure = tidyTraceback(e.message); }
+    finally {
+      try { pyodide.runPython('import sys; sys.stdout.flush(); sys.stderr.flush()'); } catch {}
+      scope.destroy();
+      pyRunning = false;
+    }
+
+    if (here[0] !== curLesson || here[1] !== curExercise) return;   // user moved on meanwhile
+    const text = decodeBytes(out.bytes), errText = decodeBytes(err.bytes);
+    if (text) text.split('\n').forEach(l => printLine(l, 'out-ok'));
+    if (errText) printLine(errText, 'out-err');
+    if (failure) return printLine('❌ ' + failure, 'out-err');
+    checkConsole(text);
   },
   curriculum: [
  // ── 0. INTRO ──────────────────────────────────────────
