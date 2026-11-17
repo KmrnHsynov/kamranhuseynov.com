@@ -254,6 +254,11 @@ function switchTab(name){
   if(name==='topics') refreshPublishedTopics(renderTopics);
   if(name==='analytics') renderAnalytics();
   if(name==='live') renderLiveTab();
+  // "Sual Redaktoru" and the question count only make sense while the editor is on screen;
+  // Analytics and the live game replace it with their own screen.
+  const editorOpen = name !== 'analytics' && name !== 'live';
+  document.getElementById('editor-title').classList.toggle('hidden', !editorOpen);
+  document.getElementById('q-counter').classList.toggle('hidden', !editorOpen);
   // Analytics and the live game draw into the same box as the question editor, so leaving either tab
   // has to draw the editor back; otherwise their last screen stays on screen and picking a question shows nothing.
   const main = document.getElementById('questions-container');
