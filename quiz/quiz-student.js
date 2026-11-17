@@ -148,6 +148,18 @@ function analyticsKey(){
 // Two modes share this one page: the exam (single-player, scheduled) and the live game
 // (host-paced, joined by PIN/QR — see the LIVE GAME section near the bottom of this file).
 function chooseExamMode(){ startExamMode(); }
+
+// "← Geri" from any exam-mode screen back to the mode picker. Bumping the token makes a still-loading
+// exam list drop its result instead of pulling the student back into the lobby.
+let examModeToken = 0;
+function backToModes(){
+  examModeToken++;
+  clearTimeout(lobbyTimer);
+  showView('mode-view');
+}
+function backToModesHtml(){
+  return '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="backToModes()">← Geri</button></div>';
+}
 function chooseLiveMode(){
   showView('live-join-view');
   document.getElementById('live-name-inp')?.focus();
@@ -155,8 +167,10 @@ function chooseLiveMode(){
 
 function startExamMode(){
   // Show loading state while fetching from Firebase
+  const token = ++examModeToken;
   document.getElementById('lobby-view').innerHTML=`
     <div class="lock-card" style="max-width:460px">
+      ${backToModesHtml()}
       <h2>Yüklənir…</h2>
       <p style="font-size:16px;color:var(--text2)">Test məlumatları alınır</p>
     </div>`;
@@ -168,8 +182,10 @@ function startExamMode(){
     db.ref('.info/serverTimeOffset').once('value').then(s => Number(s.val()), () => 0)
   ])
     .then(([snapshot, offset])=>{
+      if(token !== examModeToken) return;            // the student went back meanwhile
       serverOffset = Number.isFinite(offset) ? offset : 0;
       const exams = snapshot;
+      _examList = exams;                             // refreshed on every entry, so a stale list never decides which "back" to offer
       if(!exams.length){ showNoQuiz(); return; }
       if(exams.length===1){
         useExam(exams[0]);
@@ -178,7 +194,7 @@ function startExamMode(){
         showExamList(exams);
       }
     })
-    .catch(showLoadError);
+    .catch(err=>{ if(token === examModeToken) showLoadError(err); });
 }
 
 // ── INIT ──────────────────────────────────────────────
@@ -232,6 +248,7 @@ function useExam(e){
 function showNoQuiz(){
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
+      ${backToModesHtml()}
       <h2>Aktiv test yoxdur</h2>
       <p>Hazırda aktiv test yoxdur. Müəllim test göndərdikdə bu səhifədə görünəcək.</p>
       <button class="btn btn-ghost btn-full" onclick="location.reload()">↻ Yenilə</button>
@@ -243,6 +260,7 @@ function showNoQuiz(){
 function showLoadError(){
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
+      ${backToModesHtml()}
       <h2>Yüklənmədi</h2>
       <p>Test məlumatları alına bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin.</p>
       <button class="btn btn-primary btn-full" onclick="location.reload()">↻ Yenidən cəhd et</button>
@@ -254,6 +272,7 @@ function showExamList(exams){
   _examList = exams;
   document.getElementById('lobby-view').innerHTML=`
     <div class="lock-card" style="max-width:460px">
+      ${backToModesHtml()}
       <h2 style="font-family:var(--serif)">Test seçin</h2>
       <p style="font-size:16px;color:var(--text2);margin-bottom:16px">Müəllim ${exams.length} test göndərib. Birini seçin:</p>
       ${exams.map((e,i)=>`
@@ -280,7 +299,7 @@ function showClosedLobby(state){
   const before = state === 'before';
   document.getElementById('lobby-view').innerHTML = `
     <div class="lock-card">
-      
+      ${_examList.length > 1 ? '' : backToModesHtml()}
       <h2>${before ? 'Test hələ açılmayıb' : 'Test bağlanıb'}</h2>
       <p>${esc(topicName||'İmtahan')}<br/>${before
         ? 'Açılış vaxtı: <strong>' + esc(formatWhen(examOpensAt)) + '</strong>'
@@ -298,7 +317,7 @@ function showClosedLobby(state){
 function backToListHtml(){
   return _examList.length > 1
     ? '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="showExamList(_examList)" title="Test siyahısına qayıt">← Testlər</button></div>'
-    : '';
+    : backToModesHtml();
 }
 
 // Firefox on Android gives the page no signal when a phone assistant (Circle to Search, Gemini)
