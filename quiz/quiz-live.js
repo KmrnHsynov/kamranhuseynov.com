@@ -174,15 +174,17 @@ function livePickFact(facts, rnd){
 
 // Rows for the top-5 list shown at the end of a round, used by the host and the players. When the
 // viewing player is outside the top, their own row is added below a gap so they still see their place.
-// highlightUid marks the viewer's row. Presentation only (needs the page's esc()).
-function liveTopRowsHtml(board, highlightUid, limit){
+// highlightUid marks the viewer's row. kickable (teacher's screen only) adds a remove button to each
+// row, wired to the host's kickLivePlayer. Presentation only (needs the page's esc()).
+function liveTopRowsHtml(board, highlightUid, limit, kickable){
   const n = limit || 5;
   const row = p => {
     const mine = highlightUid != null && p.uid === highlightUid;
     return `<div class="live-top-row${mine ? ' mine' : ''}">
       <span class="live-top-rank">${p.rank}</span>
       <span class="live-top-name">${esc(p.name)}${p.streak >= 2 ? ` <span class="live-top-streak" title="Ardıcıl düzgün cavab">seriya ${p.streak}</span>` : ''}</span>
-      <strong>${p.score}</strong>
+      <strong>${p.score}</strong>${kickable && p.uid != null ? `
+      <button class="live-kick-btn" data-uid="${esc(p.uid)}" onclick="kickLivePlayer(this.dataset.uid)" title="Oyundan çıxar" aria-label="Oyundan çıxar">✕</button>` : ''}
     </div>`;
   };
   const top = board.slice(0, n);

@@ -429,6 +429,12 @@ function renderLiveLobby(){
   renderLivePlayerList();
 }
 
+// Small PIN badge for the question and reveal screens, so someone who got disconnected (or arrives
+// late) can read the code off the projector and join again.
+function liveSmallPinHtml(){
+  return `<div class="live-pin-small" title="Qoşulmaq üçün PIN">PIN <strong>${esc(liveRoomPin)}</strong></div>`;
+}
+
 function renderLiveQr(){
   const el = document.getElementById('live-qr');
   if(!el || typeof QRCode === 'undefined') return;
@@ -456,13 +462,14 @@ function renderLivePlayerList(){
     : '<div style="font-size:15px;color:var(--muted)">Hələ heç kim qoşulmayıb…</div>';
 }
 
-// Kick is only offered from the lobby (the roster shown here) - once the game starts, the screen
-// switches to the question/reveal views and there is no persistent roster to kick from.
+// Kick is offered from the lobby roster and from the top-5 list after each question. The player's
+// own screen notices the removed profile and shows "Oyundan çıxarıldınız".
 function kickLivePlayer(uid){
   const name = (livePlayersMap[uid] && livePlayersMap[uid].profile || {}).displayName || 'Bu tələbə';
   if(!confirm(`${name} oyundan çıxarılsın?`)) return;
   // Marked as banned in the same write, so the rules refuse it if they try to join again.
   db.ref('live_rooms/' + liveRoomPin).update({ ['players/' + uid]: null, ['banned/' + uid]: true })
+    .then(() => { if(liveMeta && liveMeta.status === 'REVEAL') renderLiveReveal(); })
     .catch(err => alert('Xəta: ' + err.message));
 }
 
@@ -488,6 +495,7 @@ function renderLiveQuestionActive(){
     .map(([uid]) => uid);
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
+      ${liveSmallPinHtml()}
       <div style="font-size:15px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length}</div>
       <div style="font-size:24px;font-weight:700;margin-bottom:16px">${esc(q.text)}</div>
       <div id="live-options-area"><div id="live-read-note" style="font-size:16px;color:var(--muted)">Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılır…</div></div>
@@ -652,13 +660,14 @@ function renderLiveReveal(){
   const fact = liveRevealFact.fact;
   document.getElementById('questions-container').innerHTML = `
     <div style="padding:28px;max-width:640px;margin:0 auto">
+      ${liveSmallPinHtml()}
       <div style="font-size:15px;color:var(--muted);margin-bottom:8px">Sual ${i + 1} / ${liveQuestions.length} — Nəticə</div>
       <div style="font-size:21px;font-weight:700;margin-bottom:10px">${esc(q.text)}</div>
       <div style="font-size:16px;color:var(--correct);margin-bottom:18px">✓ Düzgün cavab: ${esc(correctAnswerText(key))}</div>
       <div style="font-size:15px;color:var(--muted);margin-bottom:20px">${stats.correctCount || 0} / ${stats.answeredCount || 0} şagird düzgün cavab verdi</div>
       ${fact ? `<div class="live-fact">${esc(fact.text)}</div>` : ''}
       <div style="font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px">Top 5</div>
-      ${board.length ? `<div class="live-top-list">${liveTopRowsHtml(board, undefined, 5)}</div>`
+      ${board.length ? `<div class="live-top-list">${liveTopRowsHtml(board, undefined, 5, true)}</div>`
         : '<div style="font-size:15px;color:var(--muted)">Heç kim cavab vermədi.</div>'}
       <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="${isLast ? 'finishLiveRoom()' : 'launchLiveQuestion(' + (i + 1) + ')'}">${isLast ? 'Oyunu bitir' : 'Növbəti sual →'}</button>
       ${isLast ? '' : '<button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="confirmEndLiveRoom()">⏹ Oyunu indi bitir</button>'}

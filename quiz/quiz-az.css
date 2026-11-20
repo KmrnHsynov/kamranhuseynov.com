@@ -731,4 +731,8 @@ input.blank-inp.bad{border-color:var(--wrong);color:var(--wrong);}
 .live-top-row.mine .live-top-rank{color:inherit;}
 .live-top-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .live-top-streak{font-size:14px;font-weight:700;color:var(--accent4);}
+.live-kick-btn{background:none;border:none;color:var(--wrong);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;opacity:.7;}
+.live-kick-btn:hover{opacity:1;}
+.live-pin-small{display:inline-block;float:right;font-size:14px;color:var(--muted);padding:3px 10px;border:1px solid var(--border);border-radius:999px;background:var(--surface2);}
+.live-pin-small strong{color:var(--text);letter-spacing:.08em;font-variant-numeric:lining-nums tabular-nums;}
 .live-top-gap{text-align:center;color:var(--muted);line-height:1;padding:2px 0;}
