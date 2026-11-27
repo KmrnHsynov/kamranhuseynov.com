@@ -3,724 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin – Sual İdarəsi</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Rubik', sans-serif; background: #0f1117; color: #e8eaf0; min-height: 100vh; }
-
-    /* ── Login ── */
-    .login-wrap {
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 20px;
-    }
-    .login-box {
-      background: #1a1d27; border: 1px solid #2a2d3a;
-      border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 380px;
-      display: flex; flex-direction: column; gap: 14px;
-    }
-    .login-box h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-    .login-box p  { font-size: 0.85rem; opacity: 0.55; }
-
-    /* ── Admin panel ── */
-    .admin-wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
-    .admin-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 28px;
-    }
-    .admin-header h1 { font-size: 1.3rem; font-weight: 700; }
-    .admin-header span { font-size: 0.8rem; opacity: 0.45; }
-
-    /* ── Add form ── */
-    .add-card {
-      background: #1a1d27; border: 1px solid #2a2d3a;
-      border-radius: 14px; padding: 24px; margin-bottom: 28px;
-    }
-    .add-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .form-grid.single { grid-template-columns: 1fr; }
-
-    label { font-size: 0.75rem; opacity: 0.55; display: block; margin-bottom: 4px; }
-
-    input[type="text"], input[type="password"], select, textarea {
-      width: 100%; background: #0f1117; border: 1.5px solid #2a2d3a;
-      border-radius: 8px; color: #e8eaf0; font-family: 'Rubik', sans-serif;
-      font-size: 0.9rem; padding: 10px 12px; outline: none;
-      transition: border-color 0.15s;
-    }
-    input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus {
-      border-color: #4f8ef7;
-    }
-    textarea { resize: vertical; min-height: 72px; }
-    select option { background: #1a1d27; }
-
-    .correct-row {
-      display: flex; align-items: center; gap: 8px; margin-top: 10px;
-    }
-    .correct-row label { margin: 0; font-size: 0.85rem; opacity: 0.7; }
-
-    /* ── Buttons ── */
-    .btn { border: none; border-radius: 8px; cursor: pointer; font-family: 'Rubik', sans-serif; font-weight: 600; transition: opacity 0.15s; }
-    .btn:hover { opacity: 0.85; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary { background: #4f8ef7; color: #fff; font-size: 0.9rem; padding: 11px 24px; }
-    .btn-danger  { background: transparent; border: 1px solid #e05252; color: #e05252; font-size: 0.78rem; padding: 5px 12px; }
-    .btn-sm      { font-size: 0.78rem; padding: 6px 14px; }
-    .btn-outline { background: transparent; border: 1.5px solid #2a2d3a; color: #e8eaf0; font-size: 0.85rem; padding: 9px 18px; }
-
-    /* ── Question list ── */
-    .q-list { display: flex; flex-direction: column; gap: 12px; }
-    .q-card {
-      background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 12px;
-      padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px;
-    }
-    .q-num { font-size: 0.75rem; opacity: 0.4; min-width: 24px; padding-top: 2px; }
-    .q-content { flex: 1; }
-    .q-text { font-size: 0.92rem; font-weight: 500; margin-bottom: 8px; line-height: 1.4; }
-    .q-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
-    .q-opt { font-size: 0.8rem; opacity: 0.55; }
-    .q-opt.correct { color: #5cb85c; opacity: 1; font-weight: 600; }
-
-    /* ── Error / status ── */
-    .error-box {
-      background: rgba(224,82,82,0.12); border: 1px solid #e05252;
-      border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; color: #e05252;
-    }
-    .status { font-size: 0.82rem; opacity: 0.6; margin-top: 8px; }
-    .empty { text-align: center; padding: 48px 0; opacity: 0.35; font-size: 0.9rem; }
-
-    /* Tabs */
-    .admin-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-    .admin-tab {
-      padding: 8px 20px; border-radius: 8px; border: 1.5px solid #2a2d3a;
-      background: transparent; color: #e8eaf0; font-family: 'Rubik', sans-serif;
-      font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
-    }
-    .admin-tab.active { background: #4f8ef7; border-color: #4f8ef7; color: #fff; }
-
-    /* Vocab cards */
-    .v-card {
-      background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 12px;
-      padding: 14px 18px; display: flex; align-items: center; gap: 14px;
-    }
-    .v-emoji { font-size: 1.8rem; min-width: 36px; text-align: center; }
-    .v-content { flex: 1; }
-    .v-en { font-size: 0.92rem; font-weight: 600; }
-    .v-az { font-size: 0.8rem; opacity: 0.5; }
-    .v-cat { font-size: 0.72rem; background: #2a2d3a; border-radius: 6px; padding: 2px 8px; margin-left: 6px; }
-  </style>
+  <meta name="theme-color" content="#12357a">
+  <meta name="robots" content="noindex">
+  <title>İdarə paneli · İngiliscə Öyrən</title>
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="admin.css?v=2">
 </head>
 <body>
 
-<!-- Login screen -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-box">
-    <h2>Admin Girişi</h2>
-    <p style="font-size:0.85rem;opacity:0.55">Daxil olmaq üçün etimadnamələrinizi daxil edin.</p>
-    <div>
-      <label>Ad</label>
-      <input type="text" id="adminName" placeholder="Adınız..." autocomplete="username">
-    </div>
-    <div>
-      <label>Şifrə</label>
-      <input type="password" id="adminPwd" placeholder="Şifrəniz...">
-    </div>
-    <div class="error-box" id="loginErr" style="display:none"></div>
-    <button class="btn btn-primary" id="loginBtn" onclick="doAdminLogin()">Daxil ol</button>
-  </div>
-</div>
+  <main class="login" id="loginWrap">
+    <form class="login-box" id="loginForm">
+      <h1>İdarə paneli</h1>
+      <p class="muted">İngiliscə Öyrən</p>
+      <label class="field"><span>Ad</span>
+        <input type="text" id="adminName" autocomplete="username" required></label>
+      <label class="field"><span>Şifrə</span>
+        <input type="password" id="adminPwd" autocomplete="current-password" required></label>
+      <p class="error-text" id="loginErr" role="alert" hidden></p>
+      <button class="btn" id="loginBtn">Daxil ol</button>
+    </form>
+  </main>
 
-<!-- Admin panel -->
-<div class="admin-wrap" id="adminWrap" style="display:none">
-  <div class="admin-header">
-    <h1>📝 Sual İdarəsi </h1>
-    <span id="qCount"></span>
-  </div>
+  <div id="adminWrap" hidden>
+    <header class="admin-bar">
+      <strong class="admin-brand">İngiliscə Öyrən <span>İdarə paneli</span></strong>
+      <nav class="admin-tabs" aria-label="Bölmələr">
+        <button type="button" data-tab="lessons" aria-current="page">Dərslər</button>
+        <button type="button" data-tab="questions">Təkrar sualları</button>
+        <button type="button" data-tab="vocab">Sözlər</button>
+      </nav>
+      <button type="button" class="signout" id="signOutBtn">Çıxış</button>
+    </header>
 
-  <!-- Tab bar -->
-  <div class="admin-tabs" id="adminTabs">
-    <button class="admin-tab active" id="tabQuestions" onclick="switchAdminTab('questions')">📝 Suallar</button>
-    <button class="admin-tab" id="tabVocab" onclick="switchAdminTab('vocab')">🃏 Söz Oyunu</button>
-  </div>
-
-  <div id="panelQuestions">
-    <!-- Add form -->
-    <div class="add-card">
-      <h3>Yeni Sual Əlavə Et</h3>
-      <div class="form-grid single">
-        <div>
-          <label>Sual mətni</label>
-          <textarea id="fQuestion" placeholder="Sualı buraya yazın..."></textarea>
+    <!-- Lessons -->
+    <section class="panel lessons" id="panel-lessons">
+      <aside class="topic-pane">
+        <div class="topic-filters">
+          <input type="search" id="topicSearch" placeholder="Mövzu axtar" aria-label="Mövzu axtar">
+          <select id="topicFilter" aria-label="Vəziyyətə görə">
+            <option value="all">Bütün mövzular</option>
+            <option value="published">Dərc edilmiş</option>
+            <option value="empty">Boş</option>
+          </select>
         </div>
-      </div>
-      <div class="form-grid">
-        <div><label>A variantı</label><input type="text" id="fA" placeholder="Variant A"></div>
-        <div><label>B variantı</label><input type="text" id="fB" placeholder="Variant B"></div>
-        <div><label>C variantı</label><input type="text" id="fC" placeholder="Variant C"></div>
-        <div><label>D variantı</label><input type="text" id="fD" placeholder="Variant D"></div>
-        <div><label>E variantı <span style="opacity:0.4">(isteğe bağlı)</span></label><input type="text" id="fE" placeholder="Variant E"></div>
-      </div>
-      <div class="correct-row">
-        <label>Düzgün cavab:</label>
-        <select id="fCorrect">
-          <option value="a">A</option>
-          <option value="b">B</option>
-          <option value="c">C</option>
-          <option value="d">D</option>
-          <option value="e">E</option>
-        </select>
-      </div>
-      <div style="margin-top:10px">
-        <label>Kateqoriya <span style="opacity:0.4">(isteğe bağlı)</span></label>
-        <input type="text" id="fCategory" placeholder="məs. Nouns, Adjectives..." list="qCategoryList" style="max-width:300px;margin-top:4px">
-        <datalist id="qCategoryList"></datalist>
-      </div>
-      <div style="margin-top:14px; display:flex; align-items:center; gap:12px">
-        <button class="btn btn-primary" id="saveBtn" onclick="addQuestion()">Əlavə et</button>
-        <button class="btn btn-outline" id="cancelEditBtn" onclick="cancelEdit()" style="display:none">Ləğv et</button>
-        <span class="status" id="addStatus"></span>
-      </div>
-    </div>
+        <p class="muted topic-count" id="topicCount"></p>
+        <div class="topic-list" id="topicList"></div>
+      </aside>
+      <div class="editor" id="editor"></div>
+    </section>
 
-    <!-- Bulk paste -->
-    <div class="add-card">
-      <h3>📋 Cədvəldən Toplu Əlavə</h3>
-      <p style="font-size:0.8rem;opacity:0.5;margin-bottom:12px">Google Sheets / Excel-dən kopyalayın. Sütun sırası: <strong>Sual | A | B | C | D | E (optional) | Düzgün (a/b/c/d/e)</strong></p>
-      <textarea id="bulkPaste" style="min-height:120px" placeholder="Buraya yapışdırın..."></textarea>
-      <div style="margin-top:12px;display:flex;align-items:center;gap:12px">
-        <button class="btn btn-primary" onclick="previewBulkQuestions()">Önizlə</button>
-        <button class="btn btn-primary" id="bulkConfirmBtn" style="display:none" onclick="confirmBulkAddQuestions()">Təsdiqlə və əlavə et</button>
-        <span class="status" id="bulkStatus"></span>
-      </div>
-      <div id="bulkPreview" style="margin-top:12px"></div>
-    </div>
-
-    <!-- Bulk assign category -->
-    <div class="add-card">
-      <h3>🏷️ Kateqoriyasız Sualları Təyin Et</h3>
-      <p style="font-size:0.8rem;opacity:0.5;margin-bottom:12px">Kateqoriyası olmayan bütün sualları seçilmiş kateqoriyaya təyin edir.</p>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <input type="text" id="bulkCategoryInput" placeholder="Kateqoriya adı..." list="qCategoryList" style="max-width:260px">
-        <button class="btn btn-primary" onclick="bulkAssignCategory()">Təyin et</button>
-        <span class="status" id="bulkCategoryStatus"></span>
-      </div>
-    </div>
-
-    <!-- Search + list -->
-    <div style="margin-bottom:14px">
-      <input type="text" id="searchInput" placeholder="Sual axtar..." oninput="applySearch()" style="max-width:400px">
-    </div>
-    <div class="q-list" id="qList"></div>
-    <div id="qPager" style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;font-size:0.85rem;opacity:0.7"></div>
-  </div>
-
-  <!-- Söz Oyunu panel -->
-  <div id="panelVocab" style="display:none">
-    <div class="add-card">
-      <h3>Yeni Söz Əlavə Et</h3>
-      <div class="form-grid">
-        <div><label>Emoji</label><input type="text" id="vEmoji" placeholder="🍎" maxlength="4"></div>
-        <div><label>Kateqoriya</label><input type="text" id="vCategory" placeholder="food" list="categoryList"><datalist id="categoryList"></datalist></div>
-        <div><label>İngiliscə</label><input type="text" id="vEnglish" placeholder="apple"></div>
-        <div><label>Azərbaycanca</label><input type="text" id="vAz" placeholder="alma"></div>
-      </div>
-      <div><label style="font-size:0.72rem;opacity:0.4;margin-top:8px;display:block">Şəkil URL (isteğe bağlı — gələcək üçün)</label><input type="text" id="vImageUrl" placeholder="https://..."></div>
-      <div style="margin-top:14px;display:flex;align-items:center;gap:12px">
-        <button class="btn btn-primary" onclick="addVocabItem()">Əlavə et</button>
-        <span class="status" id="vocabAddStatus"></span>
-      </div>
-    </div>
-    <div class="q-list" id="vocabList"></div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"
-        integrity="sha384-3wY11tldQ5+yWqAvmTN4XtQvnjoTva0cV15O/O/O5NTtp0ivVopSzLOzsVXWZse9"
-        crossorigin="anonymous"></script>
-<script src="config.js"></script>
-<script>
-  // SUPABASE_URL/SUPABASE_ANON/db are defined in config.js, loaded above.
-
-  async function nameToEmail(name) {
-    const data = new TextEncoder().encode(name.toLowerCase());
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    const hex  = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-    return hex + '@ingilisce.app';
-  }
-
-  async function doAdminLogin() {
-    const name = document.getElementById('adminName').value.trim();
-    const pwd  = document.getElementById('adminPwd').value;
-    const err  = document.getElementById('loginErr');
-    const btn  = document.getElementById('loginBtn');
-    err.style.display = 'none';
-    btn.disabled = true; btn.textContent = '...';
-
-    try {
-      const email = await nameToEmail(name);
-      const { data, error } = await db.auth.signInWithPassword({ email, password: pwd });
-      if (error) throw new Error('Ad və ya şifrə yanlışdır.');
-
-      // Checked via the same is_admin() RPC that RLS relies on server-side,
-      // instead of a hardcoded username literal shipped in this file.
-      const { data: isAdmin } = await db.rpc('is_admin');
-      if (!isAdmin) {
-        await db.auth.signOut();
-        throw new Error('Giriş icazəniz yoxdur.');
-      }
-
-      document.getElementById('loginWrap').style.display = 'none';
-      document.getElementById('adminWrap').style.display = 'block';
-      loadQuestions();
-    } catch (e) {
-      err.textContent = e.message;
-      err.style.display = 'block';
-    } finally {
-      btn.disabled = false; btn.textContent = 'Daxil ol';
-    }
-  }
-
-  document.getElementById('adminPwd').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doAdminLogin();
-  });
-
-  let pageQuestions = [];
-  let totalCount = 0;
-  let currentPage = 0;
-  let editingId = null;
-  let searchTerm = '';
-  let searchDebounceTimer = null;
-  const PAGE_SIZE = 10;
-
-  // Questions are fetched one page at a time from the server (with search
-  // pushed into the query) instead of downloading the whole table and
-  // paginating/filtering client-side — keeps this cheap as the bank grows.
-  async function loadQuestions() {
-    let query = db.from('review_questions').select('*', { count: 'exact' }).order('created_at', { ascending: false });
-    if (searchTerm) query = query.ilike('question', `%${searchTerm}%`);
-    const start = currentPage * PAGE_SIZE;
-    query = query.range(start, start + PAGE_SIZE - 1);
-
-    const { data, error, count } = await query;
-    if (error) {
-      document.getElementById('qCount').textContent = 'Xəta: ' + error.message;
-      return;
-    }
-    pageQuestions = data || [];
-    totalCount = count || 0;
-    document.getElementById('qCount').textContent = `${totalCount} sual`;
-    renderQuestions();
-    loadCategoryList();
-  }
-
-  async function loadCategoryList() {
-    const { data, error } = await db.from('review_questions').select('category').not('category', 'is', null);
-    if (error) return;
-    const cats = [...new Set(data.map(q => q.category).filter(Boolean))].sort();
-    const dl = document.getElementById('qCategoryList');
-    if (dl) dl.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
-  }
-
-  function applySearch() {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
-      searchTerm = (document.getElementById('searchInput')?.value || '').trim();
-      currentPage = 0;
-      loadQuestions();
-    }, 300);
-  }
-
-  function renderQuestions() {
-    const list = document.getElementById('qList');
-    list.innerHTML = '';
-
-    if (pageQuestions.length === 0) {
-      list.innerHTML = '<div class="empty">Sual tapılmadı.</div>';
-      document.getElementById('qPager').innerHTML = '';
-      return;
-    }
-
-    const start = currentPage * PAGE_SIZE;
-    pageQuestions.forEach((q, i) => {
-      const opts = { a: q.option_a, b: q.option_b, c: q.option_c, d: q.option_d };
-      if (q.option_e) opts.e = q.option_e;
-      const card = document.createElement('div');
-      card.className = 'q-card';
-      card.innerHTML = `
-        <span class="q-num">${start + i + 1}</span>
-        <div class="q-content">
-          <div class="q-text">${escapeHtml(q.question)}</div>
-          ${q.category ? `<div style="font-size:0.72rem;opacity:0.45;margin-bottom:4px">🏷️ ${escapeHtml(q.category)}</div>` : ''}
-          <div class="q-opts">
-            ${Object.entries(opts).map(([k, v]) =>
-              `<span class="q-opt ${k === q.correct ? 'correct' : ''}">${k.toUpperCase()}. ${escapeHtml(v)}</span>`
-            ).join('')}
-          </div>
+    <!-- Review questions -->
+    <section class="panel split" id="panel-questions" hidden>
+      <div class="list-pane">
+        <div class="list-head">
+          <h1>Təkrar sualları</h1>
+          <span class="muted" id="qCount"></span>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-sm btn-outline" data-qid="${q.id}">Düzəlt</button>
-          <button class="btn btn-danger" onclick="deleteQuestion('${q.id}')">Sil</button>
-        </div>`;
-      card.querySelector('[data-qid]').addEventListener('click', () => editQuestion(q));
-      list.appendChild(card);
-    });
-
-    // Pagination
-    const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-    const pager = document.getElementById('qPager');
-    if (totalPages <= 1) { pager.innerHTML = ''; return; }
-    pager.innerHTML = `
-      <button class="btn btn-sm btn-outline" onclick="changePage(-1)" ${currentPage === 0 ? 'disabled' : ''}>← Əvvəlki</button>
-      <span>${currentPage + 1} / ${totalPages}</span>
-      <button class="btn btn-sm btn-outline" onclick="changePage(1)" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Növbəti →</button>`;
-  }
-
-  function changePage(dir) {
-    currentPage += dir;
-    loadQuestions();
-    document.getElementById('qList').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function editQuestion(q) {
-    editingId = q.id;
-    document.getElementById('fQuestion').value = q.question;
-    document.getElementById('fA').value = q.option_a;
-    document.getElementById('fB').value = q.option_b;
-    document.getElementById('fC').value = q.option_c;
-    document.getElementById('fD').value = q.option_d;
-    document.getElementById('fE').value = q.option_e || '';
-    document.getElementById('fCorrect').value = q.correct;
-    document.getElementById('fCategory').value = q.category || '';
-    document.getElementById('saveBtn').textContent = 'Yadda saxla';
-    document.getElementById('cancelEditBtn').style.display = 'inline-block';
-    document.getElementById('addStatus').textContent = '';
-    document.querySelector('.add-card h3').textContent = '✏️ Sualı Düzəlt';
-    document.querySelector('.add-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function cancelEdit() {
-    editingId = null;
-    ['fQuestion','fA','fB','fC','fD','fE','fCategory'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('fCorrect').value = 'a';
-    document.getElementById('saveBtn').textContent = 'Əlavə et';
-    document.getElementById('cancelEditBtn').style.display = 'none';
-    document.getElementById('addStatus').textContent = '';
-    document.querySelector('.add-card h3').textContent = 'Yeni Sual Əlavə Et';
-    const si = document.getElementById('searchInput');
-    if (si) {
-      si.value = '';
-      clearTimeout(searchDebounceTimer);
-      searchTerm = '';
-      currentPage = 0;
-      loadQuestions();
-    }
-  }
-
-  async function addQuestion() {
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn.disabled) return;
-
-    const question  = document.getElementById('fQuestion').value.trim();
-    const option_a  = document.getElementById('fA').value.trim();
-    const option_b  = document.getElementById('fB').value.trim();
-    const option_c  = document.getElementById('fC').value.trim();
-    const option_d  = document.getElementById('fD').value.trim();
-    const option_e  = document.getElementById('fE').value.trim() || null;
-    const correct   = document.getElementById('fCorrect').value;
-    const category  = document.getElementById('fCategory').value.trim() || null;
-    const status    = document.getElementById('addStatus');
-
-    if (!question || !option_a || !option_b || !option_c || !option_d) {
-      status.textContent = '⚠️ A–D variantları mütləqdir.';
-      return;
-    }
-
-    saveBtn.disabled = true;
-    try {
-      if (editingId) {
-        status.textContent = 'Yadda saxlanılır...';
-        const { error } = await db.from('review_questions')
-          .update({ question, option_a, option_b, option_c, option_d, option_e, correct, category })
-          .eq('id', editingId);
-        if (error) { status.textContent = '❌ ' + error.message; return; }
-        status.textContent = '✓ Yeniləndi!';
-        loadQuestions();
-        setTimeout(() => cancelEdit(), 1500);
-        return;
-      }
-
-      status.textContent = 'Əlavə edilir...';
-      const { error } = await db.from('review_questions').insert({ question, option_a, option_b, option_c, option_d, option_e, correct, category });
-      if (error) { status.textContent = '❌ ' + error.message; return; }
-      ['fQuestion','fA','fB','fC','fD','fE','fCategory'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('fCorrect').value = 'a';
-      status.textContent = '✓ Əlavə edildi!';
-      setTimeout(() => status.textContent = '', 2000);
-      loadQuestions();
-    } finally {
-      saveBtn.disabled = false;
-    }
-  }
-
-  async function bulkAssignCategory() {
-    const category = document.getElementById('bulkCategoryInput').value.trim();
-    const status   = document.getElementById('bulkCategoryStatus');
-    if (!category) { status.textContent = '⚠️ Kateqoriya daxil edin.'; return; }
-    // Query uncategorized rows directly — pageQuestions only holds the
-    // current page now, not the whole table.
-    const { data: uncategorized, error: selError } = await db.from('review_questions').select('id').is('category', null);
-    if (selError) { status.textContent = '❌ ' + selError.message; return; }
-    if (!uncategorized || uncategorized.length === 0) { status.textContent = '✓ Bütün sualların kateqoriyası var.'; return; }
-    status.textContent = `${uncategorized.length} sual yenilənir...`;
-    const ids = uncategorized.map(q => q.id);
-    const { error } = await db.from('review_questions').update({ category }).in('id', ids);
-    if (error) { status.textContent = '❌ ' + error.message; return; }
-    status.textContent = `✓ ${uncategorized.length} sual "${category}" kateqoriyasına təyin edildi!`;
-    setTimeout(() => status.textContent = '', 3000);
-    loadQuestions();
-  }
-
-  let pendingBulkRecords = null;
-
-  function previewBulkQuestions() {
-    const raw     = document.getElementById('bulkPaste').value.trim();
-    const status  = document.getElementById('bulkStatus');
-    const preview = document.getElementById('bulkPreview');
-    const confirmBtn = document.getElementById('bulkConfirmBtn');
-    preview.innerHTML = '';
-    confirmBtn.style.display = 'none';
-    pendingBulkRecords = null;
-    if (!raw) { status.textContent = '⚠️ Mətn boşdur.'; return; }
-
-    const rows = tokenizeDelimited(raw, raw.includes('\t') ? '\t' : ',').filter(r => r.length >= 6);
-    if (rows.length === 0) {
-      status.textContent = '⚠️ Format yanlışdır. Ən az 6 sütun lazımdır.';
-      return;
-    }
-
-    const records = [];
-    for (const cols of rows) {
-      // last col is always the correct letter; everything between [1..last-1] are options
-      const correct = cols[cols.length - 1].toLowerCase().trim();
-      if (!['a','b','c','d','e'].includes(correct)) {
-        status.textContent = `⚠️ Yanlış cavab: "${correct}" — a/b/c/d/e olmalıdır.`;
-        return;
-      }
-      const opts = cols.slice(1, cols.length - 1);
-      records.push({
-        question: cols[0],
-        option_a: opts[0] || '', option_b: opts[1] || '',
-        option_c: opts[2] || '', option_d: opts[3] || '',
-        option_e: opts[4] || null,
-        correct
-      });
-    }
-
-    // Render a visual sanity-check table so a shifted/misparsed row is caught
-    // before insert, instead of silently landing wrong in the DB.
-    records.forEach((rec, i) => {
-      const row = document.createElement('div');
-      row.className = 'q-card';
-      const optsLine = ['a','b','c','d','e']
-        .map(k => rec[`option_${k}`])
-        .filter(v => v)
-        .map((v, idx) => `${String.fromCharCode(97 + idx)}. ${v}`)
-        .join('  ·  ');
-
-      const num = document.createElement('span');
-      num.className = 'q-num';
-      num.textContent = i + 1;
-
-      const content = document.createElement('div');
-      content.className = 'q-content';
-
-      const qText = document.createElement('div');
-      qText.className = 'q-text';
-      qText.textContent = rec.question;
-
-      const optsEl = document.createElement('div');
-      optsEl.style.fontSize = '0.8rem';
-      optsEl.style.opacity = '0.7';
-      optsEl.textContent = optsLine;
-
-      const correctEl = document.createElement('div');
-      correctEl.style.fontSize = '0.75rem';
-      correctEl.style.marginTop = '4px';
-      correctEl.textContent = `✓ Düzgün: ${rec.correct}`;
-
-      content.appendChild(qText);
-      content.appendChild(optsEl);
-      content.appendChild(correctEl);
-      row.appendChild(num);
-      row.appendChild(content);
-      preview.appendChild(row);
-    });
-
-    pendingBulkRecords = records;
-    confirmBtn.style.display = '';
-    status.textContent = `${records.length} sual tapıldı — yoxlayıb təsdiqləyin.`;
-  }
-
-  async function confirmBulkAddQuestions() {
-    const status = document.getElementById('bulkStatus');
-    const confirmBtn = document.getElementById('bulkConfirmBtn');
-    if (confirmBtn.disabled) return;
-    if (!pendingBulkRecords || pendingBulkRecords.length === 0) {
-      status.textContent = '⚠️ Əvvəlcə önizləyin.';
-      return;
-    }
-
-    confirmBtn.disabled = true;
-    try {
-      status.textContent = `${pendingBulkRecords.length} sual əlavə edilir...`;
-      const { error } = await db.from('review_questions').insert(pendingBulkRecords);
-      if (error) { console.error('bulkAddQuestions failed:', error); status.textContent = '❌ ' + error.message; return; }
-
-      document.getElementById('bulkPaste').value = '';
-      document.getElementById('bulkPreview').innerHTML = '';
-      confirmBtn.style.display = 'none';
-      status.textContent = `✓ ${pendingBulkRecords.length} sual əlavə edildi!`;
-      pendingBulkRecords = null;
-      setTimeout(() => status.textContent = '', 3000);
-      loadQuestions();
-    } finally {
-      confirmBtn.disabled = false;
-    }
-  }
-
-  async function deleteQuestion(id) {
-    if (!confirm('Bu sualı silmək istəyirsiniz?')) return;
-    const { error } = await db.from('review_questions').delete().eq('id', id);
-    if (error) { showAdminToast('❌ Xəta: ' + error.message); return; }
-    loadQuestions();
-  }
-
-  function switchAdminTab(tab) {
-    document.getElementById('panelQuestions').style.display = tab === 'questions' ? 'block' : 'none';
-    document.getElementById('panelVocab').style.display     = tab === 'vocab'     ? 'block' : 'none';
-    document.getElementById('tabQuestions').classList.toggle('active', tab === 'questions');
-    document.getElementById('tabVocab').classList.toggle('active', tab === 'vocab');
-    if (tab === 'vocab')     loadVocabItems();
-    if (tab === 'questions') loadQuestions();
-  }
-
-  // Quote-aware CSV/TSV tokenizer: parses the whole pasted block in one pass
-  // so a quoted field containing the row delimiter or an embedded newline
-  // (e.g. wrapped text pasted from Sheets) doesn't shear rows apart the way
-  // a naive text.split('\n') would.
-  function tokenizeDelimited(text, delimiter) {
-    const rows = [];
-    let row = [];
-    let cur = '';
-    let inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      if (inQuotes) {
-        if (ch === '"') {
-          if (text[i + 1] === '"') { cur += '"'; i++; }
-          else { inQuotes = false; }
-        } else {
-          cur += ch;
-        }
-      } else if (ch === '"') {
-        inQuotes = true;
-      } else if (ch === delimiter) {
-        row.push(cur.trim()); cur = '';
-      } else if (ch === '\n') {
-        row.push(cur.trim()); cur = '';
-        rows.push(row); row = [];
-      } else if (ch === '\r') {
-        // skip; \n (handled above) marks the row boundary
-      } else {
-        cur += ch;
-      }
-    }
-    if (cur.length > 0 || row.length > 0) { row.push(cur.trim()); rows.push(row); }
-    return rows.filter(r => r.some(c => c !== ''));
-  }
-
-  // Single feedback mechanism for actions with no dedicated status element
-  // nearby (e.g. per-row delete buttons), instead of native alert() or a
-  // silently-ignored error.
-  function showAdminToast(msg) {
-    const existing = document.querySelector('.admin-toast');
-    if (existing) existing.remove();
-    const t = document.createElement('div');
-    t.className = 'admin-toast';
-    t.setAttribute('role', 'status');
-    t.setAttribute('aria-live', 'polite');
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:10px 18px;font-size:0.85rem;color:#e8eaf0;box-shadow:0 4px 16px rgba(0,0,0,0.4);z-index:1000';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 3000);
-  }
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  async function loadVocabItems() {
-    const { data, error } = await db.from('vocab_items').select('*').order('category').order('english');
-    const list = document.getElementById('vocabList');
-    list.innerHTML = '';
-
-    if (error) {
-      list.innerHTML = '<div class="empty">Xəta: ' + escapeHtml(error.message) + '</div>';
-    } else if (!data || data.length === 0) {
-      list.innerHTML = '<div class="empty">Hələ söz əlavə edilməyib.</div>';
-    } else {
-      // Populate category datalist
-      const cats = [...new Set(data.map(v => v.category))];
-      document.getElementById('categoryList').innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
-
-      data.forEach(v => {
-        const card = document.createElement('div');
-        card.className = 'v-card';
-        card.innerHTML = `
-          <span class="v-emoji">${escapeHtml(v.emoji)}</span>
-          <div class="v-content">
-            <div class="v-en">${escapeHtml(v.english)} <span class="v-cat">${escapeHtml(v.category)}</span></div>
-            <div class="v-az">${escapeHtml(v.azerbaijani)}</div>
+        <input type="search" id="searchInput" placeholder="Sual axtar" aria-label="Sual axtar">
+        <ul class="rows" id="qList"></ul>
+        <div class="pager" id="qPager"></div>
+      </div>
+      <div class="side-pane">
+        <form class="box" id="questionForm" novalidate>
+          <h2 id="questionFormTitle">Yeni sual</h2>
+          <label class="field"><span>Sual mətni</span><textarea id="fQuestion"></textarea></label>
+          <div class="pairs">
+            <label class="field"><span>A variantı</span><input type="text" id="fA"></label>
+            <label class="field"><span>B variantı</span><input type="text" id="fB"></label>
+            <label class="field"><span>C variantı</span><input type="text" id="fC"></label>
+            <label class="field"><span>D variantı</span><input type="text" id="fD"></label>
+            <label class="field"><span>E (istəyə bağlı)</span><input type="text" id="fE"></label>
+            <label class="field"><span>Düzgün cavab</span>
+              <select id="fCorrect">
+                <option value="a">A</option><option value="b">B</option><option value="c">C</option>
+                <option value="d">D</option><option value="e">E</option>
+              </select></label>
           </div>
-          <button class="btn btn-danger" onclick="deleteVocabItem('${v.id}')">Sil</button>`;
-        list.appendChild(card);
-      });
-    }
-  }
+          <label class="field"><span>Kateqoriya (istəyə bağlı)</span>
+            <input type="text" id="fCategory" placeholder="məs. Nouns" list="qCategoryList"></label>
+          <datalist id="qCategoryList"></datalist>
+          <div class="form-actions">
+            <button class="btn" id="saveBtn">Əlavə et</button>
+            <button type="button" class="btn secondary" id="cancelEditBtn" hidden>Ləğv et</button>
+          </div>
+          <p class="status" id="addStatus" role="status"></p>
+        </form>
 
-  async function addVocabItem() {
-    const emoji      = document.getElementById('vEmoji').value.trim();
-    const english    = document.getElementById('vEnglish').value.trim();
-    const azerbaijani = document.getElementById('vAz').value.trim();
-    const category   = document.getElementById('vCategory').value.trim().toLowerCase();
-    const image_url  = document.getElementById('vImageUrl').value.trim() || null;
-    const status     = document.getElementById('vocabAddStatus');
+        <details class="box">
+          <summary>Cədvəldən toplu əlavə</summary>
+          <p class="muted">Google Sheets və ya Excel-dən kopyalayın. Sütunlar: Sual, A, B, C, D, E (istəyə bağlı), düzgün hərf (a–e).</p>
+          <textarea id="bulkPaste" rows="6" aria-label="Cədvəl mətni"></textarea>
+          <div class="form-actions">
+            <button type="button" class="btn secondary" id="bulkPreviewBtn">Önizlə</button>
+            <button type="button" class="btn" id="bulkConfirmBtn" hidden>Təsdiqlə və əlavə et</button>
+          </div>
+          <p class="status" id="bulkStatus" role="status"></p>
+          <ol class="rows" id="bulkPreview"></ol>
+        </details>
 
-    if (!emoji || !english || !azerbaijani || !category) {
-      status.textContent = '⚠️ Emoji, İngiliscə, Azərbaycanca və Kateqoriya mütləqdir.';
-      return;
-    }
+        <details class="box">
+          <summary>Kateqoriyasız sualları təyin et</summary>
+          <p class="muted">Kateqoriyası olmayan bütün suallar seçdiyiniz kateqoriyaya keçir.</p>
+          <input type="text" id="bulkCategoryInput" placeholder="Kateqoriya adı" aria-label="Kateqoriya adı" list="qCategoryList">
+          <div class="form-actions"><button type="button" class="btn" id="bulkCategoryBtn">Təyin et</button></div>
+          <p class="status" id="bulkCategoryStatus" role="status"></p>
+        </details>
+      </div>
+    </section>
 
-    status.textContent = 'Əlavə edilir...';
-    const { error } = await db.from('vocab_items').insert({ emoji, english, azerbaijani, category, image_url });
-    if (error) { status.textContent = '❌ ' + error.message; return; }
+    <!-- Word game -->
+    <section class="panel split" id="panel-vocab" hidden>
+      <div class="list-pane">
+        <div class="list-head">
+          <h1>Sözlər</h1>
+          <span class="muted" id="vocabCount"></span>
+        </div>
+        <ul class="rows" id="vocabList"></ul>
+      </div>
+      <div class="side-pane">
+        <form class="box" id="vocabForm" novalidate>
+          <h2>Yeni söz</h2>
+          <div class="pairs">
+            <label class="field"><span>Emoji</span><input type="text" id="vEmoji" maxlength="4" placeholder="🍎"></label>
+            <label class="field"><span>Kateqoriya</span><input type="text" id="vCategory" placeholder="food" list="categoryList"></label>
+            <label class="field"><span>İngiliscə</span><input type="text" id="vEnglish" placeholder="apple"></label>
+            <label class="field"><span>Azərbaycanca</span><input type="text" id="vAz" placeholder="alma"></label>
+          </div>
+          <datalist id="categoryList"></datalist>
+          <label class="field"><span>Şəkil URL (istəyə bağlı)</span><input type="url" id="vImageUrl" placeholder="https://"></label>
+          <div class="form-actions"><button class="btn">Əlavə et</button></div>
+          <p class="status" id="vocabAddStatus" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </div>
 
-    ['vEmoji','vEnglish','vAz','vCategory','vImageUrl'].forEach(id => document.getElementById(id).value = '');
-    status.textContent = '✓ Əlavə edildi!';
-    setTimeout(() => status.textContent = '', 2000);
-    loadVocabItems();
-  }
-
-  async function deleteVocabItem(id) {
-    if (!confirm('Bu sözü silmək istəyirsiniz?')) return;
-    const { error } = await db.from('vocab_items').delete().eq('id', id);
-    if (error) { showAdminToast('❌ Xəta: ' + error.message); return; }
-    loadVocabItems();
-  }
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"
+          integrity="sha384-3wY11tldQ5+yWqAvmTN4XtQvnjoTva0cV15O/O/O5NTtp0ivVopSzLOzsVXWZse9"
+          crossorigin="anonymous"></script>
+  <script src="config.js"></script>
+  <script src="content.js?v=2"></script>
+  <script src="ui.js?v=2"></script>
+  <script src="admin.js?v=2"></script>
 </body>
 </html>

@@ -3,254 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#1a73e8">
+  <meta name="theme-color" content="#12357a">
   <title>İngiliscə Öyrən</title>
-  <link rel="stylesheet" href="ingilisce.css">
+  <link rel="preload" href="fonts/source-sans-3-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="ingilisce.css?v=2">
 </head>
 <body>
 
-  <header class="app-header">
-    <h1 class="app-title">İngiliscə Öyrən</h1>
-    <div class="header-right">
-      <button class="profile-btn" id="profileBtn"><span id="profileName"></span></button>
-      <div class="profile-dropdown hidden" id="profileDropdown">
-        <div class="profile-dropdown-avatar" id="dropdownAvatar"></div>
-        <div class="profile-dropdown-name" id="dropdownName"></div>
-        <div class="profile-dropdown-stats">
-          <div class="dropdown-stat">
-            <span class="dropdown-stat-value" id="dropdownCompleted">0</span>
-            <span class="dropdown-stat-label">tamamlandı</span>
-          </div>
-          <div class="dropdown-stat-divider"></div>
-          <div class="dropdown-stat">
-            <span class="dropdown-stat-value" id="dropdownTotal">0</span>
-            <span class="dropdown-stat-label">ümumi dərs</span>
-          </div>
-          <div class="dropdown-stat-divider"></div>
-          <div class="dropdown-stat">
-            <span class="dropdown-stat-value" id="dropdownLives">❤️❤️❤️❤️❤️</span>
-            <span class="dropdown-stat-label">can</span>
-          </div>
-          <div class="dropdown-stat-divider"></div>
-          <div class="dropdown-stat">
-            <span class="dropdown-stat-value" id="dropdownStreak">🔥 0</span>
-            <span class="dropdown-stat-label">gün ardıcıl</span>
-          </div>
-        </div>
-        <div class="dropdown-progress-bar-track">
-          <div class="dropdown-progress-bar-fill" id="dropdownProgressFill"></div>
-        </div>
-        <hr class="profile-dropdown-divider">
-        <button class="profile-dropdown-signout" id="btnSignOut">Çıxış et</button>
+  <header class="topbar" id="topbar" hidden>
+    <a class="brand" href="#/">İngiliscə Öyrən</a>
+    <nav class="nav" aria-label="Əsas">
+      <a href="#/" data-nav="course">Kurs</a>
+      <a href="#/tekrar" data-nav="review">Təkrar</a>
+      <a href="#/soz" data-nav="vocab">Söz oyunu</a>
+    </nav>
+    <div class="account">
+      <button class="account-btn" id="accountBtn" aria-expanded="false" aria-controls="accountMenu">
+        <span class="initial" id="accountInitial" aria-hidden="true"></span>
+        <span class="account-name" id="accountName"></span>
+      </button>
+      <div class="account-menu" id="accountMenu" hidden>
+        <strong id="menuName"></strong>
+        <p class="muted" id="menuProgress"></p>
+        <button class="btn danger small" id="signOutBtn">Çıxış et</button>
       </div>
-      <!-- İmtahan dropdown -->
-      <div class="imtahan-wrap" id="imtahanWrap">
-        <button class="review-quiz-btn imtahan-trigger" id="imtahanBtn">İmtahan ▾</button>
-        <div class="imtahan-menu hidden" id="imtahanMenu">
-          <button id="vocabMenuBtn">🃏 Söz</button>
-          <button id="reviewMenuBtn">📝 Təkrar</button>
-        </div>
-      </div>
-      <!-- <button class="mode-toggle" id="modeToggle">SAT Rejimi</button> -->
     </div>
   </header>
 
-  <main class="path-container" id="pathContainer"></main>
-  <button class="resume-btn hidden" id="resumeBtn">▶ Davam et</button>
+  <main id="view" tabindex="-1">
+    <p class="loading muted">Yüklənir…</p>
+  </main>
 
-  <!-- Profil / Auth -->
-  <div class="profile-overlay hidden" id="profileOverlay">
-    <div class="profile-modal">
-      <h2>👋 Xoş gəldiniz!</h2>
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabSignup">Yeni hesab</button>
-        <button class="auth-tab" id="tabSignin">Daxil ol</button>
-      </div>
-
-      <!-- Sign Up -->
-      <div id="formSignup">
-        <div class="avatar-picker">
-          <button class="avatar-option selected" data-avatar="👦">👦<span class="avatar-label">Oğlan</span></button>
-          <button class="avatar-option" data-avatar="👧">👧<span class="avatar-label">Qız</span></button>
+  <template id="authTemplate">
+    <div class="auth">
+      <section class="auth-intro">
+        <p class="auth-brand">İngiliscə Öyrən</p>
+        <h1>İngilis qrammatikası, Azərbaycan dilində</h1>
+        <p>Mövzuları sıra ilə oxuyun, dinləyin və hər birini qısa sualla yoxlayın.</p>
+      </section>
+      <section class="auth-form">
+        <div class="tabs" role="group" aria-label="Hesab">
+          <button type="button" data-tab="signup" aria-pressed="true">Yeni hesab</button>
+          <button type="button" data-tab="signin" aria-pressed="false">Daxil ol</button>
         </div>
-        <input type="text"     id="signupName"     class="profile-input" placeholder="Adınız..."                          maxlength="24" />
-        <div class="profile-pwd-wrap">
-          <input type="password" id="signupPassword" class="profile-input" placeholder="Şifrə (8+, böyük hərf, simvol)"               />
-          <button type="button" class="profile-pwd-toggle" data-target="signupPassword" aria-label="Şifrəni göstər">👁️</button>
-        </div>
-        <div class="profile-pwd-wrap">
-          <input type="password" id="signupConfirm"  class="profile-input" placeholder="Şifrəni təsdiqləyin"                           />
-          <button type="button" class="profile-pwd-toggle" data-target="signupConfirm" aria-label="Şifrəni göstər">👁️</button>
-        </div>
-        <div class="auth-error hidden" id="signupError" role="alert" aria-live="polite"></div>
-        <button class="btn-primary auth-btn" id="btnSignup">Hesab yarat</button>
-      </div>
 
-      <!-- Sign In -->
-      <div id="formSignin" class="hidden">
-        <input type="text"     id="signinName"     class="profile-input" placeholder="Adınız..."   />
-        <div class="profile-pwd-wrap">
-          <input type="password" id="signinPassword" class="profile-input" placeholder="Şifrəniz..." />
-          <button type="button" class="profile-pwd-toggle" data-target="signinPassword" aria-label="Şifrəni göstər">👁️</button>
-        </div>
-        <div class="auth-error hidden" id="signinError" role="alert" aria-live="polite"></div>
-        <button class="btn-primary auth-btn" id="btnSignin">Daxil ol</button>
-      </div>
-    </div>
-  </div>
+        <form id="signupForm" novalidate>
+          <label class="field"><span>Adınız</span>
+            <input type="text" id="signupName" maxlength="24" autocomplete="username" required></label>
+          <label class="field"><span>Şifrə</span>
+            <input type="password" id="signupPassword" autocomplete="new-password" aria-describedby="pwdRules" required>
+            <small id="pwdRules">Ən azı 8 simvol, bir böyük hərf və bir xüsusi simvol.</small></label>
+          <label class="field"><span>Şifrəni təkrar yazın</span>
+            <input type="password" id="signupConfirm" autocomplete="new-password" required></label>
+          <label class="check"><input type="checkbox" class="show-pwd"> Şifrəni göstər</label>
+          <p class="error-text" role="alert" hidden></p>
+          <button class="btn">Hesab yarat</button>
+        </form>
 
-  <!-- Dərs Modalı -->
-  <div class="modal-overlay hidden" id="lessonOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title" id="lessonTitle"></h2>
-        <button class="modal-close" id="lessonClose">✕</button>
-      </div>
-      <div class="lives-bar" id="lessonLives"></div>
-      <div class="modal-body" id="lessonBody"></div>
-      <div class="modal-footer" id="lessonFooter"></div>
+        <form id="signinForm" novalidate hidden>
+          <label class="field"><span>Adınız</span>
+            <input type="text" id="signinName" autocomplete="username" required></label>
+          <label class="field"><span>Şifrə</span>
+            <input type="password" id="signinPassword" autocomplete="current-password" required></label>
+          <label class="check"><input type="checkbox" class="show-pwd"> Şifrəni göstər</label>
+          <p class="error-text" role="alert" hidden></p>
+          <button class="btn">Daxil ol</button>
+        </form>
+      </section>
     </div>
-  </div>
-
-  <!-- Quiz Modalı -->
-  <div class="modal-overlay hidden" id="quizOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="quiz-progress" id="quizProgress"></span>
-        <button class="modal-close" id="quizClose">✕</button>
-      </div>
-      <div class="lives-bar" id="quizLives"></div>
-      <div class="modal-body" id="quizBody"></div>
-      <div class="modal-footer">
-        <button class="btn-primary" id="quizCheck" disabled>Yoxla</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Uğur Bildirişi -->
-  <div class="modal-overlay hidden" id="celebrationOverlay">
-    <div class="modal celebration-modal" role="status" aria-live="polite">
-      <div class="celebration-icon">🎉</div>
-      <h2 id="celebrationTitle">Əla!</h2>
-      <p id="celebrationText"></p>
-      <button class="btn-primary" id="celebrationClose">Davam et</button>
-    </div>
-  </div>
-
-  <!-- Vocab Category Picker -->
-  <div class="modal-overlay hidden" id="vocabCategoryOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title">🃏 Söz Oyunu</h2>
-        <button class="modal-close" data-close="vocabCategoryOverlay">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size:0.85rem;opacity:0.6;margin-bottom:12px">Kateqoriya seç:</p>
-        <div class="vocab-category-chips" id="vocabCategoryChips"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-primary" id="vocabStartBtn">Başla</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Vocab Game -->
-  <div class="modal-overlay hidden" id="vocabOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="quiz-progress" id="vocabProgress"></span>
-        <button class="modal-close" data-close="vocabOverlay">✕</button>
-      </div>
-      <div class="lives-bar" id="vocabLives"></div>
-      <div class="modal-body" id="vocabBody"></div>
-      <div class="modal-footer" style="display:none" id="vocabFooter"></div>
-    </div>
-  </div>
-
-  <!-- Vocab Result -->
-  <div class="modal-overlay hidden" id="vocabResultOverlay">
-    <div class="modal celebration-modal" role="status" aria-live="polite">
-      <div class="celebration-icon" id="vocabResultIcon">📊</div>
-      <h2 id="vocabResultTitle"></h2>
-      <p id="vocabResultText"></p>
-      <div id="vocabWrongList" class="vocab-wrong-list"></div>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:4px">
-        <button class="btn-primary" id="vocabResultRetry">Yenidən</button>
-        <button class="btn-outline" id="vocabResultClose">Bağla</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Vocab Canlar Bitdi -->
-  <div class="modal-overlay hidden" id="vocabFailOverlay">
-    <div class="modal celebration-modal" role="status" aria-live="polite">
-      <div class="celebration-icon">💔</div>
-      <h2>Canlar Bitdi</h2>
-      <p>Yenidən cəhd et!</p>
-      <div style="display:flex;gap:10px;justify-content:center;margin-top:4px">
-        <button class="btn-primary" id="vocabFailRetry">Yenidən</button>
-        <button class="btn-outline" id="vocabFailClose">Bağla</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Review Category Picker -->
-  <div class="modal-overlay hidden" id="reviewCategoryOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <h2 class="modal-title">📝 Təkrar</h2>
-        <button class="modal-close" data-close="reviewCategoryOverlay">✕</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size:0.85rem;opacity:0.6;margin-bottom:12px">Mövzu seç:</p>
-        <div class="vocab-category-chips" id="reviewCategoryChips"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-primary" id="reviewStartBtn">Başla</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Review Quiz -->
-  <div class="modal-overlay hidden" id="reviewOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="quiz-progress" id="reviewProgress"></span>
-        <button class="modal-close" id="reviewClose">✕</button>
-      </div>
-      <div class="modal-body" id="reviewBody"></div>
-      <div class="modal-footer">
-        <button class="btn-primary" id="reviewCheck" disabled>Yoxla</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Review Result -->
-  <div class="modal-overlay hidden" id="reviewResultOverlay">
-    <div class="modal celebration-modal" role="status" aria-live="polite">
-      <div class="celebration-icon" id="reviewResultIcon">📊</div>
-      <h2 id="reviewResultTitle"></h2>
-      <p id="reviewResultText"></p>
-      <div id="reviewWrongList" class="review-wrong-list"></div>
-      <button class="btn-primary" id="reviewResultClose">Bağla</button>
-    </div>
-  </div>
-
-  <!-- Can Bitdi -->
-  <div class="modal-overlay hidden" id="failOverlay">
-    <div class="modal celebration-modal" role="status" aria-live="polite">
-      <div class="celebration-icon">💔</div>
-      <h2>Canlar Bitdi</h2>
-      <p>5 can yeniləndi. Dərsi yenidən oxu.</p>
-      <button class="btn-primary" id="failClose">Yenidən başla</button>
-    </div>
-  </div>
+  </template>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"
           integrity="sha384-3wY11tldQ5+yWqAvmTN4XtQvnjoTva0cV15O/O/O5NTtp0ivVopSzLOzsVXWZse9"
           crossorigin="anonymous"></script>
   <script src="config.js"></script>
-  <script src="ingilisce.js"></script>
+  <script src="content.js?v=2"></script>
+  <script src="ui.js?v=2"></script>
+  <script src="ingilisce.js?v=2"></script>
 </body>
 </html>

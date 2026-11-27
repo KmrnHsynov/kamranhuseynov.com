@@ -197,25 +197,6 @@ function startExamMode(){
     .catch(err=>{ if(token === examModeToken) showLoadError(err); });
 }
 
-// ── INIT ──────────────────────────────────────────────
-(function init(){
-  // Old versions cached the last published exam here and showed it when none was active.
-  try{ localStorage.removeItem(STORAGE_KEY_STUDENT); }catch(e){}
-  const saved = loadSavedAttempt();
-  if(saved){ resumeExam(saved); return; }
-
-  // A link from the host's QR code / PIN screen goes straight to the live join form, pin prefilled.
-  const params = new URLSearchParams(location.search);
-  const linkedPin = (params.get('pin') || '').replace(/\D/g, '').slice(0, 6);
-  if(params.get('mode') === 'live' || linkedPin){
-    if(linkedPin) document.getElementById('live-pin-inp').value = linkedPin;
-    showView('live-join-view');
-    return;
-  }
-
-  showView('mode-view');
-})();
-
 // Questions are not part of the list: they are fetched when the student starts (see loadExamQuestions).
 // Exams published before the list existed are still read straight from student_quiz, as long as the rules allow it.
 async function loadExamList(){
@@ -1410,3 +1391,24 @@ function onLiveFullscreenChange(){
 }
 document.addEventListener('fullscreenchange', onLiveFullscreenChange);
 document.addEventListener('webkitfullscreenchange', onLiveFullscreenChange);
+
+// ── INIT ──────────────────────────────────────────────
+// Stays at the very end of the file: resuming a saved attempt can finish it straight away, which needs
+// every `let` above to exist. Run any earlier, it throws and leaves the exam's buttons dead.
+(function init(){
+  // Old versions cached the last published exam here and showed it when none was active.
+  try{ localStorage.removeItem(STORAGE_KEY_STUDENT); }catch(e){}
+  const saved = loadSavedAttempt();
+  if(saved){ resumeExam(saved); return; }
+
+  // A link from the host's QR code / PIN screen goes straight to the live join form, pin prefilled.
+  const params = new URLSearchParams(location.search);
+  const linkedPin = (params.get('pin') || '').replace(/\D/g, '').slice(0, 6);
+  if(params.get('mode') === 'live' || linkedPin){
+    if(linkedPin) document.getElementById('live-pin-inp').value = linkedPin;
+    showView('live-join-view');
+    return;
+  }
+
+  showView('mode-view');
+})();
