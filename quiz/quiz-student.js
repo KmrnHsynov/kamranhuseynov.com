@@ -158,7 +158,7 @@ function backToModes(){
   showView('mode-view');
 }
 function backToModesHtml(){
-  return '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="backToModes()">← Geri</button></div>';
+  return '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="backToModes()">Geri</button></div>';
 }
 function chooseLiveMode(){
   showView('live-join-view');
@@ -251,7 +251,7 @@ function showNoQuiz(){
       ${backToModesHtml()}
       <h2>Aktiv test yoxdur</h2>
       <p>Hazırda aktiv test yoxdur. Müəllim test göndərdikdə bu səhifədə görünəcək.</p>
-      <button class="btn btn-ghost btn-full" onclick="location.reload()">↻ Yenilə</button>
+      <button class="btn btn-ghost btn-full" onclick="location.reload()">Yenilə</button>
       ${lookupHtml()}
     </div>`;
   showView('lobby-view');
@@ -263,7 +263,7 @@ function showLoadError(){
       ${backToModesHtml()}
       <h2>Yüklənmədi</h2>
       <p>Test məlumatları alına bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin.</p>
-      <button class="btn btn-primary btn-full" onclick="location.reload()">↻ Yenidən cəhd et</button>
+      <button class="btn btn-primary btn-full" onclick="location.reload()">Yenidən cəhd et</button>
     </div>`;
   showView('lobby-view');
 }
@@ -304,8 +304,8 @@ function showClosedLobby(state){
       <p>${esc(topicName||'İmtahan')}<br/>${before
         ? 'Açılış vaxtı: <strong>' + esc(formatWhen(examOpensAt)) + '</strong>'
         : 'Başlamaq üçün son vaxt <strong>' + esc(formatWhen(examClosesAt)) + '</strong> idi.'}</p>
-      <button class="btn btn-ghost btn-full" onclick="showLobby()">↻ Yenilə</button>
-      ${_examList.length > 1 ? '<button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="showExamList(_examList)">← Siyahıya qayıt</button>' : ''}
+      <button class="btn btn-ghost btn-full" onclick="showLobby()">Yenilə</button>
+      ${_examList.length > 1 ? '<button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="showExamList(_examList)">Siyahıya qayıt</button>' : ''}
       ${lookupHtml()}
     </div>`;
   showView('lobby-view');
@@ -316,7 +316,7 @@ function showClosedLobby(state){
 // With several tests published, the student picks one first; this arrow goes back to that list if they picked wrong.
 function backToListHtml(){
   return _examList.length > 1
-    ? '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="showExamList(_examList)" title="Test siyahısına qayıt">← Testlər</button></div>'
+    ? '<div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="showExamList(_examList)" title="Test siyahısına qayıt">Testlər</button></div>'
     : backToModesHtml();
 }
 
@@ -375,7 +375,7 @@ function showLobby(){
       ${notice}
       <input type="text" id="student-name-inp" placeholder="Adınızı daxil edin…" style="margin-bottom:14px" maxlength="60"/>
       <p id="name-error" style="display:none;font-size:15px;color:var(--wrong);margin:-6px 0 12px;text-align:left">Zəhmət olmasa adınızı daxil edin.</p>
-      <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana başla</button>
+      <button class="btn btn-primary btn-full" onclick="startExam()">İmtahana başla</button>
       ${lookupHtml()}
     </div>`;
   showView('lobby-view');
@@ -486,7 +486,7 @@ function renderQuizQ(){
   document.getElementById('q-progress').textContent = `${quizIdx+1} / ${total}`;
   document.getElementById('prog-fill').style.width = `${(quizIdx/total)*100}%`;
   document.getElementById('btn-prev').style.display = quizIdx === 0 ? 'none' : 'inline-flex';
-  document.getElementById('btn-next').textContent = quizIdx === total-1 ? 'Bitir ✓' : 'Növbəti →';
+  document.getElementById('btn-next').textContent = quizIdx === total-1 ? 'Bitir' : 'Növbəti';
   document.getElementById('quiz-pts-lbl').textContent = `${q.points} xal`;
   document.getElementById('quiz-card-container').innerHTML = buildQuizCard(q);
   const saved = quizAns[q.id];
@@ -504,8 +504,8 @@ function buildQuizCard(q){
       </div>`).join('')}</div>`;
   } else if(q.type === 'tf'){
     body = `<div class="quiz-tf-opts">
-      <div class="quiz-tf-btn" id="tf-t" onclick="pickTF(${q.id},true)">✓ Doğru</div>
-      <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false)">✗ Yanlış</div>
+      <div class="quiz-tf-btn" id="tf-t" onclick="pickTF(${q.id},true)">Doğru</div>
+      <div class="quiz-tf-btn" id="tf-f" onclick="pickTF(${q.id},false)">Yanlış</div>
     </div>`;
   } else if(q.type === 'short'){
     body = `<textarea class="quiz-short-input" id="short-inp" oninput="liveShort(${q.id})" placeholder="Cavabınızı buraya yazın…"></textarea>
@@ -516,7 +516,6 @@ function buildQuizCard(q){
     <div id="ans-status" style="margin-top:12px;min-height:18px;font-size:15px;color:var(--muted)"></div>`;
   }
   return `<div class="quiz-card" id="quiz-card-main">
-    <div class="quiz-q-label">Sual ${quizIdx+1} / ${quizQs.length}</div>
     <div class="quiz-q-text">${esc(q.text)}</div>
     ${body}
   </div>`;
@@ -549,7 +548,7 @@ function pickTF(qid, val){
 // Written answers are kept as the student types. An empty one (or a fill-in with a blank left) counts as no answer.
 function showAnsStatus(has){
   const el = document.getElementById('ans-status');
-  if(el) el.textContent = has ? '✓ Cavab yadda saxlanıldı' : '';
+  if(el) el.textContent = has ? 'Cavab yadda saxlanıldı' : '';
 }
 
 function liveShort(qid){
@@ -686,9 +685,9 @@ function setSaveState(state){
     failed: 'Cavablarınız göndərilə bilmədi. İnternet bağlantısını yoxlayıb yenidən cəhd edin. Səhifəni bağlamayın.',
     rejected: 'İmtahan vaxtı bitdiyi üçün son cavablar artıq qəbul olunmur. Vaxt bitənə qədər saxlanılmış cavablarınız müəllimdə qalır.'
   };
-  set('result-icon', { pending: '', slow: '', ok: '✓', failed: '!', rejected: '' }[state]);
   set('result-heading', { pending: 'İmtahan göndərilir…', slow: 'İmtahan göndərilir…', ok: 'İmtahan göndərildi', failed: 'İmtahan göndərilmədi', rejected: 'İmtahan vaxtı bitib' }[state]);
   set('result-save', notes[state]);
+  document.getElementById('result-heading')?.classList.toggle('is-bad', state === 'failed' || state === 'rejected');
   if(retry) retry.style.display = state === 'failed' ? 'inline-flex' : 'none';
   const extra = document.getElementById('result-extra');
   if(extra) extra.style.display = state === 'ok' || state === 'rejected' ? 'block' : 'none';
@@ -698,7 +697,7 @@ function setSaveState(state){
     home.id = 'result-home';
     home.className = 'btn btn-ghost';
     home.style.marginBottom = '12px';
-    home.textContent = '← Ana səhifə';
+    home.textContent = 'Ana səhifə';
     home.onclick = () => { location.href = location.pathname; };
     document.getElementById('result-save')?.after(home);
   }
@@ -807,7 +806,6 @@ function showLeaveWarning(count){
   el.id = 'leave-warning';
   el.className = 'overlay';
   el.innerHTML = `<div class="modal" style="text-align:center">
-    <div style="font-size:40px;margin-bottom:8px"></div>
     <h2>Xəbərdarlıq ${count}/${leaveLimit}</h2>
     <p>İmtahan səhifəsini tərk etdiniz. Yenə ${leaveLimit-count} dəfə çıxsanız, imtahan avtomatik göndəriləcək.</p>
     <button class="btn btn-primary btn-full" onclick="document.getElementById('leave-warning').remove();enterFullscreen()">Davam et</button>
@@ -987,7 +985,7 @@ async function joinLiveRoom(){
   }catch(e){
     showLiveJoinError('Qoşulmaq mümkün olmadı. İnternet bağlantısını yoxlayın.');
   }finally{
-    btn.disabled = false; btn.textContent = '▶ Qoşul';
+    btn.disabled = false; btn.textContent = 'Qoşul';
   }
 }
 
@@ -1007,7 +1005,7 @@ function attachLiveRoomListener(){
   liveRoomMetaRef = db.ref('live_rooms/' + livePin + '/meta');
   liveRoomMetaRef.on('value', snap => {
     const meta = snap.val();
-    if(!meta){ liveJoined = false; leaveFullscreen(); renderLiveGameMessage('', 'Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
+    if(!meta){ liveJoined = false; leaveFullscreen(); renderLiveGameMessage('Oyun bitdi', 'Müəllim otağı silib.'); detachLiveRoomListener(); return; }
     handleLiveMetaUpdate(meta);
   });
   // The teacher can only kick from the lobby roster, so this only ever fires once the player's
@@ -1018,7 +1016,7 @@ function attachLiveRoomListener(){
     if(snap.exists() || !liveJoined) return;
     liveJoined = false;
     leaveFullscreen();
-    renderLiveGameMessage('', 'Oyundan çıxarıldınız', 'Müəllim sizi oyundan çıxarıb.');
+    renderLiveGameMessage('Oyundan çıxarıldınız', 'Müəllim sizi oyundan çıxarıb.');
     detachLiveRoomListener();
   });
 }
@@ -1050,19 +1048,18 @@ function handleLiveMetaUpdate(meta){
   else renderLiveFinished(meta, gen);
 }
 
-function liveGameMessageHtml(icon, title, sub){
+function liveGameMessageHtml(title, sub){
   return `<div class="lock-card" style="margin:0 auto;max-width:460px">
-    <div class="lock-icon">${icon}</div>
     <h2>${title}</h2>
     <p>${sub}</p>
   </div>`;
 }
-function renderLiveGameMessage(icon, title, sub){
-  document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml(icon, title, sub);
+function renderLiveGameMessage(title, sub){
+  document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml(title, sub);
 }
 
 function renderLiveWaiting(meta){
-  renderLiveGameMessage('', esc(meta.topic || 'Canlı oyun'), `Salam, ${esc(liveDisplayName)}! Oyun başlayana qədər gözləyin…`);
+  renderLiveGameMessage(esc(meta.topic || 'Canlı oyun'), `${esc(liveDisplayName)}, qoşuldunuz. Oyun başlayana qədər gözləyin…`);
 }
 
 // ── QUESTION ──────────────────────────────────────────
@@ -1092,9 +1089,9 @@ async function loadAndRenderLiveQuestion(meta, gen){
 function renderLiveQuestion(meta, i){
   const q = liveCurrentQuestion;
   const wrap = document.getElementById('live-game-wrap');
-  if(!q){ wrap.innerHTML = liveGameMessageHtml('', 'Sual yüklənmədi', 'Səhifəni yeniləyin.'); return; }
+  if(!q){ wrap.innerHTML = liveGameMessageHtml('Sual yüklənmədi', 'Səhifəni yeniləyin.'); return; }
   if(liveAnswered){
-    wrap.innerHTML = liveGameMessageHtml('✓', `Sual ${i + 1} / ${meta.questionCount}`, 'Bu suala artıq cavab vermisiniz. Növbəti addımı gözləyin…');
+    wrap.innerHTML = liveGameMessageHtml(`Sual ${i + 1} / ${meta.questionCount}`, 'Bu suala artıq cavab vermisiniz. Növbəti addımı gözləyin…');
     return;
   }
   wrap.innerHTML = `
@@ -1108,7 +1105,6 @@ function renderLiveQuestion(meta, i){
     </div>
     <div class="prog-track"><div class="prog-fill" style="width:${(i / meta.questionCount) * 100}%"></div></div>
     <div class="quiz-card" id="live-q-card">
-      <div class="quiz-q-label">Sual ${i + 1}</div>
       <div class="quiz-q-text">${esc(q.text)}</div>
       <div id="live-answer-area"><div id="live-read-note" class="live-read-note">Cavablar ${Math.round(LIVE_READ_MS / 1000)} saniyə sonra açılacaq…</div></div>
     </div>
@@ -1122,8 +1118,8 @@ function liveAnswerInputHtml(q){
   if(q.type === 'mc') return `<div class="quiz-mc-opts">${q.options.map((o, i) => o ?
     `<div class="quiz-mc-opt" onclick="submitLiveAnswer({selectedOption:${i}}, this)"><div class="opt-ltr">${L[i]}</div><div class="opt-txt">${esc(o)}</div></div>` : '').join('')}</div>`;
   if(q.type === 'tf') return `<div class="quiz-tf-opts">
-    <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:true}, this)">✓ Doğru</div>
-    <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:false}, this)">✗ Yanlış</div>
+    <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:true}, this)">Doğru</div>
+    <div class="quiz-tf-btn" onclick="submitLiveAnswer({tfAnswer:false}, this)">Yanlış</div>
   </div>`;
   if(q.type === 'short') return `<textarea id="live-short-inp" class="quiz-short-input" placeholder="Cavabınızı yazın…"></textarea>
     <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="submitLiveShort()">Göndər</button>`;
@@ -1187,7 +1183,7 @@ function writeLiveAnswer(fields){
     // Without this check, a reveal that already rendered while this write was still in flight gets
     // clobbered by this stale "waiting" screen, and nothing re-renders it until the next question.
     if(gen !== liveRenderGen) return;
-    document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml('✓', 'Cavab göndərildi!', 'Digər tələbələri gözləyin…');
+    document.getElementById('live-game-wrap').innerHTML = liveGameMessageHtml('Cavab göndərildi', 'Digər tələbələri gözləyin…');
   }).catch(() => {
     liveAnswered = false;
     if(gen !== liveRenderGen) return;
@@ -1240,7 +1236,7 @@ function startLiveCountdown(meta){
 async function renderLiveReveal(gen){
   const i = liveLastIndex;
   const wrap = document.getElementById('live-game-wrap');
-  wrap.innerHTML = liveGameMessageHtml('', 'Nəticə yüklənir…', '');
+  wrap.innerHTML = liveGameMessageHtml('Nəticə yüklənir…', '');
   try{
     const [resSnap, playersSnap] = await Promise.all([
       db.ref('live_rooms/' + livePin + '/results/' + i + '/' + liveUid).once('value'),
@@ -1256,8 +1252,7 @@ async function renderLiveReveal(gen){
     if(!liveRevealFact || liveRevealFact.round !== i) liveRevealFact = { round: i, fact: livePickFact(liveRoundFacts(board, i, liveUid)) };
     const fact = liveRevealFact.fact;
     wrap.innerHTML = `<div class="lock-card live-reveal-card">
-      <div class="lock-icon" style="color:var(--${res ? (ok ? 'correct' : 'wrong') : 'muted'})">${res ? (ok ? '✓' : '✗') : ''}</div>
-      <h2>${res ? (ok ? 'Düzgün!' : 'Səhv') : 'Cavab vermədiniz'}</h2>
+      <h2 class="${res ? (ok ? 'is-ok' : 'is-bad') : ''}">${res ? (ok ? 'Düzgün' : 'Səhv') : 'Cavab vermədiniz'}</h2>
       <p style="margin-bottom:16px">${res && ok ? `+${pts} xal qazandınız.` : 'Bu sual üçün xal qazanmadınız.'}</p>
       <div class="live-me-stats">
         <div class="live-me-stat"><div class="v">${me ? me.rank : '—'}<small> / ${board.length}</small></div><div class="l">Yeriniz</div></div>
@@ -1270,7 +1265,7 @@ async function renderLiveReveal(gen){
       <p style="margin:16px 0 0;font-size:15px">Növbəti sualı gözləyin…</p>
     </div>`;
   }catch(e){
-    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('', 'Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
+    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('Nəticə yüklənmədi', 'Növbəti sualı gözləyin.');
   }
 }
 
@@ -1284,7 +1279,7 @@ async function renderLiveFinished(meta, gen){
   // final-rank screen with a "room deleted" message.
   detachLiveRoomListener();
   const wrap = document.getElementById('live-game-wrap');
-  wrap.innerHTML = liveGameMessageHtml('', 'Yekun nəticələr yüklənir…', '');
+  wrap.innerHTML = liveGameMessageHtml('Yekun nəticələr yüklənir…', '');
   try{
     const snap = await db.ref('live_rooms/' + livePin + '/players').once('value');
     if(gen !== liveRenderGen) return;
@@ -1294,15 +1289,15 @@ async function renderLiveFinished(meta, gen){
     const rank = myEntry ? myEntry.rank : 0;
     const rest = board.slice(3, 10);
     wrap.innerHTML = `<div class="lock-card" style="margin:0 auto;max-width:460px">
-      <h2>${esc(meta.topic || 'Canlı oyun')} — Bitdi</h2>
-      <p style="margin-bottom:16px">Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong>${myEntry ? ` · <strong>${myEntry.score}</strong> xal` : ''}</p>
+      <h2>${esc(meta.topic || 'Canlı oyun')}</h2>
+      <p style="margin-bottom:16px">Oyun bitdi. Sizin yeriniz: <strong>${rank || '—'} / ${board.length}</strong>${myEntry ? ` · <strong>${myEntry.score}</strong> xal` : ''}</p>
       ${livePodiumHtml(board, myEntry ? myEntry.uid : undefined)}
       ${rest.map((p, idx) => `<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;${p.uid === liveUid ? 'font-weight:700;color:var(--accent)' : ''}">
         <span>${p.rank}. ${esc(p.name)}</span><strong>${p.score}</strong>
       </div>`).join('')}
     </div>`;
   }catch(e){
-    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('', 'Yekun nəticə yüklənmədi', '');
+    if(gen === liveRenderGen) wrap.innerHTML = liveGameMessageHtml('Yekun nəticə yüklənmədi', '');
   }
 }
 
@@ -1352,7 +1347,7 @@ function removeSelfFromLive(){
   detachLiveRoomListener();
   leaveFullscreen();
   document.getElementById('live-leave-warning')?.remove();
-  renderLiveGameMessage('', 'Oyundan çıxarıldınız', `Oyun səhifəsini ${liveLeaveLimit} dəfə tərk etdiyiniz üçün oyun sizin üçün bitdi. Bu müəllimə bildirilib.`);
+  renderLiveGameMessage('Oyundan çıxarıldınız', `Oyun səhifəsini ${liveLeaveLimit} dəfə tərk etdiyiniz üçün oyun sizin üçün bitdi. Bu müəllimə bildirilib.`);
 }
 function onLiveReturn(){
   if(!liveMonitoring()) return;
@@ -1368,7 +1363,6 @@ function showLiveLeaveWarning(count){
   el.id = 'live-leave-warning';
   el.className = 'overlay';
   el.innerHTML = `<div class="modal" style="text-align:center">
-    <div style="font-size:40px;margin-bottom:8px"></div>
     <h2>Xəbərdarlıq ${count}/${liveLeaveLimit}</h2>
     <p>Oyun səhifəsini tərk etdiniz. Bu müəllimə bildirilir. Yenə ${liveLeaveLimit - count} dəfə çıxsanız, oyundan çıxarılacaqsınız.</p>
     <button class="btn btn-primary btn-full" onclick="document.getElementById('live-leave-warning').remove();enterFullscreen()">Davam et</button>

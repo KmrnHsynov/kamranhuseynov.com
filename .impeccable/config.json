@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "icon-tile-stack",
+        "value": "*",
+        "files": [
+          "quiz/quiz-az.html"
+        ],
+        "createdAt": "2026-11-27T08:35:31.391Z",
+        "reason": "agent decision: match is the sidebar show-menu button beside the editor h2 (flex row, verified in screenshot), not a feature-card icon tile above a heading"
+      }
+    ]
+  }
+}

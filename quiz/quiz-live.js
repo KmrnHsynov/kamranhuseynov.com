@@ -94,6 +94,9 @@ function livePodiumHtml(leaderboard, highlightUid){
   }).join('')}</div>`;
 }
 
+// The one close/remove icon, shared by both pages (this file loads before them).
+const ICON_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
 // ── Round stats: ranking, streaks and the random "did you know" line shown after each question ──
 // The host writes these per player at every reveal (players/<uid>/streak, bestStreak, lastRound,
 // lastCorrect, lastPoints, lastMs), because players can only read their own results/ entry but can
@@ -130,11 +133,11 @@ function liveRoundFacts(board, round, myUid){
   const me = myUid != null ? board.find(p => p.uid === myUid) : null;
   const inRound = board.filter(p => p.lastRound === round);
 
-  if(me && me.streak >= 2) facts.push({ icon: '', text: `Sizin seriyanız: ${me.streak} sual ardıcıl düzgün cavab!` });
+  if(me && me.streak >= 2) facts.push({ icon: '', text: `Sizin seriyanız: ${me.streak} sual ardıcıl düzgün cavab.` });
   const hot = board.filter(p => p.streak >= 2 && (!me || p.uid !== me.uid)).sort((a, b) => b.streak - a.streak)[0];
-  if(hot) facts.push({ icon: '', text: `${hot.name} ${hot.streak} sual ardıcıl düzgün cavab verib!` });
+  if(hot) facts.push({ icon: '', text: `${hot.name} ${hot.streak} sual ardıcıl düzgün cavab verib.` });
   const bestEver = board.slice().sort((a, b) => b.bestStreak - a.bestStreak)[0];
-  if(bestEver && bestEver.bestStreak >= 3) facts.push({ icon: '', text: `Oyunun ən uzun seriyası: ${bestEver.name} — ${bestEver.bestStreak} ardıcıl düzgün cavab.` });
+  if(bestEver && bestEver.bestStreak >= 3) facts.push({ icon: '', text: `Oyunun ən uzun seriyası: ${bestEver.name} (${bestEver.bestStreak} ardıcıl düzgün cavab).` });
 
   if(board.length >= 2){
     const fast = inRound.filter(p => p.lastCorrect && p.lastMs != null).sort((a, b) => a.lastMs - b.lastMs)[0];
@@ -153,7 +156,7 @@ function liveRoundFacts(board, round, myUid){
     if(prevRank - p.rank > climb){ climb = prevRank - p.rank; climber = p; }
   });
   if(climber && (!me || climber.uid !== me.uid)) facts.push({ icon: '', text: `${climber.name} bu sualda ${climb} pillə yüksəldi.` });
-  if(me && climber && climber.uid === me.uid) facts.push({ icon: '', text: `Bu sualda ${climb} pillə yüksəldiniz!` });
+  if(me && climber && climber.uid === me.uid) facts.push({ icon: '', text: `Bu sualda ${climb} pillə yüksəldiniz.` });
 
   if(me && me.rank > 1){
     const above = board.filter(p => p.score > me.score).sort((a, b) => a.score - b.score)[0];
@@ -184,7 +187,7 @@ function liveTopRowsHtml(board, highlightUid, limit, kickable){
       <span class="live-top-rank">${p.rank}</span>
       <span class="live-top-name">${esc(p.name)}${p.streak >= 2 ? ` <span class="live-top-streak" title="Ardıcıl düzgün cavab">seriya ${p.streak}</span>` : ''}</span>
       <strong>${p.score}</strong>${kickable && p.uid != null ? `
-      <button class="live-kick-btn" data-uid="${esc(p.uid)}" onclick="kickLivePlayer(this.dataset.uid)" title="Oyundan çıxar" aria-label="Oyundan çıxar">✕</button>` : ''}
+      <button class="live-kick-btn" data-uid="${esc(p.uid)}" onclick="kickLivePlayer(this.dataset.uid)" title="Oyundan çıxar" aria-label="Oyundan çıxar">${ICON_X}</button>` : ''}
     </div>`;
   };
   const top = board.slice(0, n);

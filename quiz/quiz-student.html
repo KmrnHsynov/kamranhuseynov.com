@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>QuizCraft — Tələbə</title>
+<title>Tələbə | QuizCraft</title>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="quiz-az.css?v=17"/>
+<link rel="stylesheet" href="quiz-az.css?v=18"/>
 <style>
 /* No text selection or long-press menu on the exam or the live game; answer fields stay editable. */
 #quiz-view,#live-game-view{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
@@ -31,7 +31,7 @@
 ═══════════════════════════════ -->
 <div id="lobby-view" class="view">
   <div class="lock-card" style="max-width:460px">
-    <div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="backToModes()">← Geri</button></div>
+    <div style="text-align:left;margin:-6px 0 10px"><button class="btn btn-ghost btn-sm" onclick="backToModes()">Geri</button></div>
     <h2 id="lobby-topic">İmtahan</h2>
     <p style="font-size:16px;color:var(--text2);margin-bottom:6px">
       Suallar: <strong id="lobby-count">0</strong> &nbsp;·&nbsp; Vaxt: <strong>30 dəqiqə</strong>
@@ -41,7 +41,7 @@
       Vaxt bitdikdə test avtomatik göndəriləcək.
     </p>
     <input type="text" id="student-name-inp" placeholder="Adınızı daxil edin…" style="margin-bottom:14px" maxlength="60"/>
-    <button class="btn btn-primary btn-full" onclick="startExam()">▶ İmtahana başla</button>
+    <button class="btn btn-primary btn-full" onclick="startExam()">İmtahana başla</button>
   </div>
 </div>
 
@@ -55,8 +55,8 @@
     <input type="text" id="live-pin-inp" placeholder="PIN (6 rəqəm)…" inputmode="numeric" maxlength="6" style="margin-bottom:10px;text-align:center;font-variant-numeric:lining-nums tabular-nums;font-size:24px;letter-spacing:.1em" oninput="this.value=this.value.replace(/\D/g,'').slice(0,6)" onkeydown="if(event.key==='Enter')document.getElementById('live-name-inp').focus()"/>
     <input type="text" id="live-name-inp" placeholder="Adınızı daxil edin…" maxlength="60" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')joinLiveRoom()"/>
     <p id="live-join-error" style="display:none;font-size:15px;color:var(--wrong);margin:-2px 0 12px;text-align:left"></p>
-    <button class="btn btn-primary btn-full" id="live-join-btn" onclick="joinLiveRoom()">▶ Qoşul</button>
-    <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="showView('mode-view')">← Geri</button>
+    <button class="btn btn-primary btn-full" id="live-join-btn" onclick="joinLiveRoom()">Qoşul</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="showView('mode-view')">Geri</button>
   </div>
 </div>
 
@@ -73,7 +73,7 @@
 <div id="quiz-view" class="view">
   <div class="quiz-wrap">
     <div class="quiz-topbar">
-      <button class="btn btn-ghost btn-sm" onclick="exitQuiz()" style="font-size:15px;padding:7px 12px">✕ Çıxış</button>
+      <button class="btn btn-ghost btn-sm" onclick="exitQuiz()" style="font-size:15px;padding:7px 12px">Çıxış</button>
       <span class="quiz-title-lbl" id="quiz-disp-title">Test</span>
       <div class="quiz-meta">
         <span class="quiz-prog-txt" id="q-progress">1 / 1</span>
@@ -85,8 +85,8 @@
     <div class="quiz-nav">
       <span class="quiz-pts-lbl" id="quiz-pts-lbl"></span>
       <div class="quiz-nav-btns">
-        <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()">← Geri</button>
-        <button class="btn btn-primary" id="btn-next" onclick="nextQ()">Növbəti →</button>
+        <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()">Geri</button>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQ()">Növbəti</button>
       </div>
     </div>
   </div>
@@ -97,11 +97,10 @@
 ═══════════════════════════════ -->
 <div id="results-view" class="view">
   <div class="results-wrap">
-    <div class="results-hdr">
-      <div class="lock-icon" id="result-icon"></div>
+    <div class="results-hdr is-centred">
       <h2 class="results-title" id="result-heading">İmtahan göndərilir…</h2>
       <p class="results-sub" id="result-save"></p>
-      <button class="btn btn-primary" id="result-retry" style="display:none;margin-bottom:12px" onclick="sendFinal()">↻ Yenidən göndər</button>
+      <button class="btn btn-primary" id="result-retry" style="display:none;margin-bottom:12px" onclick="sendFinal()">Yenidən göndər</button>
       <p class="results-sub" id="result-sub"></p>
       <p class="results-sub" id="result-auto" style="display:none;color:var(--wrong);font-weight:700"></p>
     </div>
@@ -117,7 +116,7 @@
 <script src="quiz-grading.js?v=12"></script>
 <script src="quiz-schedule.js?v=10"></script>
 <script src="quiz-examcodec.js?v=11"></script>
-<script src="quiz-live.js?v=17"></script>
-<script src="quiz-student.js?v=25"></script>
+<script src="quiz-live.js?v=18"></script>
+<script src="quiz-student.js?v=26"></script>
 </body>
 </html>
