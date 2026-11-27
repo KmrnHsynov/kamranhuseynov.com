@@ -599,9 +599,30 @@ function flushAnswer(){
 function nextQ(){
   flushAnswer();
   if(quizIdx < quizQs.length-1){ quizIdx++; renderQuizQ(); }
-  else finishQuiz();
+  else showFinishConfirm();
 }
 function prevQ(){ flushAnswer(); if(quizIdx > 0){ quizIdx--; renderQuizQ(); } }
+
+// Asked before the Bitir button submits. An in-page dialog, not confirm(), which could count as leaving the page.
+// The timer keeps running behind it.
+function showFinishConfirm(){
+  document.getElementById('finish-confirm')?.remove();
+  const left = quizQs.length - answeredCount();
+  const el = document.createElement('div');
+  el.id = 'finish-confirm';
+  el.className = 'overlay';
+  el.innerHTML = `<div class="modal" style="text-align:center" role="dialog" aria-modal="true" aria-labelledby="finish-confirm-title">
+    <h2 id="finish-confirm-title">Testi bitirmək istədiyinizə əminsiniz?</h2>
+    <p>${left ? `<strong>${left}</strong> suala hələ cavab verməmisiniz. ` : ''}Bitirdikdən sonra cavabları dəyişmək mümkün olmayacaq.</p>
+    <button class="btn btn-primary btn-full" id="finish-yes" style="margin-bottom:10px">Bəli, bitir</button>
+    <button class="btn btn-ghost btn-full" id="finish-no">Xeyr, testə qayıt</button>
+  </div>`;
+  document.body.appendChild(el);
+  document.getElementById('finish-yes').onclick = () => { el.remove(); if(examActive) finishQuiz(); };
+  const no = document.getElementById('finish-no');
+  no.onclick = () => el.remove();
+  no.focus();
+}
 
 // ── RESULTS ───────────────────────────────────────────
 function answeredCount(){ return quizQs.filter(q => quizAns[q.id] !== undefined).length; }
@@ -712,6 +733,7 @@ function finishQuiz(){
   leaveFullscreen();
   persistState(true);
   document.getElementById('leave-warning')?.remove();
+  document.getElementById('finish-confirm')?.remove();
   document.getElementById('result-sub').textContent =
     `${answeredCount()} / ${quizQs.length} suala cavab verdiniz. Nəticələr müəllim tərəfindən elan olunacaq.`;
   const autoEl = document.getElementById('result-auto');
